@@ -23,6 +23,8 @@ export async function GET(req: Request) {
     const start = searchParams.get("start"); // ISO date string
     const end = searchParams.get("end"); // ISO date string
 
+    // Admin can see all events (including "Pending" and "internalOnly")
+    // No filtering by status or audience for admin calendar
     let query = supabase
       .from("calendar_events")
       .select("*")

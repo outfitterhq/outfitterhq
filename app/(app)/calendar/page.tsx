@@ -401,21 +401,24 @@ export default function CalendarPage() {
             }}
           >
             <span>
-              📋 {pendingActions.total} item{pendingActions.total !== 1 ? "s" : ""} need your attention
-              {pendingActions.counts.generate_contract > 0 && (
-                <span style={{ marginLeft: 8, color: "#e65100" }}>
-                  ({pendingActions.counts.generate_contract} need contract
-                  {(pendingActions.counts.send_docusign + pendingActions.counts.admin_sign) > 0
-                    ? `, ${pendingActions.counts.send_docusign} ready for DocuSign, ${pendingActions.counts.admin_sign} need your signature`
-                    : ""}
-                  )
-                </span>
-              )}
-              {(pendingActions.counts.send_docusign + pendingActions.counts.admin_sign) > 0 && pendingActions.counts.generate_contract === 0 && (
-                <span style={{ marginLeft: 8, color: "#e65100" }}>
-                  ({pendingActions.counts.send_docusign} ready for DocuSign, {pendingActions.counts.admin_sign} need your signature)
-                </span>
-              )}
+              📋 Work List: {pendingActions.total} item{pendingActions.total !== 1 ? "s" : ""} need your attention
+              <span style={{ marginLeft: 8, color: "#e65100", fontSize: 14 }}>
+                {pendingActions.counts.assign_to_calendar > 0 && (
+                  <span>{pendingActions.counts.assign_to_calendar} need calendar assignment</span>
+                )}
+                {pendingActions.counts.assign_to_calendar > 0 && pendingActions.counts.generate_contract > 0 && " • "}
+                {pendingActions.counts.generate_contract > 0 && (
+                  <span>{pendingActions.counts.generate_contract} need contract</span>
+                )}
+                {(pendingActions.counts.assign_to_calendar > 0 || pendingActions.counts.generate_contract > 0) && pendingActions.counts.send_docusign > 0 && " • "}
+                {pendingActions.counts.send_docusign > 0 && (
+                  <span>{pendingActions.counts.send_docusign} ready for DocuSign</span>
+                )}
+                {(pendingActions.counts.assign_to_calendar > 0 || pendingActions.counts.generate_contract > 0 || pendingActions.counts.send_docusign > 0) && pendingActions.counts.admin_sign > 0 && " • "}
+                {pendingActions.counts.admin_sign > 0 && (
+                  <span>{pendingActions.counts.admin_sign} need your signature</span>
+                )}
+              </span>
             </span>
             <span style={{ opacity: 0.7 }}>{showPendingActions ? "▼" : "▶"}</span>
           </button>
