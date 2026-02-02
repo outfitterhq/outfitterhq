@@ -758,6 +758,7 @@ export default function CalendarPage() {
                     {dayEvents.slice(0, 3).map((e) => {
                       const isTimeOff = e.title?.startsWith("Time Off:");
                       const pendingItem = isTimeOff ? undefined : pendingActions?.items.find((i) => i.hunt_id === e.id);
+                      const isPending = (e as any).status === "Pending";
                       const actionBadge =
                         pendingItem?.action === "generate_contract"
                           ? " • contract"
@@ -766,6 +767,14 @@ export default function CalendarPage() {
                             : pendingItem?.action === "admin_sign"
                               ? " • sign"
                               : "";
+                      // Color coding: Pending = orange, Time Off = orange, Action needed = red, Normal = blue
+                      const bgColor = isTimeOff 
+                        ? "#ff9800" 
+                        : pendingItem 
+                          ? "#e65100" 
+                          : isPending 
+                            ? "#ff9800" 
+                            : "#0070f3";
                       return (
                         <div
                           key={e.id}
@@ -778,7 +787,7 @@ export default function CalendarPage() {
                           style={{
                             fontSize: 11,
                             padding: "4px 6px",
-                            background: isTimeOff ? "#ff9800" : pendingItem ? "#e65100" : "#0070f3",
+                            background: bgColor,
                             color: "white",
                             borderRadius: 4,
                             cursor: isTimeOff ? "default" : "pointer",
@@ -786,14 +795,17 @@ export default function CalendarPage() {
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
                             opacity: isTimeOff ? 0.8 : 1,
+                            border: isPending ? "1px solid #ff6f00" : "none",
                           }}
                           title={
                             e.title +
                             (isTimeOff ? " (Time Off - Read Only)" : "") +
+                            (isPending ? " (Pending - Needs setup)" : "") +
                             (actionBadge ? ` — Action needed: ${actionBadge.replace(" • ", "")}` : "")
                           }
                         >
                           {e.title}
+                          {isPending && !actionBadge ? <span style={{ opacity: 0.9 }}> • Pending</span> : null}
                           {actionBadge ? <span style={{ opacity: 0.9 }}>{actionBadge}</span> : null}
                         </div>
                       );
