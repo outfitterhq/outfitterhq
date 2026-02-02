@@ -59,6 +59,11 @@ export async function createOrUpdateCalendarEventFromContract(
     const completionData = (contract.client_completion_data as any) || {};
     const clientStart = completionData.client_start_date as string | undefined;
     const clientEnd = completionData.client_end_date as string | undefined;
+    const completionSpecies = completionData.species as string | undefined;
+    const completionWeapon = completionData.weapon as string | undefined;
+    const completionUnit = completionData.unit as string | undefined;
+    const completionHuntCode = completionData.hunt_code as string | undefined;
+    const completionCamp = completionData.camp_name as string | undefined;
     
     // Also try to get dates from hunt if they exist in the database
     let huntStart: string | undefined = clientStart;
@@ -105,12 +110,35 @@ export async function createOrUpdateCalendarEventFromContract(
         console.log(`📅 Updating existing calendar event ${contract.hunt_id}`);
         console.log(`   Current: client_email=${existingEvent.client_email}, status=${(existingEvent as any).status}`);
         
+        // Get client name from clients table
+        let clientName: string | null = null;
+        if (contract.client_email) {
+          const { data: clientData } = await supabase
+            .from("clients")
+            .select("first_name, last_name")
+            .eq("email", contract.client_email)
+            .maybeSingle();
+          if (clientData?.first_name || clientData?.last_name) {
+            clientName = [clientData.first_name, clientData.last_name].filter(Boolean).join(" ") || null;
+          }
+        }
+
         // Update existing event with dates from contract
+        // If event doesn't have guide assigned yet, keep status as "Pending"
+        const needsSetup = !existingEvent.guide_username;
         const updateData: any = {
           client_email: contract.client_email, // Ensure client_email is set
           tag_status: "confirmed", // Mark as confirmed when contract is signed
-          status: "Booked", // Ensure status is "Booked"
+          status: needsSetup ? "Pending" : "Booked", // Keep as "Pending" if guide not assigned
+          audience: needsSetup ? "internalOnly" : "all", // Only show to admin until setup complete
         };
+
+        // Update notes with client info
+        if (clientName) {
+          updateData.notes = existingEvent.notes 
+            ? `${existingEvent.notes}\n\nClient: ${clientName}\nEmail: ${contract.client_email}`
+            : `Client: ${clientName}\nEmail: ${contract.client_email}`;
+        }
 
         // Update dates if provided in completion data or from hunt
         if (huntStart && huntEnd) {
@@ -142,20 +170,22 @@ export async function createOrUpdateCalendarEventFromContract(
     }
 
     // If no hunt_id or event doesn't exist, create new calendar event
-    // Extract hunt details from contract content
+    // Extract hunt details from contract content AND completion_data (completion_data takes priority)
     const content = contract.content || "";
-    const speciesMatch = content.match(/Species:\s*([^\n]+)/i);
-    const unitMatch = content.match(/Unit:\s*([^\n]+)/i);
-    const weaponMatch = content.match(/Weapon:\s*([^\n]+)/i);
-    const huntCodeMatch = content.match(/Hunt Code:\s*([A-Za-z0-9-]+)/i);
-    const campMatch = content.match(/Camp:\s*([^\n]+)/i);
+    
+    // Prefer completion_data over content parsing
+    const species = completionSpecies || content.match(/Species:\s*([^\n]+)/i)?.[1]?.trim() || null;
+    const unit = completionUnit || content.match(/Unit:\s*([^\n]+)/i)?.[1]?.trim() || null;
+    const weapon = completionWeapon || content.match(/Weapon:\s*([^\n]+)/i)?.[1]?.trim() || null;
+    const huntCode = completionHuntCode || content.match(/Hunt Code:\s*([A-Za-z0-9-]+)/i)?.[1] || null;
+    const camp = completionCamp || content.match(/Camp:\s*([^\n]+)/i)?.[1]?.trim() || null;
 
     // Determine title
     let title = "Guided Hunt";
-    if (speciesMatch) {
-      title = `${speciesMatch[1].trim()} Hunt`;
-    } else if (huntCodeMatch) {
-      title = `Hunt ${huntCodeMatch[1]}`;
+    if (species) {
+      title = `${species} Hunt`;
+    } else if (huntCode) {
+      title = `Hunt ${huntCode}`;
     }
 
     // Use dates from completion data, hunt, or default to today + 7 days
@@ -173,23 +203,40 @@ export async function createOrUpdateCalendarEventFromContract(
       endTime = end.toISOString();
     }
 
-    // Create new calendar event
+    // Get client name from clients table
+    let clientName: string | null = null;
+    if (contract.client_email) {
+      const { data: clientData } = await supabase
+        .from("clients")
+        .select("first_name, last_name")
+        .eq("email", contract.client_email)
+        .maybeSingle();
+      if (clientData?.first_name || clientData?.last_name) {
+        clientName = [clientData.first_name, clientData.last_name].filter(Boolean).join(" ") || null;
+      }
+    }
+
+    // Create new calendar event with status "Pending" - admin needs to fill in guide, cook, etc.
+    // Client can only see it when status is "Booked" and all required fields are filled
     const { data: newEvent, error: insertError } = await supabase
       .from("calendar_events")
       .insert({
         outfitter_id: outfitterId,
-        title,
-        species: speciesMatch ? speciesMatch[1].trim() : null,
-        unit: unitMatch ? unitMatch[1].trim() : null,
-        weapon: weaponMatch ? weaponMatch[1].trim() : null,
-        hunt_code: huntCodeMatch ? huntCodeMatch[1] : null,
-        camp_name: campMatch ? campMatch[1].trim() : null,
+        title: title || "Guided Hunt",
+        species: species,
+        unit: unit,
+        weapon: weapon,
+        hunt_code: huntCode,
+        camp_name: camp,
         client_email: contract.client_email,
         start_time: startTime,
         end_time: endTime,
         tag_status: "confirmed",
-        status: "Booked",
-        audience: "all", // Visible to both client and admin
+        status: "Pending", // Start as "Pending" - admin needs to complete setup (assign guide, cook, etc.)
+        audience: "internalOnly", // Only visible to admin until setup is complete
+        notes: clientName 
+          ? `Client: ${clientName}\nEmail: ${contract.client_email}${species ? `\nSpecies: ${species}` : ""}${weapon ? `\nWeapon: ${weapon}` : ""}${camp ? `\nCamp: ${camp}` : ""}`
+          : `Email: ${contract.client_email}${species ? `\nSpecies: ${species}` : ""}${weapon ? `\nWeapon: ${weapon}` : ""}${camp ? `\nCamp: ${camp}` : ""}`,
       })
       .select()
       .single();
@@ -207,10 +254,13 @@ export async function createOrUpdateCalendarEventFromContract(
 
     console.log(`✅ Created calendar event ${newEvent.id} from contract ${contractId}`);
     console.log(`   - Title: ${title}`);
-    console.log(`   - Client: ${contract.client_email}`);
+    console.log(`   - Client: ${contract.client_email}${clientName ? ` (${clientName})` : ""}`);
     console.log(`   - Dates: ${huntStart} to ${huntEnd}`);
-    console.log(`   - Status: Booked`);
-    console.log(`   - Audience: all (visible to client and admin)`);
+    console.log(`   - Species: ${speciesMatch ? speciesMatch[1].trim() : "Not set"}`);
+    console.log(`   - Weapon: ${weaponMatch ? weaponMatch[1].trim() : "Not set"}`);
+    console.log(`   - Camp: ${campMatch ? campMatch[1].trim() : "Not set"}`);
+    console.log(`   - Status: Pending (admin needs to assign guide/cook)`);
+    console.log(`   - Audience: internalOnly (only visible to admin until setup complete)`);
   } catch (error) {
     console.error("Error creating/updating calendar event from contract:", error);
   }

@@ -42,7 +42,7 @@ export async function GET(req: Request) {
   // Get all outfitter IDs the client is linked to
   const outfitterIds = links.map((l) => l.outfitter_id);
 
-  // Build query
+  // Build query - clients can only see events that are "Booked" and visible to them
   let query = supabase
     .from("calendar_events")
     .select(`
@@ -60,7 +60,9 @@ export async function GET(req: Request) {
       outfitter_id
     `)
     .eq("client_email", userEmail)
-    .in("outfitter_id", outfitterIds);
+    .in("outfitter_id", outfitterIds)
+    .eq("status", "Booked") // Only show booked hunts to clients
+    .in("audience", ["all", "client"]); // Only show events visible to clients
 
   // Apply date range filter if provided
   if (start) {

@@ -59,6 +59,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const body: any = await req.json();
 
+    // Get current event to check if guide is being assigned
+    const { data: currentEvent } = await supabase
+      .from("calendar_events")
+      .select("guide_username, status, audience, client_email")
+      .eq("id", id)
+      .eq("outfitter_id", outfitterId)
+      .single();
+
     const updateData: any = {};
     if (body.title !== undefined) updateData.title = body.title;
     if (body.notes !== undefined) {
@@ -85,6 +93,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     // Hunt workflow fields
     if (body.hunt_type !== undefined) updateData.hunt_type = body.hunt_type || 'draw';
     if (body.tag_status !== undefined) updateData.tag_status = body.tag_status || 'pending';
+
+    // Auto-update status and audience when guide is assigned to a "Pending" event
+    // If guide is being assigned and event is currently "Pending", change to "Booked" and make visible to client
+    if (body.guide_username && currentEvent?.status === "Pending" && !currentEvent?.guide_username) {
+      updateData.status = "Booked";
+      updateData.audience = "all"; // Make visible to client once guide is assigned
+      console.log(`📅 Auto-updating event ${id}: guide assigned, changing status to "Booked" and audience to "all"`);
+    }
 
     const { data, error } = await supabase
       .from("calendar_events")
