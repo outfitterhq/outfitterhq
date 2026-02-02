@@ -49,12 +49,14 @@ export async function GET() {
 
     // 1) Contracts without calendar events - need to assign to calendar
     // Show ALL contracts that don't have a calendar event, regardless of status
-    const { data: contractsNoHunt } = await supabase
+    const { data: contractsNoHunt, error: contractsError } = await supabase
       .from("hunt_contracts")
       .select("id, client_email, status, created_at, client_completion_data")
       .eq("outfitter_id", outfitterId)
       .is("hunt_id", null) // Contracts without calendar events
       .order("created_at", { ascending: true }); // Show oldest first
+
+    console.log(`[PENDING ACTIONS] Contracts without hunt_id: ${contractsNoHunt?.length || 0}`, contractsError ? `Error: ${contractsError.message}` : "");
 
     for (const contract of contractsNoHunt ?? []) {
       const completionData = (contract.client_completion_data as any) || {};
@@ -74,13 +76,15 @@ export async function GET() {
     }
 
     // 2) Events with status "Pending" - need to be completed (all fields filled) before they can be "Booked"
-    const { data: pendingEvents } = await supabase
+    // Don't filter by end_time - show all pending events regardless of date
+    const { data: pendingEvents, error: pendingError } = await supabase
       .from("calendar_events")
       .select("id, title, start_time, end_time, client_email, guide_username, species, unit, weapon, camp_name, status")
       .eq("outfitter_id", outfitterId)
       .eq("status", "Pending")
-      .gte("end_time", now) // future or current hunts only
       .order("start_time", { ascending: true });
+
+    console.log(`[PENDING ACTIONS] Pending events: ${pendingEvents?.length || 0}`, pendingError ? `Error: ${pendingError.message}` : "");
 
     for (const event of pendingEvents ?? []) {
       // Check if event is missing required fields
@@ -184,6 +188,8 @@ export async function GET() {
       admin_sign: items.filter((i) => i.action === "admin_sign").length,
     };
     const total = items.length;
+
+    console.log(`[PENDING ACTIONS] Total items: ${total}`, counts);
 
     return NextResponse.json({
       total,
