@@ -68,7 +68,31 @@ Deno.serve(async (req) => {
     if (!outfitter_id) return json(400, { error: "outfitter_id is required" });
     if (!email) return json(400, { error: "email is required" });
     if (!isValidEmail(email)) return json(400, { error: "Invalid email address", email });
-    if (!app_confirm_url) return json(400, { error: "app_confirm_url is required" });
+
+    // Get production URL from environment variable (set in Supabase Edge Function secrets)
+    // Fallback to app_confirm_url if provided, but prefer WEB_APP_URL env var
+    const webAppUrl = Deno.env.get("WEB_APP_URL") || Deno.env.get("NEXT_PUBLIC_WEB_APP_URL") || app_confirm_url;
+    
+    if (!webAppUrl) {
+      return json(400, { 
+        error: "Production URL not configured. Set WEB_APP_URL in Supabase Edge Function secrets.",
+        hint: "Go to Supabase Dashboard → Edge Functions → admin-invite-cook → Settings → Secrets"
+      });
+    }
+
+    // If webAppUrl contains localhost, reject it
+    if (webAppUrl.includes("localhost") || webAppUrl.includes("127.0.0.1")) {
+      return json(400, {
+        error: "Invalid production URL (contains localhost). Set WEB_APP_URL in Supabase Edge Function secrets to your production URL.",
+        received: webAppUrl
+      });
+    }
+
+    // Use the production URL from env var, or the provided app_confirm_url if it's valid
+    const baseUrl = webAppUrl.replace(/\/$/, ""); // Remove trailing slash
+    const app_confirm_url_final = app_confirm_url && !app_confirm_url.includes("localhost") 
+      ? app_confirm_url 
+      : `${baseUrl}/cook/accept-invite`;
 
     // Caller-scoped client (uses JWT)
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -107,10 +131,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Redirect target: use app_confirm_url as-is if it already has outfitter_id (sent by the outfitter who invited), else append
-    const hasOutfitterInUrl = app_confirm_url.includes("outfitter_id=");
-    const sep = app_confirm_url.includes("?") ? "&" : "?";
-    const emailRedirectTo = hasOutfitterInUrl ? app_confirm_url : app_confirm_url + sep + "outfitter_id=" + encodeURIComponent(outfitter_id);
+    // Redirect target: use app_confirm_url_final and ensure outfitter_id is included
+    const hasOutfitterInUrl = app_confirm_url_final.includes("outfitter_id=");
+    const sep = app_confirm_url_final.includes("?") ? "&" : "?";
+    const emailRedirectTo = hasOutfitterInUrl 
+      ? app_confirm_url_final 
+      : app_confirm_url_final + sep + "outfitter_id=" + encodeURIComponent(outfitter_id);
 
     // Try invite first; if already exists, use recovery
     let linkData: any = null;
