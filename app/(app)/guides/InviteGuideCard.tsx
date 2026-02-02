@@ -110,12 +110,16 @@ export default function InviteGuideCard() {
 
       const fnUrl = `${base}/functions/v1/admin-invite-guide`;
 
+      // Get production web app URL from environment variable, fallback to current origin
+      // This ensures invite links always point to production, not localhost or preview URLs
+      const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
+      
       // Redirect URL includes outfitter_id so the guide lands with the correct outfitter (the one who sent the invite)
       const payload = {
         outfitter_id,
         email: e,
         name: n || null,
-        app_confirm_url: `${window.location.origin}/guide/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}`,
+        app_confirm_url: `${webAppUrl}/guide/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}`,
       };
 
       const r = await fetch(fnUrl, {

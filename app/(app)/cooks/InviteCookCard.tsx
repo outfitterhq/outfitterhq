@@ -107,7 +107,10 @@ export default function InviteCookCard() {
         outfitter_id,
         email: e,
         name: n || null,
-        app_confirm_url: `${window.location.origin}/cook/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}`,
+        // Get production web app URL from environment variable, fallback to current origin
+        // This ensures invite links always point to production, not localhost or preview URLs
+        const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
+        app_confirm_url: `${webAppUrl}/cook/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}`,
       };
 
       const r = await fetch(fnUrl, {
