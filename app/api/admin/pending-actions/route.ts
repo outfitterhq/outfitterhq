@@ -48,13 +48,13 @@ export async function GET() {
     const now = new Date().toISOString();
 
     // 1) Contracts without calendar events - need to assign to calendar
+    // Show ALL contracts that don't have a calendar event, regardless of status
     const { data: contractsNoHunt } = await supabase
       .from("hunt_contracts")
       .select("id, client_email, status, created_at, client_completion_data")
       .eq("outfitter_id", outfitterId)
       .is("hunt_id", null) // Contracts without calendar events
-      .in("status", ["pending_client_completion", "ready_for_signature", "client_signed", "fully_executed"])
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true }); // Show oldest first
 
     for (const contract of contractsNoHunt ?? []) {
       const completionData = (contract.client_completion_data as any) || {};

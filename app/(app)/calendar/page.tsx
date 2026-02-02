@@ -45,7 +45,7 @@ export default function CalendarPage() {
     counts: { assign_to_calendar: number; generate_contract: number; send_docusign: number; admin_sign: number };
     items: Array<{ hunt_id: string; contract_id?: string; action: string; title: string; start_time: string | null; client_email: string | null }>;
   } | null>(null);
-  const [showPendingActions, setShowPendingActions] = useState(true);
+  const [showPendingActions, setShowPendingActions] = useState(true); // Always show by default
 
   // Load events and time off for current month
   useEffect(() => {
@@ -372,95 +372,146 @@ export default function CalendarPage() {
         <div style={{ background: "#fee", padding: 12, borderRadius: 8, marginBottom: 16 }}>{error}</div>
       )}
 
-      {/* Pending actions (admin): items needing contract, DocuSign, or admin signature */}
-      {pendingActions && pendingActions.total > 0 && (
-        <div
+      {/* Work Queue: Contracts and events needing attention */}
+      {/* Always show the work queue section, even if empty */}
+      <div
+        style={{
+          marginBottom: 16,
+          border: pendingActions && pendingActions.total > 0 ? "2px solid #ff9800" : "1px solid #ddd",
+          borderRadius: 12,
+          background: pendingActions && pendingActions.total > 0 ? "#fff8e1" : "#f9f9f9",
+          overflow: "hidden",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setShowPendingActions((v) => !v)}
           style={{
-            marginBottom: 16,
-            border: "1px solid #ff9800",
-            borderRadius: 12,
-            background: "#fff8e1",
-            overflow: "hidden",
+            width: "100%",
+            padding: "16px 20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: 16,
+            textAlign: "left",
           }}
         >
-          <button
-            type="button"
-            onClick={() => setShowPendingActions((v) => !v)}
-            style={{
-              width: "100%",
-              padding: "12px 16px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 600,
-              fontSize: 15,
-              textAlign: "left",
-            }}
-          >
-            <span>
-              📋 Work List: {pendingActions.total} item{pendingActions.total !== 1 ? "s" : ""} need your attention
-              <span style={{ marginLeft: 8, color: "#e65100", fontSize: 14 }}>
-                {pendingActions.counts.assign_to_calendar > 0 && (
-                  <span>{pendingActions.counts.assign_to_calendar} need calendar assignment</span>
-                )}
-                {pendingActions.counts.assign_to_calendar > 0 && pendingActions.counts.generate_contract > 0 && " • "}
-                {pendingActions.counts.generate_contract > 0 && (
-                  <span>{pendingActions.counts.generate_contract} need contract</span>
-                )}
-                {(pendingActions.counts.assign_to_calendar > 0 || pendingActions.counts.generate_contract > 0) && pendingActions.counts.send_docusign > 0 && " • "}
-                {pendingActions.counts.send_docusign > 0 && (
-                  <span>{pendingActions.counts.send_docusign} ready for DocuSign</span>
-                )}
-                {(pendingActions.counts.assign_to_calendar > 0 || pendingActions.counts.generate_contract > 0 || pendingActions.counts.send_docusign > 0) && pendingActions.counts.admin_sign > 0 && " • "}
-                {pendingActions.counts.admin_sign > 0 && (
-                  <span>{pendingActions.counts.admin_sign} need your signature</span>
-                )}
+          <span>
+            📋 Work Queue: {pendingActions ? pendingActions.total : 0} item{(pendingActions?.total || 0) !== 1 ? "s" : ""} need attention
+            {pendingActions && pendingActions.counts.assign_to_calendar > 0 && (
+              <span style={{ marginLeft: 12, color: "#e65100", fontSize: 15, fontWeight: 700 }}>
+                ⚠️ {pendingActions.counts.assign_to_calendar} contract{pendingActions.counts.assign_to_calendar !== 1 ? "s" : ""} need calendar assignment
               </span>
-            </span>
-            <span style={{ opacity: 0.7 }}>{showPendingActions ? "▼" : "▶"}</span>
-          </button>
-          {showPendingActions && (
-            <div style={{ padding: "0 16px 12px" }}>
-              <ul style={{ margin: 0, paddingLeft: 20, listStyle: "disc" }}>
-                {pendingActions.items.map((item) => {
-                  const actionLabel =
-                    item.action === "assign_to_calendar"
-                      ? "Assign to calendar"
-                      : item.action === "generate_contract"
-                        ? "Generate contract"
-                        : item.action === "send_docusign"
-                          ? "Send to DocuSign"
-                          : "Sign (admin)";
-                  const dateStr = item.start_time
-                    ? new Date(item.start_time).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-                    : "";
-                  const linkUrl = item.action === "assign_to_calendar" && item.contract_id
-                    ? `/calendar?assign_contract=${item.contract_id}`
-                    : item.hunt_id
-                      ? `/calendar?event=${encodeURIComponent(item.hunt_id)}`
-                      : "#";
-                  return (
-                    <li key={`${item.hunt_id || item.contract_id}-${item.action}`} style={{ marginBottom: 6 }}>
-                      <Link
-                        href={linkUrl}
-                        style={{ fontWeight: 500, color: "#1565c0" }}
-                      >
-                        {item.title}
-                        {dateStr ? ` (${dateStr})` : ""}
-                      </Link>
-                      {" — "}
-                      <span style={{ color: "#e65100" }}>{actionLabel}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+            {pendingActions && pendingActions.counts.assign_to_calendar === 0 && (
+              <span style={{ marginLeft: 12, color: "#666", fontSize: 14, fontWeight: 400 }}>
+                All contracts assigned
+              </span>
+            )}
+          </span>
+          <span style={{ opacity: 0.7 }}>{showPendingActions ? "▼" : "▶"}</span>
+        </button>
+        {showPendingActions && (
+          <div style={{ padding: pendingActions && pendingActions.total > 0 ? "0 20px 16px" : "0 20px 16px" }}>
+            {pendingActions && pendingActions.total > 0 ? (
+              <>
+                {pendingActions.counts.assign_to_calendar > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600, color: "#e65100" }}>
+                      Contracts Needing Calendar Assignment ({pendingActions.counts.assign_to_calendar})
+                    </h3>
+                    <div style={{ 
+                      background: "white", 
+                      border: "1px solid #ffcc80", 
+                      borderRadius: 8, 
+                      padding: 12,
+                      maxHeight: 300,
+                      overflowY: "auto"
+                    }}>
+                      <ul style={{ margin: 0, paddingLeft: 20, listStyle: "disc" }}>
+                        {pendingActions.items
+                          .filter((item) => item.action === "assign_to_calendar")
+                          .map((item) => {
+                            const dateStr = item.start_time
+                              ? new Date(item.start_time).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                              : "";
+                            const clientInfo = item.client_email ? ` — ${item.client_email}` : "";
+                            return (
+                              <li key={`${item.contract_id}-assign`} style={{ marginBottom: 8 }}>
+                                <Link
+                                  href={`/calendar?assign_contract=${item.contract_id}`}
+                                  style={{ 
+                                    fontWeight: 600, 
+                                    color: "#1565c0",
+                                    textDecoration: "none",
+                                    fontSize: 14
+                                  }}
+                                  onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
+                                  onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
+                                >
+                                  {item.title}
+                                </Link>
+                                {dateStr && <span style={{ color: "#666", marginLeft: 8 }}>({dateStr})</span>}
+                                {clientInfo && <span style={{ color: "#666", marginLeft: 8 }}>{clientInfo}</span>}
+                                <span style={{ marginLeft: 8, color: "#e65100", fontWeight: 500 }}>→ Click to assign</span>
+                              </li>
+                            );
+                          })}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+                {(pendingActions.counts.generate_contract > 0 || pendingActions.counts.send_docusign > 0 || pendingActions.counts.admin_sign > 0) && (
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #ddd" }}>
+                    <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600, color: "#666" }}>
+                      Other Actions Needed
+                    </h3>
+                    <ul style={{ margin: 0, paddingLeft: 20, listStyle: "disc" }}>
+                      {pendingActions.items
+                        .filter((item) => item.action !== "assign_to_calendar")
+                        .map((item) => {
+                          const actionLabel =
+                            item.action === "generate_contract"
+                              ? "Generate contract"
+                              : item.action === "send_docusign"
+                                ? "Send to DocuSign"
+                                : "Sign (admin)";
+                          const dateStr = item.start_time
+                            ? new Date(item.start_time).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                            : "";
+                          const linkUrl = item.hunt_id
+                            ? `/calendar?event=${encodeURIComponent(item.hunt_id)}`
+                            : "#";
+                          return (
+                            <li key={`${item.hunt_id || item.contract_id}-${item.action}`} style={{ marginBottom: 6 }}>
+                              <Link
+                                href={linkUrl}
+                                style={{ fontWeight: 500, color: "#1565c0" }}
+                              >
+                                {item.title}
+                                {dateStr ? ` (${dateStr})` : ""}
+                              </Link>
+                              {" — "}
+                              <span style={{ color: "#e65100" }}>{actionLabel}</span>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ padding: "12px 0", color: "#666", fontSize: 14, textAlign: "center" }}>
+                ✓ All contracts have been assigned to calendar events
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Filter Toggle Button */}
       <div style={{ marginBottom: 16 }}>
