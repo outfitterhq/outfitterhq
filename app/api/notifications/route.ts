@@ -39,9 +39,13 @@ export async function GET(req: Request) {
     const { data: notifications, error } = await query;
 
     if (error) {
-      // If table doesn't exist, return empty array instead of error
-      if (error.message?.includes("relation") && error.message?.includes("does not exist")) {
-        console.warn("Notifications table does not exist, returning empty array");
+      // If table doesn't exist or permission denied, return empty array instead of error
+      if (
+        (error.message?.includes("relation") && error.message?.includes("does not exist")) ||
+        error.code === "42501" || // permission denied
+        error.message?.includes("permission denied")
+      ) {
+        console.warn("Notifications table error (missing table or permission):", error.message);
         return NextResponse.json({
           notifications: [],
           unreadCount: 0,
@@ -59,8 +63,14 @@ export async function GET(req: Request) {
       .eq("is_read", false)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
 
-    // If count query fails (table doesn't exist), just return 0
-    if (countError && countError.message?.includes("does not exist")) {
+    // If count query fails (table doesn't exist or permission denied), just return 0
+    if (
+      countError && (
+        countError.message?.includes("does not exist") ||
+        countError.code === "42501" ||
+        countError.message?.includes("permission denied")
+      )
+    ) {
       return NextResponse.json({
         notifications: notifications || [],
         unreadCount: 0,

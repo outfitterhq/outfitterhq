@@ -75,8 +75,16 @@ export async function GET(req: Request) {
 
   if (eventsError) {
     console.error("Events error:", eventsError);
-    return NextResponse.json({ error: "Failed to load events" }, { status: 500 });
+    console.error("Client email:", userEmail);
+    console.error("Outfitter IDs:", outfitterIds);
+    // If RLS is blocking, try using admin client as fallback (for debugging)
+    if (eventsError.code === "42501" || eventsError.message?.includes("permission denied")) {
+      console.warn("RLS permission denied - calendar events may not be visible to clients. Check RLS policies.");
+    }
+    return NextResponse.json({ error: "Failed to load events", details: eventsError.message }, { status: 500 });
   }
+  
+  console.log(`📅 Loaded ${events?.length || 0} calendar events for client ${userEmail}`);
 
   return NextResponse.json({
     events: events || [],
