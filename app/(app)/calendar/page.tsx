@@ -464,8 +464,12 @@ export default function CalendarPage() {
                                       ? new Date(new Date(item.start_time).getTime() + 7 * 24 * 60 * 60 * 1000)
                                       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                                     
+                                    // Get outfitter_id from first event (all events should have same outfitter_id)
+                                    const outfitterId = events.length > 0 ? events[0].outfitter_id : "";
+                                    
                                     const newEvent: CalendarEvent = {
                                       id: "",
+                                      outfitter_id: outfitterId, // Required field - will be set by API if empty
                                       title: item.title,
                                       notes: item.client_email 
                                         ? `Client: ${item.client_email}\n\nContract ID: ${item.contract_id}\n(This event will be linked to the contract when saved)`
