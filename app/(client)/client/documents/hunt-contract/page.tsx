@@ -1184,7 +1184,7 @@ export default function HuntContractPage() {
                 Please review the contract above. Your hunt details (species, dates, hunt code) are shown at the top. Confirm below to submit for your outfitter&apos;s review.
               </p>
 
-              {!hunt?.start_date || !hunt?.end_date ? (
+              {!currentContract?.hunt?.start_date || !currentContract?.hunt?.end_date ? (
                 <div style={{ 
                   background: "#fff3cd", 
                   border: "1px solid #ffc107", 
