@@ -46,7 +46,7 @@ export default async function DashboardPage() {
               Failed to load outfitter memberships. Check your Supabase connection.
             </p>
             <pre style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, fontSize: 12, overflow: "auto" }}>
-              {JSON.stringify({ error: memError.message, code: memError.code, hint: memError.hint }, null, 2)}
+              {JSON.stringify({ error: memError.message, code: memError.code }, null, 2)}
             </pre>
           </section>
         </div>

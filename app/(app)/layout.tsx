@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             Failed to authenticate. Please try logging in again.
           </p>
           <pre style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, fontSize: 12, overflow: "auto" }}>
-            {JSON.stringify({ error: userError.message, code: userError.status, hint: userError.hint }, null, 2)}
+            {JSON.stringify({ error: userError.message, code: userError.status }, null, 2)}
           </pre>
         </main>
       );
