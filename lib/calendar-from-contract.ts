@@ -10,6 +10,8 @@ export async function createOrUpdateCalendarEventFromContract(
   outfitterId: string
 ) {
   try {
+    console.log(`📅 Creating/updating calendar event for contract ${contractId}`);
+    
     // Get the contract with all needed details
     const { data: contract, error: contractError } = await supabase
       .from("hunt_contracts")
@@ -18,20 +20,39 @@ export async function createOrUpdateCalendarEventFromContract(
         hunt_id,
         client_email,
         client_completion_data,
-        content
+        content,
+        status
       `)
       .eq("id", contractId)
       .single();
 
     if (contractError || !contract) {
-      console.error("Failed to fetch contract for calendar event:", contractError);
+      console.error("❌ Failed to fetch contract for calendar event:", contractError);
       return;
     }
+    
+    console.log(`📅 Contract status: ${contract.status}, hunt_id: ${contract.hunt_id || 'none'}`);
 
     // Get client completion data to extract dates and details
     const completionData = (contract.client_completion_data as any) || {};
     const clientStart = completionData.client_start_date as string | undefined;
     const clientEnd = completionData.client_end_date as string | undefined;
+    
+    // Also try to get dates from hunt if they exist in the database
+    let huntStart: string | undefined = clientStart;
+    let huntEnd: string | undefined = clientEnd;
+    
+    if (contract.hunt_id && (!huntStart || !huntEnd)) {
+      const { data: huntEvent } = await supabase
+        .from("calendar_events")
+        .select("start_time, end_time")
+        .eq("id", contract.hunt_id)
+        .single();
+      if (huntEvent?.start_time && huntEvent?.end_time) {
+        huntStart = huntStart || new Date(huntEvent.start_time).toISOString().slice(0, 10);
+        huntEnd = huntEnd || new Date(huntEvent.end_time).toISOString().slice(0, 10);
+      }
+    }
 
     // If contract has hunt_id, update existing calendar event
     if (contract.hunt_id) {
@@ -48,13 +69,16 @@ export async function createOrUpdateCalendarEventFromContract(
           tag_status: "confirmed", // Mark as confirmed when contract is signed
         };
 
-        // Update dates if provided in completion data
-        if (clientStart && clientEnd) {
-          const startTimeIso = new Date(clientStart + "T00:00:00Z").toISOString();
-          const endTimeIso = new Date(clientEnd + "T23:59:59Z").toISOString();
+        // Update dates if provided in completion data or from hunt
+        if (huntStart && huntEnd) {
+          const startTimeIso = new Date(huntStart + "T00:00:00Z").toISOString();
+          const endTimeIso = new Date(huntEnd + "T23:59:59Z").toISOString();
           updateData.start_time = startTimeIso;
           updateData.end_time = endTimeIso;
         }
+        
+        // Ensure status is "Booked" when contract is fully executed
+        updateData.status = "Booked";
 
         const { error: updateError } = await supabase
           .from("calendar_events")
@@ -62,9 +86,12 @@ export async function createOrUpdateCalendarEventFromContract(
           .eq("id", contract.hunt_id);
 
         if (updateError) {
-          console.error("Failed to update calendar event:", updateError);
+          console.error("❌ Failed to update calendar event:", updateError);
         } else {
           console.log(`✅ Updated calendar event ${contract.hunt_id} from contract ${contractId}`);
+          console.log(`   - Client: ${contract.client_email}`);
+          console.log(`   - Dates: ${huntStart} to ${huntEnd}`);
+          console.log(`   - Status: Booked`);
         }
         return;
       }
@@ -87,12 +114,12 @@ export async function createOrUpdateCalendarEventFromContract(
       title = `Hunt ${huntCodeMatch[1]}`;
     }
 
-    // Use dates from completion data or default to today + 7 days
+    // Use dates from completion data, hunt, or default to today + 7 days
     let startTime: string;
     let endTime: string;
-    if (clientStart && clientEnd) {
-      startTime = new Date(clientStart + "T00:00:00Z").toISOString();
-      endTime = new Date(clientEnd + "T23:59:59Z").toISOString();
+    if (huntStart && huntEnd) {
+      startTime = new Date(huntStart + "T00:00:00Z").toISOString();
+      endTime = new Date(huntEnd + "T23:59:59Z").toISOString();
     } else {
       // Default: start today, end in 7 days
       const today = new Date();
@@ -124,7 +151,7 @@ export async function createOrUpdateCalendarEventFromContract(
       .single();
 
     if (insertError) {
-      console.error("Failed to create calendar event:", insertError);
+      console.error("❌ Failed to create calendar event:", insertError);
       return;
     }
 
@@ -135,6 +162,11 @@ export async function createOrUpdateCalendarEventFromContract(
       .eq("id", contractId);
 
     console.log(`✅ Created calendar event ${newEvent.id} from contract ${contractId}`);
+    console.log(`   - Title: ${title}`);
+    console.log(`   - Client: ${contract.client_email}`);
+    console.log(`   - Dates: ${huntStart} to ${huntEnd}`);
+    console.log(`   - Status: Booked`);
+    console.log(`   - Audience: all (visible to client and admin)`);
   } catch (error) {
     console.error("Error creating/updating calendar event from contract:", error);
   }

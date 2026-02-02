@@ -93,26 +93,6 @@ export default function ClientPricingPage() {
 
   return (
     <div>
-      {/* SUPER VISIBLE TEST - RED BOX AT TOP */}
-      <div style={{ 
-        background: "#ff0000", 
-        color: "white", 
-        padding: "20px", 
-        marginBottom: "20px",
-        fontWeight: 700,
-        fontSize: "18px",
-        textAlign: "center",
-        border: "5px solid #000",
-        position: "sticky",
-        top: 0,
-        zIndex: 9999
-      }}>
-        🚨 IF YOU SEE THIS RED BOX, NEW CODE IS DEPLOYED! 🚨
-        <div style={{ fontSize: "14px", marginTop: "8px", opacity: 0.9 }}>
-          Version: 2.0 - Table Layout Active - {new Date().toLocaleTimeString()}
-        </div>
-      </div>
-      
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Pricing</h1>
         <p style={{ color: "#666" }}>
