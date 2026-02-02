@@ -39,16 +39,33 @@ export async function GET(req: Request) {
     const { data: notifications, error } = await query;
 
     if (error) {
+      // If table doesn't exist, return empty array instead of error
+      if (error.message?.includes("relation") && error.message?.includes("does not exist")) {
+        console.warn("Notifications table does not exist, returning empty array");
+        return NextResponse.json({
+          notifications: [],
+          unreadCount: 0,
+        });
+      }
+      console.error("Notifications API error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Get unread count
-    const { count: unreadCount } = await supabase
+    const { count: unreadCount, error: countError } = await supabase
       .from("notifications")
       .select("*", { count: "exact", head: true })
       .eq("user_email", userEmail)
       .eq("is_read", false)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+
+    // If count query fails (table doesn't exist), just return 0
+    if (countError && countError.message?.includes("does not exist")) {
+      return NextResponse.json({
+        notifications: notifications || [],
+        unreadCount: 0,
+      });
+    }
 
     return NextResponse.json({
       notifications: notifications || [],

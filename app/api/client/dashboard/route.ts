@@ -4,14 +4,17 @@ import { supabaseRoute, supabaseAdmin } from "@/lib/supabase/server";
 import { recalculateGuideFeePaymentItem } from "@/lib/guide-fee-bill-server";
 
 async function getAuthUserEmail(supabase: Awaited<ReturnType<typeof supabaseRoute>>): Promise<string | null> {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (!error && session?.user?.email) return session.user.email;
+  // Use getUser() instead of getSession() for security (validates with Supabase Auth server)
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (!error && user?.email) return user.email;
+  
+  // Fallback to Bearer token for API requests
   const h = await headers();
   const auth = h.get("Authorization");
   if (auth?.startsWith("Bearer ")) {
     const token = auth.slice(7);
-    const { data: { user }, error: userErr } = await supabase.auth.getUser(token);
-    if (!userErr && user?.email) return user.email;
+    const { data: { user: tokenUser }, error: userErr } = await supabase.auth.getUser(token);
+    if (!userErr && tokenUser?.email) return tokenUser.email;
   }
   return null;
 }
