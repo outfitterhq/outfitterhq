@@ -102,14 +102,15 @@ export default function InviteCookCard() {
 
       const fnUrl = `${base}/functions/v1/admin-invite-cook`;
 
+      // Get production web app URL from environment variable, fallback to current origin
+      // This ensures invite links always point to production, not localhost or preview URLs
+      const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
+
       // Redirect URL includes outfitter_id so the cook lands with the correct outfitter (the one who sent the invite)
       const payload = {
         outfitter_id,
         email: e,
         name: n || null,
-        // Get production web app URL from environment variable, fallback to current origin
-        // This ensures invite links always point to production, not localhost or preview URLs
-        const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
         app_confirm_url: `${webAppUrl}/cook/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}`,
       };
 
