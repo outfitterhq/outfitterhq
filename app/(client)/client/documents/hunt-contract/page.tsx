@@ -88,11 +88,10 @@ export default function HuntContractPage() {
     searchParams.get("simulate") === "1" || process.env.NEXT_PUBLIC_ALLOW_SIMULATE_PAYMENT === "true";
 
   // Completion form state (if contract needs client completion)
+  // Note: Dates come from hunt.start_date/end_date (set in complete-booking), not from user input here
   const [completionData, setCompletionData] = useState({
     acknowledgment: false,
     additionalInfo: "",
-    client_start_date: "",
-    client_end_date: "",
     extra_days: 0,
     extra_non_hunters: 0,
     extra_spotters: 0,
@@ -125,8 +124,6 @@ export default function HuntContractPage() {
       extra_days: num(o.extra_days ?? o.additional_days ?? prev.extra_days),
       extra_non_hunters: num(o.extra_non_hunters ?? o.non_hunters ?? prev.extra_non_hunters),
       extra_spotters: num(o.extra_spotters ?? prev.extra_spotters),
-      client_start_date: (o.client_start_date as string) || prev.client_start_date,
-      client_end_date: (o.client_end_date as string) || prev.client_end_date,
     }));
   }, [currentContract?.id, currentContract?.status, currentContract?.client_completion_data]);
 
@@ -333,9 +330,10 @@ export default function HuntContractPage() {
     const hasHuntCode = Boolean(huntCode);
     const hasWindow = Boolean(windowStart && windowEnd);
 
+    // Dates come from hunt object (set in complete-booking flow), not from user input
     const toYMD = (s: string | undefined) => (s && s.length >= 10 ? s.slice(0, 10) : "");
-    const startDate = completionData.client_start_date || toYMD(hunt?.start_date);
-    const endDate = completionData.client_end_date || toYMD(hunt?.end_date);
+    const startDate = toYMD(hunt?.start_date);
+    const endDate = toYMD(hunt?.end_date);
 
     if (hasHuntCode && hasWindow && startDate && endDate && windowStart && windowEnd) {
       if (startDate < windowStart || endDate > windowEnd || startDate > endDate) {
@@ -1078,7 +1076,11 @@ export default function HuntContractPage() {
                 <div>
                   <div style={{ fontSize: 12, color: "#999" }}>Dates</div>
                   <div style={{ fontWeight: 500 }}>
-                    {formatDate(currentContract.hunt.start_date)} – {formatDate(currentContract.hunt.end_date)}
+                    {currentContract.hunt.start_date && currentContract.hunt.end_date ? (
+                      `${formatDate(currentContract.hunt.start_date)} – ${formatDate(currentContract.hunt.end_date)}`
+                    ) : (
+                      <span style={{ color: "#d32f2f" }}>Dates will be set when you complete your booking</span>
+                    )}
                   </div>
                 </div>
                 <div>
