@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { supabaseRoute } from "@/lib/supabase/server";
+import { supabaseRoute, supabaseAdmin } from "@/lib/supabase/server";
 import { OUTFITTER_COOKIE } from "@/lib/tenant";
+import { createOrUpdateCalendarEventFromContract } from "@/lib/calendar-from-contract";
 
 /**
  * GET: Get a specific hunt contract (admin)
@@ -107,16 +108,42 @@ export async function PATCH(
       );
     }
 
-    const { data, error } = await supabase
+    // Get contract before update to check if it's becoming fully_executed
+    const { data: currentContract } = await supabase
       .from("hunt_contracts")
-      .update({ status })
+      .select("id, status, outfitter_id, client_signed_at, admin_signed_at")
       .eq("id", id)
       .eq("outfitter_id", outfitterId)
-      .select()
+      .single();
+
+    const updateData: any = { status };
+    
+    // If setting to fully_executed and admin hasn't signed yet, set admin_signed_at
+    if (status === "fully_executed" && !currentContract?.admin_signed_at) {
+      updateData.admin_signed_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from("hunt_contracts")
+      .update(updateData)
+      .eq("id", id)
+      .eq("outfitter_id", outfitterId)
+      .select("id, status, client_signed_at, admin_signed_at")
       .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // If status is being set to fully_executed, create/update calendar event
+    // OR if both signatures are now present (regardless of status)
+    const bothSigned = data?.client_signed_at && data?.admin_signed_at;
+    const becameFullyExecuted = status === "fully_executed" && currentContract?.status !== "fully_executed";
+    
+    if (becameFullyExecuted || (bothSigned && !currentContract?.admin_signed_at)) {
+      console.log(`📅 Triggering calendar event creation: status=${status}, bothSigned=${bothSigned}`);
+      const admin = supabaseAdmin();
+      await createOrUpdateCalendarEventFromContract(admin, id, outfitterId);
     }
 
     return NextResponse.json({ contract: data }, { status: 200 });

@@ -21,7 +21,9 @@ export async function createOrUpdateCalendarEventFromContract(
         client_email,
         client_completion_data,
         content,
-        status
+        status,
+        client_signed_at,
+        admin_signed_at
       `)
       .eq("id", contractId)
       .single();
@@ -32,6 +34,26 @@ export async function createOrUpdateCalendarEventFromContract(
     }
     
     console.log(`📅 Contract status: ${contract.status}, hunt_id: ${contract.hunt_id || 'none'}`);
+    
+    // Also check if contract has both signatures (even if status isn't fully_executed yet)
+    const { data: contractWithSignatures } = await supabase
+      .from("hunt_contracts")
+      .select("client_signed_at, admin_signed_at")
+      .eq("id", contractId)
+      .single();
+    
+    const bothSigned = contractWithSignatures?.client_signed_at && contractWithSignatures?.admin_signed_at;
+    console.log(`📅 Both signatures present: ${bothSigned}`);
+    
+    // Create event if contract is fully_executed OR if both parties have signed
+    if (contract.status !== "fully_executed" && !bothSigned) {
+      console.log(`⚠️ Contract not fully executed and both parties haven't signed. Skipping calendar event.`);
+      return;
+    }
+    
+    if (bothSigned && contract.status !== "fully_executed") {
+      console.log(`📅 Both parties signed but status is ${contract.status}. Creating calendar event anyway.`);
+    }
 
     // Get client completion data to extract dates and details
     const completionData = (contract.client_completion_data as any) || {};
@@ -42,15 +64,32 @@ export async function createOrUpdateCalendarEventFromContract(
     let huntStart: string | undefined = clientStart;
     let huntEnd: string | undefined = clientEnd;
     
-    if (contract.hunt_id && (!huntStart || !huntEnd)) {
+    // Try to get dates from linked hunt event
+    if (contract.hunt_id) {
       const { data: huntEvent } = await supabase
         .from("calendar_events")
-        .select("start_time, end_time")
+        .select("start_time, end_time, species, unit, weapon, hunt_code, camp_name")
         .eq("id", contract.hunt_id)
         .single();
       if (huntEvent?.start_time && huntEvent?.end_time) {
         huntStart = huntStart || new Date(huntEvent.start_time).toISOString().slice(0, 10);
         huntEnd = huntEnd || new Date(huntEvent.end_time).toISOString().slice(0, 10);
+        console.log(`📅 Found dates from hunt event: ${huntStart} to ${huntEnd}`);
+      }
+    }
+    
+    // If still no dates, try extracting from contract content
+    if (!huntStart || !huntEnd) {
+      const dateMatch = contract.content?.match(/Dates?:\s*([^\n]+)/i);
+      if (dateMatch) {
+        const dateStr = dateMatch[1].trim();
+        // Try to parse date range like "Jan 15, 2024 – Jan 20, 2024" or "2024-01-15 to 2024-01-20"
+        const rangeMatch = dateStr.match(/(\d{4}-\d{2}-\d{2})[^\d]*(\d{4}-\d{2}-\d{2})/);
+        if (rangeMatch) {
+          huntStart = rangeMatch[1];
+          huntEnd = rangeMatch[2];
+          console.log(`📅 Extracted dates from contract content: ${huntStart} to ${huntEnd}`);
+        }
       }
     }
 
@@ -58,15 +97,19 @@ export async function createOrUpdateCalendarEventFromContract(
     if (contract.hunt_id) {
       const { data: existingEvent, error: eventError } = await supabase
         .from("calendar_events")
-        .select("id, title, species, unit, weapon, camp_name, hunt_code")
+        .select("id, title, species, unit, weapon, camp_name, hunt_code, client_email, start_time, end_time")
         .eq("id", contract.hunt_id)
         .single();
 
       if (existingEvent && !eventError) {
+        console.log(`📅 Updating existing calendar event ${contract.hunt_id}`);
+        console.log(`   Current: client_email=${existingEvent.client_email}, status=${(existingEvent as any).status}`);
+        
         // Update existing event with dates from contract
         const updateData: any = {
-          client_email: contract.client_email,
+          client_email: contract.client_email, // Ensure client_email is set
           tag_status: "confirmed", // Mark as confirmed when contract is signed
+          status: "Booked", // Ensure status is "Booked"
         };
 
         // Update dates if provided in completion data or from hunt
@@ -75,10 +118,11 @@ export async function createOrUpdateCalendarEventFromContract(
           const endTimeIso = new Date(huntEnd + "T23:59:59Z").toISOString();
           updateData.start_time = startTimeIso;
           updateData.end_time = endTimeIso;
+          console.log(`   Updating dates: ${huntStart} to ${huntEnd}`);
+        } else if (existingEvent.start_time && existingEvent.end_time) {
+          // Keep existing dates if no new dates provided
+          console.log(`   Keeping existing dates: ${existingEvent.start_time} to ${existingEvent.end_time}`);
         }
-        
-        // Ensure status is "Booked" when contract is fully executed
-        updateData.status = "Booked";
 
         const { error: updateError } = await supabase
           .from("calendar_events")
