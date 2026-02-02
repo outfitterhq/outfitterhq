@@ -1,0 +1,70 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { supabasePage } from "@/lib/supabase/server";
+import { OUTFITTER_COOKIE } from "@/lib/tenant";
+import DashboardHeader from "./DashboardHeader";
+
+export default async function DashboardPage() {
+  const supabase = await supabasePage();
+  const { data: userRes } = await supabase.auth.getUser();
+  const user = userRes.user;
+
+  if (!user) redirect("/login");
+
+  const { data: sessionRes } = await supabase.auth.getSession();
+  const sessionUserId = sessionRes.session?.user?.id ?? null;
+  const hasAccessToken = !!sessionRes.session?.access_token;
+
+
+  const { data: memberships, error: memErr } = await supabase
+    .from("outfitter_memberships")
+    .select("outfitter_id, role, status, outfitters:outfitters(id,name)")
+    .eq("user_id", user.id)
+    .eq("status", "active");
+
+  const active: any[] = (memberships as any[]) ?? [];
+  if (active.length === 0) {
+    return (
+      <main style={{ maxWidth: 900, margin: "32px auto", padding: 16 }}>
+        <DashboardHeader />
+
+        <p>No active outfitter membership found.</p>
+<pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify({ userId: user.id, sessionUserId, hasAccessToken, memErr: memErr ? { message: memErr.message, code: memErr.code, details: memErr.details, hint: memErr.hint } : null, memberships }, null, 2)}</pre>
+      </main>
+    );
+  }
+
+  const currentOutfitterId = (await cookies()).get(OUTFITTER_COOKIE)?.value;
+
+  if (active.length > 1 && !currentOutfitterId) redirect("/select-outfitter");
+
+  const current = currentOutfitterId ? active.find((m) => m.outfitter_id === currentOutfitterId) : active[0];
+
+  if (!current) redirect("/select-outfitter");
+
+  return (
+    <main style={{ maxWidth: 900, margin: "32px auto", padding: 16 }}>
+      <h1>Admin HQ</h1>
+
+      <div style={{ padding: 12, border: "1px solid #eee", borderRadius: 8 }}>
+        <div><b>User:</b> {user.email}</div>
+        <div><b>Outfitter:</b> {current.outfitters?.name} ({current.outfitter_id})</div>
+        <div><b>Role:</b> {current.role}</div>
+      </div>
+
+      <div style={{ marginTop: 16, display: "flex", gap: 12 }}>
+        {active.length > 1 && <a href="/select-outfitter">Switch outfitter</a>}
+        <form action="/api/auth/logout" method="post">
+          <button type="submit">Log out</button>
+        </form>
+      </div>
+
+      <hr style={{ margin: "20px 0" }} />
+
+      <h2>Next: Invite Guide</h2>
+      <p>
+        Paste the payload your <code>admin-invite-guide</code> Edge Function expects and I’ll wire a web invite form.
+      </p>
+    </main>
+  );
+}

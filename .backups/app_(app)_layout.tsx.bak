@@ -1,0 +1,49 @@
+import { redirect } from "next/navigation";
+import { supabasePage } from "@/lib/supabase/server";
+import AppShell from "@/app/components/AppShell";
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await supabasePage();
+
+  const { data: userRes } = await supabase.auth.getUser();
+  const user = userRes.user;
+  if (!user) redirect("/login");
+
+  // Load active memberships for the header tenant switcher + access checks
+  const { data: memberships, error } = await supabase
+    .from("outfitter_memberships")
+    .select("outfitter_id, role, status, outfitters:outfitters(id,name)")
+    .eq("user_id", user.id)
+    .eq("status", "active");
+
+  if (error) {
+    return (
+      <main style={{ maxWidth: 900, margin: "32px auto", padding: 16 }}>
+        <h1>App error</h1>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{error.message}</pre>
+      </main>
+    );
+  }
+
+  const active = (memberships ?? []) as any[];
+
+  // If no active memberships, send to select outfitter or show a helpful page
+  // (Should be rare now that signup creates owner+active automatically)
+  if (active.length === 0) {
+    redirect("/select-outfitter");
+  }
+
+  return (
+    <AppShell
+      userEmail={user.email ?? ""}
+      memberships={active.map((m) => ({
+        outfitter_id: m.outfitter_id,
+        role: m.role,
+        status: m.status,
+        outfitter_name: m.outfitters?.name ?? "Outfitter",
+      }))}
+    >
+      {children}
+    </AppShell>
+  );
+}

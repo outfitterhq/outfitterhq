@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { supabaseRoute } from "@/lib/supabase/server";
+import { OUTFITTER_COOKIE } from "@/lib/tenant";
+
+export async function POST(req: Request) {
+  const { outfitter_id } = await req.json().catch(() => ({ outfitter_id: null }));
+
+  if (!outfitter_id || typeof outfitter_id !== "string") {
+    return NextResponse.json({ error: "outfitter_id required" }, { status: 400 });
+  }
+
+  const supabase = await supabaseRoute();
+  const { data: userRes } = await supabase.auth.getUser();
+  const user = userRes.user;
+
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Safety: ensure the user actually has an ACTIVE membership for this outfitter (RLS enforced)
+  const { data: membership, error: memErr } = await supabase
+    .from("outfitter_memberships")
+    .select("outfitter_id, status")
+    .eq("user_id", user.id)
+    .eq("outfitter_id", outfitter_id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (memErr) {
+    return NextResponse.json({ error: memErr.message }, { status: 500 });
+  }
+  if (!membership) {
+    return NextResponse.json({ error: "No active membership for outfitter" }, { status: 403 });
+  }
+
+  const store = await cookies();
+  store.set({
+    name: OUTFITTER_COOKIE,
+    value: outfitter_id,
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+  });
+
+  return NextResponse.json({ ok: true, outfitter_id });
+}

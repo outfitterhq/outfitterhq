@@ -1,0 +1,258 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+export default function AcceptInvitePage() {
+  const sp = useSearchParams();
+  const supabase = useMemo(() => createClient(), []);
+
+  const outfitter_id = sp.get("outfitter_id") ?? "";
+  const token_hash = sp.get("token_hash") ?? "";
+  const type = sp.get("type") ?? "";
+
+  const [stage, setStage] = useState<"verifying" | "form" | "saving" | "done" | "error">("verifying");
+  const [error, setError] = useState<string | null>(null);
+
+  // Required-ish for onboarding
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
+
+  // Contact
+  const [phone, setPhone] = useState("");
+  const [address1, setAddress1] = useState("");
+  const [address2, setAddress2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [zip, setZip] = useState("");
+
+  // Guide info
+  const [notes, setNotes] = useState("");
+  const [vehicleYear, setVehicleYear] = useState("");
+  const [vehicleMake, setVehicleMake] = useState("");
+  const [vehicleModel, setVehicleModel] = useState("");
+  const [vehicleColor, setVehicleColor] = useState("");
+  const [vehiclePlate, setVehiclePlate] = useState("");
+
+  const [hasGuideLicense, setHasGuideLicense] = useState(false);
+  const [hasCPRCard, setHasCPRCard] = useState(false);
+  const [hasLeaveNoTrace, setHasLeaveNoTrace] = useState(false);
+
+  const canSubmit = fullName.trim().length >= 2 && password.length >= 8 && !!outfitter_id;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setError(null);
+
+        if (type === "invite" && token_hash) {
+          const { error: otpErr } = await supabase.auth.verifyOtp({ type: "invite", token_hash });
+          if (otpErr) throw otpErr;
+        }
+
+        // ensure session
+        for (let i = 0; i < 10; i++) {
+          const { data } = await supabase.auth.getSession();
+          if (data?.session) break;
+          await new Promise((r) => setTimeout(r, 250));
+        }
+
+        setStage("form");
+      } catch (e: any) {
+        setStage("error");
+        setError(String(e?.message ?? e));
+      }
+    })();
+  }, [supabase, type, token_hash]);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!canSubmit) return;
+
+    try {
+      setStage("saving");
+      setError(null);
+
+      const { error: pwErr } = await supabase.auth.updateUser({ password });
+      if (pwErr) throw pwErr;
+
+      const { data, error: fnErr } = await supabase.functions.invoke("guide-complete-onboarding", {
+        body: {
+          outfitter_id,
+          full_name: fullName.trim(),
+
+          phone: phone.trim() || null,
+          address_line1: address1.trim() || null,
+          address_line2: address2.trim() || null,
+          city: city.trim() || null,
+          state: state.trim() || null,
+          zip: zip.trim() || null,
+
+          notes: notes.trim() || null,
+
+          vehicle_year: vehicleYear.trim() || null,
+          vehicle_make: vehicleMake.trim() || null,
+          vehicle_model: vehicleModel.trim() || null,
+          vehicle_color: vehicleColor.trim() || null,
+          vehicle_plate: vehiclePlate.trim() || null,
+
+          has_guide_license: hasGuideLicense,
+          has_cpr_card: hasCPRCard,
+          has_leave_no_trace: hasLeaveNoTrace,
+        },
+      });
+
+      if (fnErr) throw fnErr;
+      if (!data?.ok) throw new Error("Onboarding did not return ok:true");
+
+      setStage("done");
+    } catch (e: any) {
+      setStage("error");
+      setError(String(e?.message ?? e));
+    }
+  }
+
+  return (
+    <main style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 900, marginBottom: 8 }}>Guide Account Setup</h1>
+
+      {stage === "verifying" && <p>Verifying invite…</p>}
+
+      {stage === "error" && (
+        <>
+          <p style={{ color: "crimson", fontWeight: 800 }}>Setup failed</p>
+          <pre style={{ whiteSpace: "pre-wrap", background: "#f7f7f7", padding: 12, borderRadius: 10 }}>
+            {error ?? "Unknown error"}
+          </pre>
+          <p style={{ marginTop: 10 }}>Try reopening the invite link, or ask the outfitter to resend it.</p>
+        </>
+      )}
+
+      {stage === "form" && (
+        <form onSubmit={onSubmit} style={{ display: "grid", gap: 18 }}>
+          <section style={{ border: "1px solid #eee", borderRadius: 12, padding: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Account</h2>
+            <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span>Full name *</span>
+                <input value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+              </label>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span>Create password (8+ characters) *</span>
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+              </label>
+            </div>
+          </section>
+
+          <section style={{ border: "1px solid #eee", borderRadius: 12, padding: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Contact</h2>
+            <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span>Phone</span>
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+              </label>
+
+              <label style={{ display: "grid", gap: 6 }}>
+                <span>Address line 1</span>
+                <input value={address1} onChange={(e) => setAddress1(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+              </label>
+
+              <label style={{ display: "grid", gap: 6 }}>
+                <span>Address line 2</span>
+                <input value={address2} onChange={(e) => setAddress2(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+              </label>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 140px", gap: 10 }}>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>City</span>
+                  <input value={city} onChange={(e) => setCity(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>State</span>
+                  <input value={state} onChange={(e) => setState(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>Zip</span>
+                  <input value={zip} onChange={(e) => setZip(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section style={{ border: "1px solid #eee", borderRadius: 12, padding: 12 }}>
+            <h2 style={{ margin: 0, fontSize: 16 }}>Guide details</h2>
+            <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
+              <label style={{ display: "grid", gap: 6 }}>
+                <span>Notes</span>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+              </label>
+
+              <div style={{ display: "grid", gridTemplateColumns: "120px 1fr 1fr", gap: 10 }}>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>Vehicle year</span>
+                  <input value={vehicleYear} onChange={(e) => setVehicleYear(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>Make</span>
+                  <input value={vehicleMake} onChange={(e) => setVehicleMake(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>Model</span>
+                  <input value={vehicleModel} onChange={(e) => setVehicleModel(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>Color</span>
+                  <input value={vehicleColor} onChange={(e) => setVehicleColor(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+                <label style={{ display: "grid", gap: 6 }}>
+                  <span>Plate</span>
+                  <input value={vehiclePlate} onChange={(e) => setVehiclePlate(e.target.value)} style={{ padding: 10, borderRadius: 10, border: "1px solid #ccc" }} />
+                </label>
+                <div />
+              </div>
+
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input type="checkbox" checked={hasGuideLicense} onChange={(e) => setHasGuideLicense(e.target.checked)} />
+                Has guide license
+              </label>
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input type="checkbox" checked={hasCPRCard} onChange={(e) => setHasCPRCard(e.target.checked)} />
+                Has CPR card
+              </label>
+              <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <input type="checkbox" checked={hasLeaveNoTrace} onChange={(e) => setHasLeaveNoTrace(e.target.checked)} />
+                Has Leave No Trace
+              </label>
+            </div>
+          </section>
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            style={{ padding: 14, borderRadius: 12, border: "1px solid #111", opacity: canSubmit ? 1 : 0.5 }}
+          >
+            Finish Setup
+          </button>
+        </form>
+      )}
+
+      {stage === "saving" && <p>Saving…</p>}
+
+      {stage === "done" && (
+        <>
+          <p style={{ fontWeight: 900 }}>✅ Account setup complete.</p>
+          <p style={{ marginTop: 8 }}>
+            You can now log into the HuntCo app with your email + password.
+          </p>
+          <p style={{ marginTop: 8, opacity: 0.8 }}>
+            This website is for owners/admins only.
+          </p>
+        </>
+      )}
+    </main>
+  );
+}

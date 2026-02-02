@@ -1,0 +1,897 @@
+species,hunt_code,unit_description,season_text,start_date,end_date,bag_limit,licenses
+PRONGHORN,ANT-1-101,"Units 2, 7, 9, 10: youth only Aug. 23-25","Units 2, 7, 9, 10: youth only Aug. 23-25",2025-08-23,2025-08-25,ES,3
+PRONGHORN,ANT-1-102,"Units 2, 7, 9, 10 Aug. 23-25","Units 2, 7, 9, 10 Aug. 23-25",2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-104,Unit 12: youth only Aug. 23-25,Unit 12: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,3
+PRONGHORN,ANT-1-105,Unit 12 Aug. 23-25,Unit 12 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-106,Unit 12: mobility impaired only Oct. 4-6,Unit 12: mobility impaired only Oct. 4-6,2025-10-04,2025-10-06,MB,10
+PRONGHORN,ANT-1-107,Unit 12 Oct. 4-6,Unit 12 Oct. 4-6,2025-10-04,2025-10-06,MB,10
+PRONGHORN,ANT-1-109,Unit 13: youth only Aug. 23-25,Unit 13: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,2
+PRONGHORN,ANT-1-110,Unit 13 Aug. 23-25,Unit 13 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-111,Unit 13: mobility impaired only Sep. 27-29,Unit 13: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-112,Unit 13 Aug. 23-25 Oct. 4-6,Unit 13 Aug. 23-25 Oct. 4-6,2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-114,Unit 15: youth only Aug. 23-25,Unit 15: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-115,Unit 15 Aug. 23-25,Unit 15 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-117,Unit 15: mobility impaired only Oct. 4-6,Unit 15: mobility impaired only Oct. 4-6,2025-10-04,2025-10-06,MB,3
+PRONGHORN,ANT-1-118,Unit 15 Oct. 4-6,Unit 15 Oct. 4-6,2025-10-04,2025-10-06,MB,10
+PRONGHORN,ANT-1-120,Unit 16: youth only Aug. 23-25,Unit 16: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-121,Unit 16 Aug. 23-25,Unit 16 Aug. 23-25,2025-08-23,2025-08-25,MB,15
+PRONGHORN,ANT-1-123,Unit 16: mobility impaired only Oct. 4-6,Unit 16: mobility impaired only Oct. 4-6,2025-10-04,2025-10-06,MB,3
+PRONGHORN,ANT-1-124,Unit 16 Oct. 4-6,Unit 16 Oct. 4-6,2025-10-04,2025-10-06,MB,25
+PRONGHORN,ANT-1-126,Unit 17: youth only Aug. 23-25,Unit 17: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-127,Unit 17 Aug. 23-25,Unit 17 Aug. 23-25,2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-128,Unit 17 Sep. 27-29,Unit 17 Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-129,Unit 17: mobility impaired only Sep. 27-29,Unit 17: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,3
+PRONGHORN,ANT-1-130,Unit 17 Oct. 4-6,Unit 17 Oct. 4-6,2025-10-04,2025-10-06,MB,10
+PRONGHORN,ANT-1-132,Unit 18 Aug. 23-25,Unit 18 Aug. 23-25,2025-08-23,2025-08-25,MB,15
+PRONGHORN,ANT-1-133,Unit 18 Sep. 27-29,Unit 18 Sep. 27-29,2025-09-27,2025-09-29,MB,15
+PRONGHORN,ANT-1-134,"Unit 19: WSMR only, youth only Oct. 3-5","Unit 19: WSMR only, youth only Oct. 3-5",2025-10-03,2025-10-05,ES,5
+PRONGHORN,ANT-1-136,Unit 20: youth only Aug. 23-25,Unit 20: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,2
+PRONGHORN,ANT-1-137,Unit 20 Aug. 23-25,Unit 20 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-139,"Units 21, 24: youth only Aug. 23-25","Units 21, 24: youth only Aug. 23-25",2025-08-23,2025-08-25,ES,10
+PRONGHORN,ANT-1-140,"Units 21, 24 Aug. 23-25","Units 21, 24 Aug. 23-25",2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-141,"Units 21, 24 Sep. 27-29","Units 21, 24 Sep. 27-29",2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-142,"Units 21, 24: mobility impaired only Sep. 27-29","Units 21, 24: mobility impaired only Sep. 27-29",2025-09-27,2025-09-29,MB,8
+PRONGHORN,ANT-1-143,"Units 21, 24 Oct. 4-6","Units 21, 24 Oct. 4-6",2025-10-04,2025-10-06,MB,15
+PRONGHORN,ANT-1-145,"Units 22, 23: youth only Aug. 23-25","Units 22, 23: youth only Aug. 23-25",2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-146,"Units 22, 23 Aug. 23-25","Units 22, 23 Aug. 23-25",2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-147,"Units 22, 23 Sep. 27-29","Units 22, 23 Sep. 27-29",2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-148,"Units 22, 23: mobility impaired only Sep. 27-29","Units 22, 23: mobility impaired only Sep. 27-29",2025-09-27,2025-09-29,MB,3
+PRONGHORN,ANT-1-150,"Units 25, 26, 27: youth only Aug. 23-25","Units 25, 26, 27: youth only Aug. 23-25",2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-151,"Units 25, 26, 27 Aug. 23-25","Units 25, 26, 27 Aug. 23-25",2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-152,"Units 25, 26, 27 Sep. 27-29","Units 25, 26, 27 Sep. 27-29",2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-153,"Units 25, 26, 27: mobility impaired only Sep. 27-29","Units 25, 26, 27: mobility impaired only Sep. 27-29",2025-09-27,2025-09-29,MB,3
+PRONGHORN,ANT-1-161,Unit 31 north of US 380: youth only Aug. 23-25,Unit 31 north of US 380: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-162,Unit 31 north of US 380 Aug. 23-25,Unit 31 north of US 380 Aug. 23-25,2025-08-23,2025-08-25,MB,5
+PRONGHORN,ANT-1-163,Unit 31 north of US 380 Sep. 27-29,Unit 31 north of US 380 Sep. 27-29,2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-164,Unit 31 north of US 380: mobility impaired only Sep. 27-29,Unit 31 north of US 380: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-165,Unit 31 north of US 380 Oct. 4-6,Unit 31 north of US 380 Oct. 4-6,2025-10-04,2025-10-06,MB,15
+PRONGHORN,ANT-1-167,Unit 31 south of US 380: youth only Aug. 23-25,Unit 31 south of US 380: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-168,Unit 31 south of US 380 Aug. 23-25,Unit 31 south of US 380 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-169,Unit 31 south of US 380 Sep. 27-29,Unit 31 south of US 380 Sep. 27-29,2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-170,Unit 31 south of US 380: mobility impaired only Sep. 27-29,Unit 31 south of US 380: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-171,Unit 31 south of US 380 Oct. 4-6,Unit 31 south of US 380 Oct. 4-6,2025-10-04,2025-10-06,MB,20
+PRONGHORN,ANT-1-173,Unit 32 east of Pecos River: youth only Aug. 23-25,Unit 32 east of Pecos River: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-174,Unit 32 east of Pecos River Aug. 23-25,Unit 32 east of Pecos River Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-175,Unit 32 east of Pecos River Sep. 27-29,Unit 32 east of Pecos River Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-176,Unit 32 east of Pecos River: mobility impaired only Sep. 27-29,Unit 32 east of Pecos River: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-177,Unit 32 east of Pecos River Oct. 4-6,Unit 32 east of Pecos River Oct. 4-6,2025-10-04,2025-10-06,MB,15
+PRONGHORN,ANT-1-179,Unit 32 west of Pecos River Aug. 23-25,Unit 32 west of Pecos River Aug. 23-25,2025-08-23,2025-08-25,MB,15
+PRONGHORN,ANT-1-180,Unit 32 west of Pecos River Sep. 27-29,Unit 32 west of Pecos River Sep. 27-29,2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-181,Unit 32 west of Pecos River: mobility impaired only Sep. 27-29,Unit 32 west of Pecos River: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-182,Unit 32 west of Pecos River Oct. 4-6,Unit 32 west of Pecos River Oct. 4-6,2025-10-04,2025-10-06,MB,15
+PRONGHORN,ANT-1-183,Unit 32 (Roswell Hunt Area only) Dec. 1-15,Unit 32 (Roswell Hunt Area only) Dec. 1-15,2025-12-01,2025-12-15,F-IM,15
+PRONGHORN,ANT-1-185,Unit 33: youth only Aug. 23-25,Unit 33: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-186,Unit 33 Aug. 23-25,Unit 33 Aug. 23-25,2025-08-23,2025-08-25,MB,25
+PRONGHORN,ANT-1-187,Unit 33 Sep. 27-29,Unit 33 Sep. 27-29,2025-09-27,2025-09-29,MB,20
+PRONGHORN,ANT-1-188,Unit 33: mobility impaired only Sep. 27-29,Unit 33: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-189,Unit 33 Oct. 4-6,Unit 33 Oct. 4-6,2025-10-04,2025-10-06,MB,25
+PRONGHORN,ANT-1-191,"Units 36, 37: youth only Aug. 23-25","Units 36, 37: youth only Aug. 23-25",2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-192,"Units 36, 37 Aug. 23-25","Units 36, 37 Aug. 23-25",2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-193,"Units 36, 37 Sep. 27-29","Units 36, 37 Sep. 27-29",2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-194,"Units 36, 37: mobility impaired only Sep. 27-29","Units 36, 37: mobility impaired only Sep. 27-29",2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-195,"Units 36, 37 Oct. 4-6","Units 36, 37 Oct. 4-6",2025-10-04,2025-10-06,MB,15
+PRONGHORN,ANT-1-197,Unit 38: youth only Aug. 23-25,Unit 38: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,10
+PRONGHORN,ANT-1-198,Unit 38 Aug. 23-25,Unit 38 Aug. 23-25,2025-08-23,2025-08-25,MB,15
+PRONGHORN,ANT-1-199,Unit 38 Sep. 27-29,Unit 38 Sep. 27-29,2025-09-27,2025-09-29,MB,20
+PRONGHORN,ANT-1-200,Unit 38: mobility impaired only Sep. 27-29,Unit 38: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-201,Unit 38 Oct. 4-6,Unit 38 Oct. 4-6,2025-10-04,2025-10-06,MB,30
+PRONGHORN,ANT-1-203,Unit 39: youth only Aug. 23-25,Unit 39: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-1-204,Unit 39 Aug. 23-25,Unit 39 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-205,Unit 39 Sep. 27-29,Unit 39 Sep. 27-29,2025-09-27,2025-09-29,MB,10
+PRONGHORN,ANT-1-206,Unit 39: mobility impaired only Sep. 27-29,Unit 39: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-207,Unit 39 Oct. 4-6,Unit 39 Oct. 4-6,2025-10-04,2025-10-06,MB,10
+PRONGHORN,ANT-1-209,Unit 40 Aug. 23-25,Unit 40 Aug. 23-25,2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-210,Unit 40: mobility impaired only Sep. 27-29,Unit 40: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,5
+PRONGHORN,ANT-1-211,Unit 40 Oct. 4-6,Unit 40 Oct. 4-6,2025-10-04,2025-10-06,MB,10
+PRONGHORN,ANT-1-213,Unit 41: youth only Aug. 23-25,Unit 41: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,4
+PRONGHORN,ANT-1-214,Unit 41 Aug. 23-25,Unit 41 Aug. 23-25,2025-08-23,2025-08-25,MB,24
+PRONGHORN,ANT-1-215,Unit 41 Sep. 27-29,Unit 41 Sep. 27-29,2025-09-27,2025-09-29,MB,24
+PRONGHORN,ANT-1-216,Unit 41: mobility impaired only Sep. 27-29,Unit 41: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,4
+PRONGHORN,ANT-1-217,Unit 41 Oct. 4-6,Unit 41 Oct. 4-6,2025-10-04,2025-10-06,MB,28
+PRONGHORN,ANT-1-220,Unit 42: youth only Aug. 23-25,Unit 42: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,8
+PRONGHORN,ANT-1-221,Unit 42 Sep. 27-29,Unit 42 Sep. 27-29,2025-09-27,2025-09-29,MB,8
+PRONGHORN,ANT-1-222,Unit 42 Oct. 4-6,Unit 42 Oct. 4-6,2025-10-04,2025-10-06,MB,8
+PRONGHORN,ANT-1-224,"Units 8, 43 Aug. 23-25","Units 8, 43 Aug. 23-25",2025-08-23,2025-08-25,MB,10
+PRONGHORN,ANT-1-226,Unit 47: youth only Aug. 23-25,Unit 47: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,4
+PRONGHORN,ANT-1-227,Unit 47 Aug. 23-25,Unit 47 Aug. 23-25,2025-08-23,2025-08-25,MB,20
+PRONGHORN,ANT-1-228,Unit 47 Sep. 27-29,Unit 47 Sep. 27-29,2025-09-27,2025-09-29,MB,24
+PRONGHORN,ANT-1-229,Unit 47: mobility impaired only Sep. 27-29,Unit 47: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,4
+PRONGHORN,ANT-1-230,Unit 47 Oct. 4-6,Unit 47 Oct. 4-6,2025-10-04,2025-10-06,MB,28
+PRONGHORN,ANT-1-234,"Units 50, 52 Aug. 16-18","Units 50, 52 Aug. 16-18",2025-08-16,2025-08-18,MB,20
+PRONGHORN,ANT-1-237,Unit 56: youth only Aug. 23-25,Unit 56: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,40
+PRONGHORN,ANT-1-238,Unit 56 Aug. 23-25,Unit 56 Aug. 23-25,2025-08-23,2025-08-25,MB,4
+PRONGHORN,ANT-1-239,Unit 56 Sep. 27-29,Unit 56 Sep. 27-29,2025-09-27,2025-09-29,MB,36
+PRONGHORN,ANT-1-240,Unit 56: mobility impaired only Sep. 27-29,Unit 56: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,4
+PRONGHORN,ANT-1-241,Unit 56 Oct. 4-6,Unit 56 Oct. 4-6,2025-10-04,2025-10-06,MB,40
+PRONGHORN,ANT-1-244,Unit 57: youth only Aug. 23-25,Unit 57: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,4
+PRONGHORN,ANT-1-245,Unit 57 Sep. 27-29,Unit 57 Sep. 27-29,2025-09-27,2025-09-29,MB,4
+PRONGHORN,ANT-1-248,Unit 58: youth only Aug. 23-25,Unit 58: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,16
+PRONGHORN,ANT-1-249,Unit 58 Aug. 23-25,Unit 58 Aug. 23-25,2025-08-23,2025-08-25,MB,24
+PRONGHORN,ANT-1-250,Unit 58 Sep. 27-29,Unit 58 Sep. 27-29,2025-09-27,2025-09-29,MB,24
+PRONGHORN,ANT-1-251,Unit 58: mobility impaired only Sep. 27-29,Unit 58: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,4
+PRONGHORN,ANT-1-252,Unit 58 Oct. 4-6,Unit 58 Oct. 4-6,2025-10-04,2025-10-06,MB,32
+PRONGHORN,ANT-1-255,Unit 59: youth only Aug. 23-25,Unit 59: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,36
+PRONGHORN,ANT-1-256,Unit 59 Aug. 23-25,Unit 59 Aug. 23-25,2025-08-23,2025-08-25,MB,4
+PRONGHORN,ANT-1-257,Unit 59 Sep. 27-29,Unit 59 Sep. 27-29,2025-09-27,2025-09-29,MB,32
+PRONGHORN,ANT-1-258,Unit 59: mobility impaired only Sep. 27-29,Unit 59: mobility impaired only Sep. 27-29,2025-09-27,2025-09-29,MB,8
+PRONGHORN,ANT-1-259,Unit 59 Oct. 4-6,Unit 59 Oct. 4-6,2025-10-04,2025-10-06,MB,40
+PRONGHORN,ANT-2-100,"Units 2, 7, 9, 10 Aug. 9-17","Units 2, 7, 9, 10 Aug. 9-17",2025-08-09,2025-08-17,MB,10
+PRONGHORN,ANT-2-103,Unit 12 Aug. 9-17,Unit 12 Aug. 9-17,2025-08-09,2025-08-17,MB,10
+PRONGHORN,ANT-2-108,Unit 13 Aug. 9-17,Unit 13 Aug. 9-17,2025-08-09,2025-08-17,MB,10
+PRONGHORN,ANT-2-113,Unit 15 Aug. 9-17,Unit 15 Aug. 9-17,2025-08-09,2025-08-17,MB,20
+PRONGHORN,ANT-2-119,Unit 16 Aug. 9-17,Unit 16 Aug. 9-17,2025-08-09,2025-08-17,MB,20
+PRONGHORN,ANT-2-125,Unit 17 Aug. 9-17,Unit 17 Aug. 9-17,2025-08-09,2025-08-17,MB,20
+PRONGHORN,ANT-2-131,Unit 18 Aug. 9-17,Unit 18 Aug. 9-17,2025-08-09,2025-08-17,MB,25
+PRONGHORN,ANT-2-135,Unit 20 Aug. 9-17,Unit 20 Aug. 9-17,2025-08-09,2025-08-17,MB,10
+PRONGHORN,ANT-2-138,"Units 21, 24 Aug. 9-17","Units 21, 24 Aug. 9-17",2025-08-09,2025-08-17,MB,25
+PRONGHORN,ANT-2-144,"Units 22, 23 Aug. 9-17","Units 22, 23 Aug. 9-17",2025-08-09,2025-08-17,MB,10
+PRONGHORN,ANT-2-149,"Units 25, 26, 27 Aug. 9-17","Units 25, 26, 27 Aug. 9-17",2025-08-09,2025-08-17,MB,10
+PRONGHORN,ANT-2-159,Unit 30 Aug. 9-17,Unit 30 Aug. 9-17,2025-08-09,2025-08-17,MB,25
+PRONGHORN,ANT-2-160,Unit 31 north of US 380 Aug. 9-17,Unit 31 north of US 380 Aug. 9-17,2025-08-09,2025-08-17,MB,25
+PRONGHORN,ANT-2-166,Unit 31 south of US 380 Aug. 9-17,Unit 31 south of US 380 Aug. 9-17,2025-08-09,2025-08-17,MB,50
+PRONGHORN,ANT-2-172,Unit 32 east of Pecos River Aug. 9-17,Unit 32 east of Pecos River Aug. 9-17,2025-08-09,2025-08-17,MB,25
+PRONGHORN,ANT-2-178,Unit 32 west of Pecos River Aug. 9-17,Unit 32 west of Pecos River Aug. 9-17,2025-08-09,2025-08-17,MB,20
+PRONGHORN,ANT-2-184,Unit 33 Aug. 9-17,Unit 33 Aug. 9-17,2025-08-09,2025-08-17,MB,30
+PRONGHORN,ANT-2-190,"Units 36, 37 Aug. 9-17","Units 36, 37 Aug. 9-17",2025-08-09,2025-08-17,MB,20
+PRONGHORN,ANT-2-196,Unit 38 Aug. 9-17,Unit 38 Aug. 9-17,2025-08-09,2025-08-17,MB,20
+PRONGHORN,ANT-2-202,Unit 39 Aug. 9-17,Unit 39 Aug. 9-17,2025-08-09,2025-08-17,MB,5
+PRONGHORN,ANT-2-208,Unit 40 Aug. 9-17,Unit 40 Aug. 9-17,2025-08-09,2025-08-17,MB,5
+PRONGHORN,ANT-2-212,Unit 41 Aug. 9-17,Unit 41 Aug. 9-17,2025-08-09,2025-08-17,MB,28
+PRONGHORN,ANT-2-219,Unit 42 Aug. 9-17,Unit 42 Aug. 9-17,2025-08-09,2025-08-17,MB,4
+PRONGHORN,ANT-2-223,"Units 8, 43 Aug. 9-17","Units 8, 43 Aug. 9-17",2025-08-09,2025-08-17,MB,5
+PRONGHORN,ANT-2-225,Unit 47 Aug. 9-17,Unit 47 Aug. 9-17,2025-08-09,2025-08-17,MB,8
+PRONGHORN,ANT-2-233,"Units 50, 52 Aug. 5-13","Units 50, 52 Aug. 5-13",2025-08-05,2025-08-13,MB,20
+PRONGHORN,ANT-2-236,Unit 56 Aug. 9-17,Unit 56 Aug. 9-17,2025-08-09,2025-08-17,MB,40
+PRONGHORN,ANT-2-243,Unit 57 Aug. 9-17,Unit 57 Aug. 9-17,2025-08-09,2025-08-17,MB,4
+PRONGHORN,ANT-2-247,Unit 58 Aug. 9-17,Unit 58 Aug. 9-17,2025-08-09,2025-08-17,MB,32
+PRONGHORN,ANT-2-254,Unit 59 Aug. 9-17,Unit 59 Aug. 9-17,2025-08-09,2025-08-17,MB,40
+PRONGHORN,ANT-3-154,Unit 28: McGregor Range only Aug. 30-31,Unit 28: McGregor Range only Aug. 30-31,2025-08-30,2025-08-31,MB,7
+PRONGHORN,ANT-3-155,"Unit 28: McGregor Range only, military only Aug. 30-31","Unit 28: McGregor Range only, military only Aug. 30-31",2025-08-30,2025-08-31,MB,7
+PRONGHORN,ANT-3-156,Unit 29: youth only Aug. 23-25,Unit 29: youth only Aug. 23-25,2025-08-23,2025-08-25,ES,5
+PRONGHORN,ANT-3-157,Unit 29 Aug. 23-25,Unit 29 Aug. 23-25,2025-08-23,2025-08-25,MB,15
+PRONGHORN,ANT-3-158,Unit 29 Sep. 27-29,Unit 29 Sep. 27-29,2025-09-27,2025-09-29,MB,25
+PRONGHORN,ANT-3-232,"Units 50, 52: youth only Aug. 2-4","Units 50, 52: youth only Aug. 2-4",2025-08-02,2025-08-04,ES,40
+PRONGHORN,ANT-3-235,"Units 50, 52 Aug. 23-25","Units 50, 52 Aug. 23-25",2025-08-23,2025-08-25,MB,40
+BARBARY SHEEP,BBY-1-101,"GMUs 32, 36, 37 Oct. 10-16","GMUs 32, 36, 37 Oct. 10-16",2025-10-10,2025-10-16,ES,50
+BARBARY SHEEP,BBY-1-102,"GMUs 32, 36, 37 Dec. 4-10","GMUs 32, 36, 37 Dec. 4-10",2025-12-04,2025-12-10,ES,50
+BARBARY SHEEP,BBY-1-103,"GMUs 32, 36, 37 Dec. 15-21","GMUs 32, 36, 37 Dec. 15-21",2025-12-15,2025-12-21,ES,75
+BARBARY SHEEP,BBY-1-104,"GMUs 32, 36, 37 Jan. 20-26, '26","GMUs 32, 36, 37 Jan. 20-26, '26",2025-01-20,2025-01-26,ES,150
+BARBARY SHEEP,BBY-1-105,"GMUs 32, 36, 37 Feb. 1-7, '26","GMUs 32, 36, 37 Feb. 1-7, '26",2025-02-01,2025-02-07,ES,150
+BARBARY SHEEP,BBY-1-106,"GMUs 32, 36, 37 Feb. 12-18, '26","GMUs 32, 36, 37 Feb. 12-18, '26",2025-02-12,2025-02-18,ES,150
+BARBARY SHEEP,BBY-1-107,"GMUs 32, 36, 37 Feb. 21-27, '26","GMUs 32, 36, 37 Feb. 21-27, '26",2025-02-21,2025-02-27,ES,150
+BARBARY SHEEP,BBY-1-109,"GMUs 29, 30 Oct. 10-16","GMUs 29, 30 Oct. 10-16",2025-10-10,2025-10-16,ES,75
+BARBARY SHEEP,BBY-1-110,"GMUs 29, 30 Dec. 4-10","GMUs 29, 30 Dec. 4-10",2025-12-04,2025-12-10,ES,75
+BARBARY SHEEP,BBY-1-111,"GMUs 29, 30 Dec. 15-21","GMUs 29, 30 Dec. 15-21",2025-12-15,2025-12-21,ES,75
+BARBARY SHEEP,BBY-1-112,"GMUs 29, 30 Jan. 20-26, '26","GMUs 29, 30 Jan. 20-26, '26",2025-01-20,2025-01-26,ES,200
+BARBARY SHEEP,BBY-1-113,"GMUs 29, 30 Feb. 1-7, '26","GMUs 29, 30 Feb. 1-7, '26",2025-02-01,2025-02-07,ES,200
+BARBARY SHEEP,BBY-1-114,"GMUs 29, 30 Feb. 12-18, '26","GMUs 29, 30 Feb. 12-18, '26",2025-02-12,2025-02-18,ES,200
+BARBARY SHEEP,BBY-1-115,"GMUs 29, 30 Feb. 21-27, '26","GMUs 29, 30 Feb. 21-27, '26",2025-02-21,2025-02-27,ES,200
+BARBARY SHEEP,BBY-1-116,Unit 28 McGregor range Dec. 13-17,Unit 28 McGregor range Dec. 13-17,2025-12-13,2025-12-17,ES,10
+BARBARY SHEEP,BBY-1-117,"Unit 28 McGregor range, military only Dec. 13-17","Unit 28 McGregor range, military only Dec. 13-17",2025-12-13,2025-12-17,ES,10
+BARBARY SHEEP,BBY-1-118,Unit 28 McGregor range Dec. 27-28,Unit 28 McGregor range Dec. 27-28,2025-12-27,2025-12-28,F-IM,65
+BARBARY SHEEP,BBY-1-119,"Unit 28 McGregor range, military only Dec. 27-28","Unit 28 McGregor range, military only Dec. 27-28",2025-12-27,2025-12-28,F-IM,10
+BARBARY SHEEP,BBY-1-120,"Unit 28 McGregor range Jan. 3-4, '26","Unit 28 McGregor range Jan. 3-4, '26",2025-01-03,2025-01-04,F-IM,65
+BARBARY SHEEP,BBY-1-121,"Unit 28 McGregor range, military only Jan. 3-4, '26","Unit 28 McGregor range, military only Jan. 3-4, '26",2025-01-03,2025-01-04,F-IM,10
+BARBARY SHEEP,BBY-2-100,"GMUs 32, 36, 37 Jan. 1-15, '26","GMUs 32, 36, 37 Jan. 1-15, '26",2025-01-01,2025-01-15,ES,75
+BARBARY SHEEP,BBY-2-108,"GMUs 29, 30 Jan. 1-15, '26","GMUs 29, 30 Jan. 1-15, '26",2025-01-01,2025-01-15,ES,75
+BIGHORN SHEEP,BHS-1-201,Rocky Mountain BHS: TBD by hunt area selected,Rocky Mountain BHS: TBD by hunt area selected,,,RAM,28
+BIGHORN SHEEP,BHS-1-202,Unit 45,Unit 45,,,EWE,20
+BIGHORN SHEEP,BHS-1-204,Desert BHS: TBD by hunt area selected,Desert BHS: TBD by hunt area selected,,,RAM,25
+BIGHORN SHEEP,BHS-2-203,Unit 45,Unit 45,,,EWE,10
+DEER,DER-1-100,Unit 2A: youth only Oct. 25-29,Unit 2A: youth only Oct. 25-29,2025-10-25,2025-10-29,FAD,25
+DEER,DER-1-101,Unit 2A Nov. 1-5,Unit 2A Nov. 1-5,2025-11-01,2025-11-05,FAD,150
+DEER,DER-1-102,Unit 2A: private land only,Unit 2A: private land only,,,FAD,40
+DEER,DER-1-103,Unit 2A: youth only Nov. 22-30,Unit 2A: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,15
+DEER,DER-1-110,Unit 2B Oct. 25-29,Unit 2B Oct. 25-29,2025-10-25,2025-10-29,FAD,275
+DEER,DER-1-111,Unit 2B: youth only Oct. 25-29,Unit 2B: youth only Oct. 25-29,2025-10-25,2025-10-29,FAD,125
+DEER,DER-1-112,Unit 2B: private land only,Unit 2B: private land only,,,FAD,25
+DEER,DER-1-113,Unit 2B Nov. 1-5,Unit 2B Nov. 1-5,2025-11-01,2025-11-05,FAD,350
+DEER,DER-1-114,Unit 2B: private land only,Unit 2B: private land only,,,FAD,25
+DEER,DER-1-115,Unit 2B Nov. 8-12,Unit 2B Nov. 8-12,2025-11-08,2025-11-12,FAD,400
+DEER,DER-1-116,Unit 2B: private land only,Unit 2B: private land only,,,FAD,75
+DEER,DER-1-117,Unit 2B: youth only Nov. 22-30,Unit 2B: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,25
+DEER,DER-1-127,Unit 2C Nov. 8-12,Unit 2C Nov. 8-12,2025-11-08,2025-11-12,FAD,30
+DEER,DER-1-128,Unit 2C: private land only,Unit 2C: private land only,,,FAD,8
+DEER,DER-1-133,Unit 4: Humphries/Rio Chama/Sargent WMAs only Oct. 25-29,Unit 4: Humphries/Rio Chama/Sargent WMAs only Oct. 25-29,2025-10-25,2025-10-29,FAD,20
+DEER,DER-1-134,"Unit 4: Humphries/Rio Chama/Sargent WMAs only, youth only Oct. 25-29","Unit 4: Humphries/Rio Chama/Sargent WMAs only, youth only Oct. 25-29",2025-10-25,2025-10-29,FAD,10
+DEER,DER-1-135,Unit 4: private land only,Unit 4: private land only,,,FAD,175
+DEER,DER-1-136,Unit 4: Humphries/Rio Chama/Sargent WMAs only Nov. 1-5,Unit 4: Humphries/Rio Chama/Sargent WMAs only Nov. 1-5,2025-11-01,2025-11-05,FAD,20
+DEER,DER-1-137,Unit 4: private land only,Unit 4: private land only,,,FAD,175
+DEER,DER-1-138,Unit 4: Humphries/Rio Chama/Sargent WMAs only Nov. 8-12,Unit 4: Humphries/Rio Chama/Sargent WMAs only Nov. 8-12,2025-11-08,2025-11-12,FAD,10
+DEER,DER-1-139,Unit 4: private land only,Unit 4: private land only,,,FAD,10
+DEER,DER-1-140,"Unit 4: Humphries/Rio Chama/Sargent WMAs only, youth only Nov. 26-30","Unit 4: Humphries/Rio Chama/Sargent WMAs only, youth only Nov. 26-30",2025-11-26,2025-11-30,FAD,5
+DEER,DER-1-144,Unit 5A: public land only Nov. 11-17,Unit 5A: public land only Nov. 11-17,2025-11-11,2025-11-17,FAD,40
+DEER,DER-1-145,Unit 5A: private land only,Unit 5A: private land only,,,FAD,220
+DEER,DER-1-150,Unit 5B Nov. 1-5,Unit 5B Nov. 1-5,2025-11-01,2025-11-05,FAD,30
+DEER,DER-1-151,Unit 5B: youth only Nov. 22-30,Unit 5B: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,10
+DEER,DER-1-154,Units 6A and 6C: mobility impaired only Oct. 11-15,Units 6A and 6C: mobility impaired only Oct. 11-15,2025-10-11,2025-10-15,FAD,20
+DEER,DER-1-155,Units 6A and 6C Nov. 1-5,Units 6A and 6C Nov. 1-5,2025-11-01,2025-11-05,FAD,110
+DEER,DER-1-158,Unit 7 Nov. 1-5,Unit 7 Nov. 1-5,2025-11-01,2025-11-05,FAD,30
+DEER,DER-1-164,"Unit 9, including Water Canyon WMA Nov. 8-12","Unit 9, including Water Canyon WMA Nov. 8-12",2025-11-08,2025-11-12,FAD,15
+DEER,DER-1-165,Unit 9: Marquez/LBar WMAs only Nov. 8-12,Unit 9: Marquez/LBar WMAs only Nov. 8-12,2025-11-08,2025-11-12,FAD,10
+DEER,DER-1-166,"Unit 9, including Water Canyon WMA: youth only Nov. 22-30","Unit 9, including Water Canyon WMA: youth only Nov. 22-30",2025-11-22,2025-11-30,FAD,10
+DEER,DER-1-170,Unit 10: mobility impaired only Oct. 25-29,Unit 10: mobility impaired only Oct. 25-29,2025-10-25,2025-10-29,FAD,20
+DEER,DER-1-171,Unit 10 Oct. 25-29,Unit 10 Oct. 25-29,2025-10-25,2025-10-29,FAD,70
+DEER,DER-1-172,Unit 10 Nov. 1-5,Unit 10 Nov. 1-5,2025-11-01,2025-11-05,FAD,65
+DEER,DER-1-173,Unit 10 Nov. 8-12,Unit 10 Nov. 8-12,2025-11-08,2025-11-12,FAD,90
+DEER,DER-1-174,Unit 10: youth only Nov. 22-30,Unit 10: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,25
+DEER,DER-1-177,Unit 12 Nov. 8-12,Unit 12 Nov. 8-12,2025-11-08,2025-11-12,FAD,85
+DEER,DER-1-180,Unit 13 Nov. 8-12,Unit 13 Nov. 8-12,2025-11-08,2025-11-12,FAD,150
+DEER,DER-1-181,Unit 13 Nov. 15-19,Unit 13 Nov. 15-19,2025-11-15,2025-11-19,FAD,150
+DEER,DER-1-182,Unit 13: youth only Nov. 22-30,Unit 13: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,50
+DEER,DER-1-186,Unit 14,Unit 14,,,FAD,55
+DEER,DER-1-194,Unit 16,Unit 16,,,FAD,300
+DEER,DER-1-195,Unit 16: mobility impaired only,Unit 16: mobility impaired only,,,FAD,25
+DEER,DER-1-196,Unit 16,Unit 16,,,FAD,300
+DEER,DER-1-197,Unit 16: youth only,Unit 16: youth only,,,FAD,100
+DEER,DER-1-201,Unit 17,Unit 17,,,FAD,80
+DEER,DER-1-202,Unit 17,Unit 17,,,FAD,80
+DEER,DER-1-203,Unit 17: youth only,Unit 17: youth only,,,FAD,80
+DEER,DER-1-207,Unit 18 Nov. 8-12,Unit 18 Nov. 8-12,2025-11-08,2025-11-12,FAD,70
+DEER,DER-1-208,Unit 18 Nov. 15-19,Unit 18 Nov. 15-19,2025-11-15,2025-11-19,FAD,70
+DEER,DER-1-212,"Unit 19: White Sands missile range only, mandatory check-in/check-out Nov. 28-30","Unit 19: White Sands missile range only, mandatory check-in/check-out Nov. 28-30",2025-11-28,2025-11-30,FAD,5
+DEER,DER-1-213,"Unit 19: White Sands missile range only, mandatory check-in/check-out Jan. 9-11","Unit 19: White Sands missile range only, mandatory check-in/check-out Jan. 9-11",2025-01-09,2025-01-11,FAD,5
+DEER,DER-1-216,Unit 20 Nov. 8-12,Unit 20 Nov. 8-12,2025-11-08,2025-11-12,FAD,90
+DEER,DER-1-217,Unit 20 Nov. 15-19,Unit 20 Nov. 15-19,2025-11-15,2025-11-19,FAD,90
+DEER,DER-1-221,Unit 21 Nov. 8-12,Unit 21 Nov. 8-12,2025-11-08,2025-11-12,FAD,425
+DEER,DER-1-222,Unit 21 Nov. 15-19,Unit 21 Nov. 15-19,2025-11-15,2025-11-19,FAD,425
+DEER,DER-1-223,Unit 21: youth only Nov. 22-30,Unit 21: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,100
+DEER,DER-1-227,Unit 21 Dec. 6-14,Unit 21 Dec. 6-14,2025-12-06,2025-12-14,FAWTD,25
+DEER,DER-1-228,Unit 22 Nov. 8-12,Unit 22 Nov. 8-12,2025-11-08,2025-11-12,FAD,70
+DEER,DER-1-229,Unit 22 Nov. 15-19,Unit 22 Nov. 15-19,2025-11-15,2025-11-19,FAD,70
+DEER,DER-1-230,Unit 22: youth only Nov. 22-30,Unit 22: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,20
+DEER,DER-1-234,Unit 23: except the Burro mountains hunt area Nov. 8-12,Unit 23: except the Burro mountains hunt area Nov. 8-12,2025-11-08,2025-11-12,FAMD,450
+DEER,DER-1-235,Unit 23: except the Burro mountains hunt area Nov. 15-19,Unit 23: except the Burro mountains hunt area Nov. 15-19,2025-11-15,2025-11-19,FAMD,450
+DEER,DER-1-236,Unit 23: except the Burro mountains hunt area Nov. 22-26,Unit 23: except the Burro mountains hunt area Nov. 22-26,2025-11-22,2025-11-26,FAWTD,100
+DEER,DER-1-237,Unit 23: except the Burro mountains hunt area Dec. 6-14,Unit 23: except the Burro mountains hunt area Dec. 6-14,2025-12-06,2025-12-14,FAWTD,55
+DEER,DER-1-238,"Unit 23: except the Burro mountains hunt area, youth only Nov. 22-30","Unit 23: except the Burro mountains hunt area, youth only Nov. 22-30",2025-11-22,2025-11-30,FAD,75
+DEER,DER-1-245,Unit 23: Burro mountains hunt area only Nov. 8-16,Unit 23: Burro mountains hunt area only Nov. 8-16,2025-11-08,2025-11-16,FAMD,35
+DEER,DER-1-246,Unit 23: Burro mountains hunt area only Dec. 6-14,Unit 23: Burro mountains hunt area only Dec. 6-14,2025-12-06,2025-12-14,FAWTD,40
+DEER,DER-1-247,"Unit 23: Burro mountains hunt area only, youth only Nov. 22-30","Unit 23: Burro mountains hunt area only, youth only Nov. 22-30",2025-11-22,2025-11-30,FAD,25
+DEER,DER-1-253,"Unit 24: including Fort Bayard management area, youth only","Unit 24: including Fort Bayard management area, youth only",,,FAD,50
+DEER,DER-1-254,Unit 24: excluding Fort Bayard management area,Unit 24: excluding Fort Bayard management area,,,FAMD,400
+DEER,DER-1-255,Unit 24: excluding Fort Bayard management area,Unit 24: excluding Fort Bayard management area,,,FAMD,400
+DEER,DER-1-256,Unit 24: excluding Fort Bayard management area,Unit 24: excluding Fort Bayard management area,,,FAWTD,100
+DEER,DER-1-257,"Unit 24: including Fort Bayard management area, youth only","Unit 24: including Fort Bayard management area, youth only",,,FAD,50
+DEER,DER-1-258,Unit 24: excluding Fort Bayard management area,Unit 24: excluding Fort Bayard management area,,,FAWTD,50
+DEER,DER-1-265,Unit 25,Unit 25,,,FAD,100
+DEER,DER-1-266,Unit 25,Unit 25,,,FAD,100
+DEER,DER-1-270,Unit 26,Unit 26,,,FAD,100
+DEER,DER-1-271,Unit 26,Unit 26,,,FAD,100
+DEER,DER-1-275,Unit 26,Unit 26,,,FAWTD,25
+DEER,DER-1-276,Unit 27 Nov. 8-12,Unit 27 Nov. 8-12,2025-11-08,2025-11-12,FAMD,50
+DEER,DER-1-277,Unit 27 Nov. 15-19,Unit 27 Nov. 15-19,2025-11-15,2025-11-19,FAMD,50
+DEER,DER-1-278,Unit 27 Nov. 22-26,Unit 27 Nov. 22-26,2025-11-22,2025-11-26,FAWTD,40
+DEER,DER-1-279,Unit 27: youth only Nov. 22-30,Unit 27: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,25
+DEER,DER-1-280,Unit 27 Dec. 6-14,Unit 27 Dec. 6-14,2025-12-06,2025-12-14,FAWTD,25
+DEER,DER-1-287,Unit 28: McGregor range only Dec. 20-21,Unit 28: McGregor range only Dec. 20-21,2025-12-20,2025-12-21,FAD,25
+DEER,DER-1-288,"Unit 28: McGregor range only, military only Dec. 20-21","Unit 28: McGregor range only, military only Dec. 20-21",2025-12-20,2025-12-21,FAD,25
+DEER,DER-1-289,Unit 29 Oct. 25-29,Unit 29 Oct. 25-29,2025-10-25,2025-10-29,FAD,150
+DEER,DER-1-290,Unit 29 Nov. 8-12,Unit 29 Nov. 8-12,2025-11-08,2025-11-12,FAD,150
+DEER,DER-1-294,Unit 30 Oct. 25-29,Unit 30 Oct. 25-29,2025-10-25,2025-10-29,FAD,720
+DEER,DER-1-295,Unit 30 Nov. 8-12,Unit 30 Nov. 8-12,2025-11-08,2025-11-12,FAD,720
+DEER,DER-1-296,Unit 30: youth only Nov. 22-30,Unit 30: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,250
+DEER,DER-1-300,"Unit 31, including Prairie Chicken WMAs Nov. 1-5","Unit 31, including Prairie Chicken WMAs Nov. 1-5",2025-11-01,2025-11-05,FAD,440
+DEER,DER-1-301,"Unit 31, including Prairie Chicken WMAs Nov. 15-19","Unit 31, including Prairie Chicken WMAs Nov. 15-19",2025-11-15,2025-11-19,FAD,435
+DEER,DER-1-305,"Unit 32, including Prairie Chicken WMAs Nov. 1-5","Unit 32, including Prairie Chicken WMAs Nov. 1-5",2025-11-01,2025-11-05,FAD,565
+DEER,DER-1-306,"Unit 32, including Prairie Chicken WMAs Nov. 8-12","Unit 32, including Prairie Chicken WMAs Nov. 8-12",2025-11-08,2025-11-12,FAD,560
+DEER,DER-1-307,"Unit 32: Roswell and Ft. Sumner hunt areas only, youth only Dec. 16-31","Unit 32: Roswell and Ft. Sumner hunt areas only, youth only Dec. 16-31",2025-12-16,2025-12-31,A,15
+DEER,DER-1-308,Unit 32: Roswell and Ft. Sumner hunt areas only Jan. 16-31,Unit 32: Roswell and Ft. Sumner hunt areas only Jan. 16-31,2025-01-16,2025-01-31,A,15
+DEER,DER-1-312,"Unit 33, including Prairie Chicken WMAs Nov. 1-5","Unit 33, including Prairie Chicken WMAs Nov. 1-5",2025-11-01,2025-11-05,FAD,150
+DEER,DER-1-313,"Unit 33, including Prairie Chicken WMAs Nov. 15-19","Unit 33, including Prairie Chicken WMAs Nov. 15-19",2025-11-15,2025-11-19,FAD,150
+DEER,DER-1-319,Unit 34: mobility impaired only Nov. 1-5,Unit 34: mobility impaired only Nov. 1-5,2025-11-01,2025-11-05,FAD,50
+DEER,DER-1-320,Unit 34: youth only Nov. 1-5,Unit 34: youth only Nov. 1-5,2025-11-01,2025-11-05,FAD,45
+DEER,DER-1-321,Unit 34 Nov. 15-19,Unit 34 Nov. 15-19,2025-11-15,2025-11-19,FAD,650
+DEER,DER-1-322,Unit 34 Nov. 22-26,Unit 34 Nov. 22-26,2025-11-22,2025-11-26,FAD,650
+DEER,DER-1-326,Unit 36 Nov. 8-12,Unit 36 Nov. 8-12,2025-11-08,2025-11-12,FAD,300
+DEER,DER-1-327,Unit 36 Nov. 15-19,Unit 36 Nov. 15-19,2025-11-15,2025-11-19,FAD,300
+DEER,DER-1-328,Unit 36: youth only Nov. 22-30,Unit 36: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,25
+DEER,DER-1-333,Unit 37 Nov. 8-12,Unit 37 Nov. 8-12,2025-11-08,2025-11-12,FAD,365
+DEER,DER-1-334,Unit 37 Nov. 15-19,Unit 37 Nov. 15-19,2025-11-15,2025-11-19,FAD,360
+DEER,DER-1-338,Unit 38 Nov. 8-12,Unit 38 Nov. 8-12,2025-11-08,2025-11-12,FAD,160
+DEER,DER-1-339,Unit 38 Nov. 15-19,Unit 38 Nov. 15-19,2025-11-15,2025-11-19,FAD,155
+DEER,DER-1-343,Unit 39 Nov. 8-12,Unit 39 Nov. 8-12,2025-11-08,2025-11-12,FAD,35
+DEER,DER-1-344,Unit 39 Nov. 15-19,Unit 39 Nov. 15-19,2025-11-15,2025-11-19,FAD,35
+DEER,DER-1-348,Unit 40 Nov. 1-5,Unit 40 Nov. 1-5,2025-11-01,2025-11-05,FAD,50
+DEER,DER-1-349,Unit 40 Nov. 15-19,Unit 40 Nov. 15-19,2025-11-15,2025-11-19,FAD,50
+DEER,DER-1-353,Unit 41 Oct. 25-29,Unit 41 Oct. 25-29,2025-10-25,2025-10-29,FAD,40
+DEER,DER-1-354,Unit 41 Nov. 1-5,Unit 41 Nov. 1-5,2025-11-01,2025-11-05,FAD,40
+DEER,DER-1-355,Unit 41: youth only Nov. 22-30,Unit 41: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,5
+DEER,DER-1-356,Unit 41: youth only Dec. 6-10,Unit 41: youth only Dec. 6-10,2025-12-06,2025-12-10,ESWTD,15
+DEER,DER-1-357,Unit 41 Dec. 13-17,Unit 41 Dec. 13-17,2025-12-13,2025-12-17,ESWTD,10
+DEER,DER-1-361,Unit 42 Oct. 25-29,Unit 42 Oct. 25-29,2025-10-25,2025-10-29,FAD,40
+DEER,DER-1-362,Unit 42 Nov. 1-5,Unit 42 Nov. 1-5,2025-11-01,2025-11-05,FAD,40
+DEER,DER-1-363,Unit 42 Nov. 26-30,Unit 42 Nov. 26-30,2025-11-26,2025-11-30,ESWTD,10
+DEER,DER-1-366,Unit 43 Nov. 8-12,Unit 43 Nov. 8-12,2025-11-08,2025-11-12,FAD,35
+DEER,DER-1-369,Unit 45 Nov. 1-5,Unit 45 Nov. 1-5,2025-11-01,2025-11-05,FAD,250
+DEER,DER-1-370,Unit 45: mobility impaired only Nov. 8-12,Unit 45: mobility impaired only Nov. 8-12,2025-11-08,2025-11-12,FAD,25
+DEER,DER-1-371,Unit 45 Nov. 8-12,Unit 45 Nov. 8-12,2025-11-08,2025-11-12,FAD,250
+DEER,DER-1-372,Unit 45: youth only Nov. 22-30,Unit 45: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,25
+DEER,DER-1-375,Unit 47 Oct. 25-29,Unit 47 Oct. 25-29,2025-10-25,2025-10-29,FAD,25
+DEER,DER-1-376,Unit 47 Nov. 1-5,Unit 47 Nov. 1-5,2025-11-01,2025-11-05,FAD,20
+DEER,DER-1-379,Unit 48 Nov. 1-5,Unit 48 Nov. 1-5,2025-11-01,2025-11-05,FAD,50
+DEER,DER-1-380,Unit 48 Nov. 8-12,Unit 48 Nov. 8-12,2025-11-08,2025-11-12,FAD,50
+DEER,DER-1-383,Unit 49 Oct. 25-29,Unit 49 Oct. 25-29,2025-10-25,2025-10-29,FAD,100
+DEER,DER-1-384,Unit 49 Nov. 1-5,Unit 49 Nov. 1-5,2025-11-01,2025-11-05,FAD,100
+DEER,DER-1-386,Unit 50 Oct. 25-29,Unit 50 Oct. 25-29,2025-10-25,2025-10-29,FAD,50
+DEER,DER-1-387,Unit 50 Nov. 1-5,Unit 50 Nov. 1-5,2025-11-01,2025-11-05,FAD,50
+DEER,DER-1-389,Unit 51A Nov. 1-5,Unit 51A Nov. 1-5,2025-11-01,2025-11-05,FAD,145
+DEER,DER-1-391,Unit 51B Oct. 25-29,Unit 51B Oct. 25-29,2025-10-25,2025-10-29,FAD,20
+DEER,DER-1-392,Unit 51B Nov. 1-5,Unit 51B Nov. 1-5,2025-11-01,2025-11-05,FAD,15
+DEER,DER-1-394,Unit 52 Nov. 1-5,Unit 52 Nov. 1-5,2025-11-01,2025-11-05,FAD,90
+DEER,DER-1-395,Unit 52 Nov. 8-12,Unit 52 Nov. 8-12,2025-11-08,2025-11-12,FAD,90
+DEER,DER-1-398,Unit 53 Nov. 1-5,Unit 53 Nov. 1-5,2025-11-01,2025-11-05,FAD,85
+DEER,DER-1-399,Unit 53 Nov. 8-12,Unit 53 Nov. 8-12,2025-11-08,2025-11-12,FAD,85
+DEER,DER-1-401,Units 54/55: Colin Neblett WMA only Oct. 25-29,Units 54/55: Colin Neblett WMA only Oct. 25-29,2025-10-25,2025-10-29,FAD,10
+DEER,DER-1-402,Units 54/55: Colin Neblett WMA only Nov. 1-5,Units 54/55: Colin Neblett WMA only Nov. 1-5,2025-11-01,2025-11-05,FAD,10
+DEER,DER-1-404,Unit 55: ES Barker WMA only Oct. 25-29,Unit 55: ES Barker WMA only Oct. 25-29,2025-10-25,2025-10-29,FAD,5
+DEER,DER-1-405,"Unit 55: ES Barker WMA only, youth only Nov. 22-30","Unit 55: ES Barker WMA only, youth only Nov. 22-30",2025-11-22,2025-11-30,FAD,5
+DEER,DER-1-406,Unit 55: Urraca WMA only Oct. 25-29,Unit 55: Urraca WMA only Oct. 25-29,2025-10-25,2025-10-29,FAD,5
+DEER,DER-1-407,Unit 55: Urraca WMA only Nov. 1-5,Unit 55: Urraca WMA only Nov. 1-5,2025-11-01,2025-11-05,FAD,5
+DEER,DER-1-409,Unit 56 Oct. 25-29,Unit 56 Oct. 25-29,2025-10-25,2025-10-29,FAD,15
+DEER,DER-1-410,Unit 56 Nov. 1-5,Unit 56 Nov. 1-5,2025-11-01,2025-11-05,FAD,15
+DEER,DER-1-411,Unit 56: youth only Nov. 22-30,Unit 56: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,10
+DEER,DER-1-412,Unit 56: youth only Dec. 6-10,Unit 56: youth only Dec. 6-10,2025-12-06,2025-12-10,ESWTD,10
+DEER,DER-1-415,Unit 57 (excluding Sugarite Canyon S.P.) Oct. 25-29,Unit 57 (excluding Sugarite Canyon S.P.) Oct. 25-29,2025-10-25,2025-10-29,FAD,25
+DEER,DER-1-416,Unit 57 (excluding Sugarite Canyon S.P.) Nov. 1-5,Unit 57 (excluding Sugarite Canyon S.P.) Nov. 1-5,2025-11-01,2025-11-05,FAD,25
+DEER,DER-1-417,Unit 57 (excluding Sugarite Canyon S.P.): youth only Nov. 22-30,Unit 57 (excluding Sugarite Canyon S.P.): youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,10
+DEER,DER-1-418,Unit 57 (excluding Sugarite Canyon S.P.) Nov. 26-30,Unit 57 (excluding Sugarite Canyon S.P.) Nov. 26-30,2025-11-26,2025-11-30,ESWTD,10
+DEER,DER-1-422,Unit 58 Oct. 25-29,Unit 58 Oct. 25-29,2025-10-25,2025-10-29,FAD,40
+DEER,DER-1-423,Unit 58 Nov. 1-5,Unit 58 Nov. 1-5,2025-11-01,2025-11-05,FAD,35
+DEER,DER-1-424,Unit 58: youth only Nov. 22-30,Unit 58: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,10
+DEER,DER-1-425,Unit 58: youth only Dec. 6-10,Unit 58: youth only Dec. 6-10,2025-12-06,2025-12-10,ESWTD,15
+DEER,DER-1-426,Unit 58 Dec. 13-17,Unit 58 Dec. 13-17,2025-12-13,2025-12-17,ESWTD,15
+DEER,DER-1-429,Unit 59 Oct. 25-29,Unit 59 Oct. 25-29,2025-10-25,2025-10-29,FAD,40
+DEER,DER-1-430,Unit 59 Nov. 1-5,Unit 59 Nov. 1-5,2025-11-01,2025-11-05,FAD,40
+DEER,DER-1-431,Unit 59: youth only Nov. 22-30,Unit 59: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,5
+DEER,DER-1-432,Unit 59: youth only Dec. 6-10,Unit 59: youth only Dec. 6-10,2025-12-06,2025-12-10,ESWTD,15
+DEER,DER-1-433,Unit 59 Dec. 13-17,Unit 59 Dec. 13-17,2025-12-13,2025-12-17,ESWTD,15
+DEER,DER-1-700,statewide Jan. 31; Sep. 1,statewide Jan. 31; Sep. 1,,,FAD,1
+DEER,DER-2-104,Unit 2A Sep. 1-24,Unit 2A Sep. 1-24,2025-09-01,2025-09-24,FAD,40
+DEER,DER-2-105,Unit 2A: private land only,Unit 2A: private land only,,,FAD,15
+DEER,DER-2-106,Unit 2A Jan. 1-15,Unit 2A Jan. 1-15,2025-01-01,2025-01-15,FAD,80
+DEER,DER-2-107,Unit 2A: private land only,Unit 2A: private land only,,,FAD,15
+DEER,DER-2-118,Unit 2B Sep. 1-24,Unit 2B Sep. 1-24,2025-09-01,2025-09-24,FAD,130
+DEER,DER-2-119,Unit 2B: youth only Sep. 1-24,Unit 2B: youth only Sep. 1-24,2025-09-01,2025-09-24,FAD,20
+DEER,DER-2-120,Unit 2B: private land only,Unit 2B: private land only,,,FAD,10
+DEER,DER-2-121,Unit 2B Jan. 1-15,Unit 2B Jan. 1-15,2025-01-01,2025-01-15,FAD,180
+DEER,DER-2-122,Unit 2B: youth only Jan. 1-15,Unit 2B: youth only Jan. 1-15,2025-01-01,2025-01-15,FAD,50
+DEER,DER-2-123,Unit 2B: private land only,Unit 2B: private land only,,,FAD,30
+DEER,DER-2-129,Unit 2C Jan. 1-15,Unit 2C Jan. 1-15,2025-01-01,2025-01-15,FAD,50
+DEER,DER-2-130,Unit 2C: private land only,Unit 2C: private land only,,,FAD,15
+DEER,DER-2-141,Unit 4: Humphries/Rio Chama/Sargent WMAs only Sep. 1-24,Unit 4: Humphries/Rio Chama/Sargent WMAs only Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-142,Unit 4: private land only,Unit 4: private land only,,,FAD,150
+DEER,DER-2-146,Unit 5A: public land only Sep. 1-24,Unit 5A: public land only Sep. 1-24,2025-09-01,2025-09-24,FAD,30
+DEER,DER-2-147,Unit 5A: private land only,Unit 5A: private land only,,,FAD,220
+DEER,DER-2-152,Unit 5B Sep. 1-24,Unit 5B Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-156,Units 6A and 6C Sep. 1-24,Units 6A and 6C Sep. 1-24,2025-09-01,2025-09-24,FAD,100
+DEER,DER-2-159,Unit 7 Sep. 1-24,Unit 7 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-160,Unit 7 Jan. 1-15,Unit 7 Jan. 1-15,2025-01-01,2025-01-15,FAD,15
+DEER,DER-2-162,Unit 8: youth only Nov. 22-30,Unit 8: youth only Nov. 22-30,2025-11-22,2025-11-30,FAD,65
+DEER,DER-2-163,Unit 8 Jan. 1-15,Unit 8 Jan. 1-15,2025-01-01,2025-01-15,FAD,65
+DEER,DER-2-167,"Unit 9, including Water Canyon WMA Sep. 1-24","Unit 9, including Water Canyon WMA Sep. 1-24",2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-168,"Unit 9, including Water Canyon WMA Jan. 1-15","Unit 9, including Water Canyon WMA Jan. 1-15",2025-01-01,2025-01-15,FAD,15
+DEER,DER-2-175,Unit 10 Sep. 1-24,Unit 10 Sep. 1-24,2025-09-01,2025-09-24,FAD,100
+DEER,DER-2-178,Unit 12 Sep. 1-24,Unit 12 Sep. 1-24,2025-09-01,2025-09-24,FAD,20
+DEER,DER-2-183,Unit 13 Sep. 1-24,Unit 13 Sep. 1-24,2025-09-01,2025-09-24,FAD,125
+DEER,DER-2-184,Unit 13 Jan. 1-15,Unit 13 Jan. 1-15,2025-01-01,2025-01-15,FAD,75
+DEER,DER-2-187,Unit 14 Sep. 1- 24,Unit 14 Sep. 1- 24,2025-09-01,2025-09-24,FAD,35
+DEER,DER-2-188,Unit 14,Unit 14,,,FAD,25
+DEER,DER-2-190,Unit 15 Sep. 1- 24,Unit 15 Sep. 1- 24,2025-09-01,2025-09-24,FAD,75
+DEER,DER-2-191,Unit 15,Unit 15,,,FAD,25
+DEER,DER-2-198,Unit 16 Sep. 1- 24,Unit 16 Sep. 1- 24,2025-09-01,2025-09-24,FAD,230
+DEER,DER-2-199,Unit 16,Unit 16,,,FAD,175
+DEER,DER-2-204,Unit 17 Sep. 1- 24,Unit 17 Sep. 1- 24,2025-09-01,2025-09-24,FAD,75
+DEER,DER-2-205,Unit 17,Unit 17,,,FAD,75
+DEER,DER-2-209,Unit 18 Sep. 1- 24,Unit 18 Sep. 1- 24,2025-09-01,2025-09-24,FAD,50
+DEER,DER-2-210,Unit 18,Unit 18,,,FAD,40
+DEER,DER-2-214,Unit 19: except WSMR and Ft. Bliss Jan. 1-15,Unit 19: except WSMR and Ft. Bliss Jan. 1-15,2025-01-01,2025-01-15,FAD,10
+DEER,DER-2-218,Unit 20 Sep. 1-24,Unit 20 Sep. 1-24,2025-09-01,2025-09-24,FAD,45
+DEER,DER-2-219,Unit 20 Jan. 1-15,Unit 20 Jan. 1-15,2025-01-01,2025-01-15,FAD,25
+DEER,DER-2-224,Unit 21 Sep. 1-24,Unit 21 Sep. 1-24,2025-09-01,2025-09-24,FAD,300
+DEER,DER-2-225,Unit 21 Jan. 1-15,Unit 21 Jan. 1-15,2025-01-01,2025-01-15,FAD,200
+DEER,DER-2-231,Unit 22 Sep. 1-24,Unit 22 Sep. 1-24,2025-09-01,2025-09-24,FAD,30
+DEER,DER-2-232,Unit 22 Jan. 1-15,Unit 22 Jan. 1-15,2025-01-01,2025-01-15,FAD,25
+DEER,DER-2-239,Unit 23: except Burro mountains hunt area.  Sep. 1-24,Unit 23: except Burro mountains hunt area.  Sep. 1-24,2025-09-01,2025-09-24,FAMD,205
+DEER,DER-2-240,Unit 23: except Burro mountains hunt area.  Jan. 1-15,Unit 23: except Burro mountains hunt area.  Jan. 1-15,2025-01-01,2025-01-15,FAMD,50
+DEER,DER-2-241,Unit 23: except Burro mountains hunt area.  Sep. 1-24,Unit 23: except Burro mountains hunt area.  Sep. 1-24,2025-09-01,2025-09-24,FAWTD,100
+DEER,DER-2-242,Unit 23: except Burro mountains hunt area.  Jan. 16-31,Unit 23: except Burro mountains hunt area.  Jan. 16-31,2025-01-16,2025-01-31,FAWTD,50
+DEER,DER-2-248,Unit 23: Burro mountains hunt area only.  Jan. 1-15,Unit 23: Burro mountains hunt area only.  Jan. 1-15,2025-01-01,2025-01-15,FAMD,40
+DEER,DER-2-249,Unit 23: Burro mountains hunt area only.  Sep. 1-24,Unit 23: Burro mountains hunt area only.  Sep. 1-24,2025-09-01,2025-09-24,FAWTD,20
+DEER,DER-2-250,Unit 23: Burro mountains hunt area only.  Jan. 16-31,Unit 23: Burro mountains hunt area only.  Jan. 16-31,2025-01-16,2025-01-31,FAWTD,50
+DEER,DER-2-259,Unit 24: excluding Fort Bayard. Sep. 1-24,Unit 24: excluding Fort Bayard. Sep. 1-24,2025-09-01,2025-09-24,FAMD,135
+DEER,DER-2-260,Unit 24: excluding Fort Bayard. Jan. 1-15,Unit 24: excluding Fort Bayard. Jan. 1-15,2025-01-01,2025-01-15,FAMD,85
+DEER,DER-2-261,Unit 24: excluding Fort Bayard. Sep. 1-24,Unit 24: excluding Fort Bayard. Sep. 1-24,2025-09-01,2025-09-24,FAWTD,60
+DEER,DER-2-262,Unit 24: excluding Fort Bayard. Jan. 16-31,Unit 24: excluding Fort Bayard. Jan. 16-31,2025-01-16,2025-01-31,FAWTD,40
+DEER,DER-2-267,Unit 25 Sep. 1- 24,Unit 25 Sep. 1- 24,2025-09-01,2025-09-24,FAD,45
+DEER,DER-2-268,Unit 25,Unit 25,,,FAD,30
+DEER,DER-2-272,Unit 26 Sep. 1- 24,Unit 26 Sep. 1- 24,2025-09-01,2025-09-24,FAD,25
+DEER,DER-2-273,Unit 26,Unit 26,,,FAD,15
+DEER,DER-2-281,Unit 27 Sep. 1- 24,Unit 27 Sep. 1- 24,2025-09-01,2025-09-24,FAMD,30
+DEER,DER-2-282,Unit 27,Unit 27,,,FAWTD,15
+DEER,DER-2-283,Unit 27,Unit 27,,,FAMD,30
+DEER,DER-2-284,Unit 27,Unit 27,,,FAWTD,40
+DEER,DER-2-291,Unit 29 Sep. 1-24,Unit 29 Sep. 1-24,2025-09-01,2025-09-24,FAD,100
+DEER,DER-2-292,Unit 29 Jan. 1-15,Unit 29 Jan. 1-15,2025-01-01,2025-01-15,FAD,50
+DEER,DER-2-297,Unit 30 Sep. 1-24,Unit 30 Sep. 1-24,2025-09-01,2025-09-24,FAD,200
+DEER,DER-2-298,Unit 30 Jan. 1-15,Unit 30 Jan. 1-15,2025-01-01,2025-01-15,FAD,100
+DEER,DER-2-302,"Unit 31, including Prairie Chicken WMAs Sep. 1-24","Unit 31, including Prairie Chicken WMAs Sep. 1-24",2025-09-01,2025-09-24,FAD,175
+DEER,DER-2-303,"Unit 31, including Prairie Chicken WMAs Jan. 1-15","Unit 31, including Prairie Chicken WMAs Jan. 1-15",2025-01-01,2025-01-15,FAD,100
+DEER,DER-2-309,"Unit 32, including Prairie Chicken WMAs Sep. 1-24","Unit 32, including Prairie Chicken WMAs Sep. 1-24",2025-09-01,2025-09-24,FAD,150
+DEER,DER-2-310,"Unit 32, including Prairie Chicken WMAs Jan. 1-15","Unit 32, including Prairie Chicken WMAs Jan. 1-15",2025-01-01,2025-01-15,FAD,100
+DEER,DER-2-314,"Unit 33, including Prairie Chicken WMAs Sep. 1-24","Unit 33, including Prairie Chicken WMAs Sep. 1-24",2025-09-01,2025-09-24,FAD,60
+DEER,DER-2-315,"Unit 33, including Prairie Chicken WMAs Jan. 1-15","Unit 33, including Prairie Chicken WMAs Jan. 1-15",2025-01-01,2025-01-15,FAD,50
+DEER,DER-2-323,Unit 34 Sep. 1-24,Unit 34 Sep. 1-24,2025-09-01,2025-09-24,FAD,450
+DEER,DER-2-324,Unit 34 Jan. 1-15,Unit 34 Jan. 1-15,2025-01-01,2025-01-15,FAD,350
+DEER,DER-2-329,Unit 36 Sep. 1-24,Unit 36 Sep. 1-24,2025-09-01,2025-09-24,FAD,225
+DEER,DER-2-330,Unit 36 Jan. 1-15,Unit 36 Jan. 1-15,2025-01-01,2025-01-15,FAD,125
+DEER,DER-2-335,Unit 37 Sep. 1-24,Unit 37 Sep. 1-24,2025-09-01,2025-09-24,FAD,100
+DEER,DER-2-336,Unit 37 Jan. 1-15,Unit 37 Jan. 1-15,2025-01-01,2025-01-15,FAD,80
+DEER,DER-2-340,Unit 38 Sep. 1-24,Unit 38 Sep. 1-24,2025-09-01,2025-09-24,FAD,65
+DEER,DER-2-341,Unit 38 Jan. 1-15,Unit 38 Jan. 1-15,2025-01-01,2025-01-15,FAD,40
+DEER,DER-2-345,Unit 39 Sep. 1-24,Unit 39 Sep. 1-24,2025-09-01,2025-09-24,FAD,25
+DEER,DER-2-346,Unit 39 Jan. 1-15,Unit 39 Jan. 1-15,2025-01-01,2025-01-15,FAD,15
+DEER,DER-2-350,Unit 40 Sep. 1-24,Unit 40 Sep. 1-24,2025-09-01,2025-09-24,FAD,20
+DEER,DER-2-351,Unit 40 Jan. 1-15,Unit 40 Jan. 1-15,2025-01-01,2025-01-15,FAD,15
+DEER,DER-2-358,Unit 41 Sep. 1-24,Unit 41 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-359,Unit 41 Jan. 1-15,Unit 41 Jan. 1-15,2025-01-01,2025-01-15,FAD,10
+DEER,DER-2-364,Unit 42 Sep. 1-24,Unit 42 Sep. 1-24,2025-09-01,2025-09-24,FAD,15
+DEER,DER-2-367,Unit 43 Sep. 1-24,Unit 43 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-373,Unit 45 Sep. 1-24,Unit 45 Sep. 1-24,2025-09-01,2025-09-24,FAD,165
+DEER,DER-2-377,Unit 47 Sep. 1-24,Unit 47 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-381,Unit 48 Sep. 1-24,Unit 48 Sep. 1-24,2025-09-01,2025-09-24,FAD,45
+DEER,DER-2-385,Unit 49 Sep. 1-24,Unit 49 Sep. 1-24,2025-09-01,2025-09-24,FAD,105
+DEER,DER-2-388,Unit 50 Sep. 1-24,Unit 50 Sep. 1-24,2025-09-01,2025-09-24,FAD,5
+DEER,DER-2-390,Unit 51A Sep. 1-24,Unit 51A Sep. 1-24,2025-09-01,2025-09-24,FAD,65
+DEER,DER-2-393,Unit 51B Sep. 1-24,Unit 51B Sep. 1-24,2025-09-01,2025-09-24,FAD,15
+DEER,DER-2-396,Unit 52 Sep. 1-24,Unit 52 Sep. 1-24,2025-09-01,2025-09-24,FAD,80
+DEER,DER-2-400,Unit 53 Sep. 1-24,Unit 53 Sep. 1-24,2025-09-01,2025-09-24,FAD,100
+DEER,DER-2-403,Units 54/55: Colin Neblett WMA only Sep. 1-24,Units 54/55: Colin Neblett WMA only Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-408,Unit 55A: Valle Vidal only Sep. 1-24,Unit 55A: Valle Vidal only Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-413,Unit 56 Sep. 1-24,Unit 56 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-419,Unit 57 (excluding Sugarite Canyon S.P.) Sep. 1-24,Unit 57 (excluding Sugarite Canyon S.P.) Sep. 1-24,2025-09-01,2025-09-24,FAD,20
+DEER,DER-2-420,Unit 57: Sugarite Canyon S.P. only Nov. 1-30,Unit 57: Sugarite Canyon S.P. only Nov. 1-30,2025-11-01,2025-11-30,FAD,20
+DEER,DER-2-427,Unit 58 Sep. 1-24,Unit 58 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-2-434,Unit 59 Sep. 1-24,Unit 59 Sep. 1-24,2025-09-01,2025-09-24,FAD,10
+DEER,DER-3-108,Unit 2A Oct. 3; Sep. 27,Unit 2A Oct. 3; Sep. 27,,,FAD,50
+DEER,DER-3-109,Unit 2A: private land only,Unit 2A: private land only,,,FAD,10
+DEER,DER-3-124,Unit 2B Oct. 3; Sep. 27,Unit 2B Oct. 3; Sep. 27,,,FAD,175
+DEER,DER-3-125,Unit 2B: youth only Oct. 3; Sep. 27,Unit 2B: youth only Oct. 3; Sep. 27,,,FAD,20
+DEER,DER-3-126,Unit 2B: private land only,Unit 2B: private land only,,,FAD,10
+DEER,DER-3-131,Unit 2C Oct. 3; Sep. 27,Unit 2C Oct. 3; Sep. 27,,,FAD,20
+DEER,DER-3-132,Unit 2C: private land only,Unit 2C: private land only,,,FAD,9
+DEER,DER-3-143,Unit 4: private land only,Unit 4: private land only,,,FAD,100
+DEER,DER-3-148,Unit 5A: public land only Oct. 3; Sep. 27,Unit 5A: public land only Oct. 3; Sep. 27,,,FAD,10
+DEER,DER-3-149,Unit 5A: private land only,Unit 5A: private land only,,,FAD,50
+DEER,DER-3-153,Unit 5B Oct. 3; Sep. 27,Unit 5B Oct. 3; Sep. 27,,,FAD,10
+DEER,DER-3-157,Units 6A and 6C Oct. 4-8,Units 6A and 6C Oct. 4-8,2025-10-04,2025-10-08,FAD,115
+DEER,DER-3-161,Unit 7 Oct. 3; Sep. 27,Unit 7 Oct. 3; Sep. 27,,,FAD,25
+DEER,DER-3-169,"Unit 9, including Water Canyon WMA: restricted muzzleloader Oct. 3; Sep. 27","Unit 9, including Water Canyon WMA: restricted muzzleloader Oct. 3; Sep. 27",,,FAD,10
+DEER,DER-3-176,Unit 10 Oct. 3; Sep. 27,Unit 10 Oct. 3; Sep. 27,,,FAD,90
+DEER,DER-3-179,Unit 12 Nov. 1-5,Unit 12 Nov. 1-5,2025-11-01,2025-11-05,FAD,40
+DEER,DER-3-185,Unit 13 Nov. 1-5,Unit 13 Nov. 1-5,2025-11-01,2025-11-05,FAD,200
+DEER,DER-3-189,Unit 14,Unit 14,,,FAD,55
+DEER,DER-3-192,Unit 15,Unit 15,,,FAD,165
+DEER,DER-3-193,Unit 15: youth only,Unit 15: youth only,,,FAD,100
+DEER,DER-3-200,Unit 16,Unit 16,,,FAD,300
+DEER,DER-3-206,Unit 17,Unit 17,,,FAD,80
+DEER,DER-3-211,Unit 18,Unit 18,,,FAD,75
+DEER,DER-3-215,Unit 19: except WSMR and Ft. Bliss Dec. 6-10,Unit 19: except WSMR and Ft. Bliss Dec. 6-10,2025-12-06,2025-12-10,FAD,10
+DEER,DER-3-220,Unit 20 Nov. 1-5,Unit 20 Nov. 1-5,2025-11-01,2025-11-05,FAD,85
+DEER,DER-3-226,Unit 21 Nov. 1-5,Unit 21 Nov. 1-5,2025-11-01,2025-11-05,FAD,350
+DEER,DER-3-233,Unit 22 Nov. 1-5,Unit 22 Nov. 1-5,2025-11-01,2025-11-05,FAD,65
+DEER,DER-3-243,Unit 23: except the Burro mountains hunt area Nov. 1-5,Unit 23: except the Burro mountains hunt area Nov. 1-5,2025-11-01,2025-11-05,FAMD,225
+DEER,DER-3-244,Unit 23: except Burro mountains hunt area Nov. 1-5,Unit 23: except Burro mountains hunt area Nov. 1-5,2025-11-01,2025-11-05,FAWTD,75
+DEER,DER-3-251,Unit 23: Burro mountains hunt area only Nov. 1-5,Unit 23: Burro mountains hunt area only Nov. 1-5,2025-11-01,2025-11-05,FAMD,40
+DEER,DER-3-252,Unit 23: Burro mountains hunt area only Nov. 1-5,Unit 23: Burro mountains hunt area only Nov. 1-5,2025-11-01,2025-11-05,FAWTD,40
+DEER,DER-3-263,Unit 24: excluding Fort Bayard  Nov. 1 -5,Unit 24: excluding Fort Bayard  Nov. 1 -5,2025-11-01,2025-11-05,FAMD,280
+DEER,DER-3-264,Unit 24: excluding Fort Bayard,Unit 24: excluding Fort Bayard,,,FAWTD,75
+DEER,DER-3-269,Unit 25,Unit 25,,,FAD,45
+DEER,DER-3-274,Unit 26,Unit 26,,,FAD,60
+DEER,DER-3-285,Unit 27,Unit 27,,,FAMD,40
+DEER,DER-3-286,Unit 27 Nov. 1-5,Unit 27 Nov. 1-5,2025-11-01,2025-11-05,FAWTD,50
+DEER,DER-3-293,Unit 29 Oct. 18-22,Unit 29 Oct. 18-22,2025-10-18,2025-10-22,FAD,70
+DEER,DER-3-299,Unit 30 Oct. 18-22,Unit 30 Oct. 18-22,2025-10-18,2025-10-22,FAD,325
+DEER,DER-3-304,"Unit 31, including Prairie Chicken WMAs Oct. 18-22","Unit 31, including Prairie Chicken WMAs Oct. 18-22",2025-10-18,2025-10-22,FAD,175
+DEER,DER-3-311,"Unit 32, including Prairie Chicken WMAs Oct. 18-22","Unit 32, including Prairie Chicken WMAs Oct. 18-22",2025-10-18,2025-10-22,FAD,175
+DEER,DER-3-316,"Unit 33, including Prairie Chicken WMAs: restricted muzzleloader only Oct. 25-29","Unit 33, including Prairie Chicken WMAs: restricted muzzleloader only Oct. 25-29",2025-10-25,2025-10-29,FAD,140
+DEER,DER-3-317,"Unit 33: Huey WMA only, youth only Nov. 22-30","Unit 33: Huey WMA only, youth only Nov. 22-30",2025-11-22,2025-11-30,ES,5
+DEER,DER-3-318,"Unit 33: Huey WMA only, youth only Dec. 26; Jan. 1","Unit 33: Huey WMA only, youth only Dec. 26; Jan. 1",,,A,5
+DEER,DER-3-325,Unit 34 Nov. 8-12,Unit 34 Nov. 8-12,2025-11-08,2025-11-12,FAD,340
+DEER,DER-3-331,Unit 36 Oct. 25-29,Unit 36 Oct. 25-29,2025-10-25,2025-10-29,FAD,115
+DEER,DER-3-332,Unit 36: youth only Oct. 25-29,Unit 36: youth only Oct. 25-29,2025-10-25,2025-10-29,FAD,25
+DEER,DER-3-337,Unit 37 Oct. 25-29,Unit 37 Oct. 25-29,2025-10-25,2025-10-29,FAD,125
+DEER,DER-3-342,Unit 38 Oct. 25-29,Unit 38 Oct. 25-29,2025-10-25,2025-10-29,FAD,100
+DEER,DER-3-347,Unit 39 Oct. 25-29,Unit 39 Oct. 25-29,2025-10-25,2025-10-29,FAD,40
+DEER,DER-3-352,Unit 40 Oct. 25-29,Unit 40 Oct. 25-29,2025-10-25,2025-10-29,FAD,30
+DEER,DER-3-360,Unit 41 Oct. 3; Sep. 27,Unit 41 Oct. 3; Sep. 27,,,FAD,25
+DEER,DER-3-365,Unit 42 Oct. 3; Sep. 27,Unit 42 Oct. 3; Sep. 27,,,FAD,15
+DEER,DER-3-368,Unit 43 Oct. 25-29,Unit 43 Oct. 25-29,2025-10-25,2025-10-29,FAD,15
+DEER,DER-3-374,Unit 45 Oct. 3; Sep. 27,Unit 45 Oct. 3; Sep. 27,,,FAD,160
+DEER,DER-3-378,Unit 47 Oct. 3; Sep. 27,Unit 47 Oct. 3; Sep. 27,,,FAD,20
+DEER,DER-3-382,Unit 48 Oct. 3; Sep. 27,Unit 48 Oct. 3; Sep. 27,,,FAD,30
+DEER,DER-3-397,Unit 52: restricted muzzleloader only Oct. 3; Sep. 27,Unit 52: restricted muzzleloader only Oct. 3; Sep. 27,,,FAD,25
+DEER,DER-3-414,Unit 56 Oct. 3; Sep. 27,Unit 56 Oct. 3; Sep. 27,,,FAD,15
+DEER,DER-3-421,Unit 57 (excluding Sugarite Canyon S.P.) Oct. 3; Sep. 27,Unit 57 (excluding Sugarite Canyon S.P.) Oct. 3; Sep. 27,,,FAD,15
+DEER,DER-3-428,Unit 58 Oct. 3; Sep. 27,Unit 58 Oct. 3; Sep. 27,,,FAD,25
+DEER,DER-3-435,Unit 59 Oct. 3; Sep. 27,Unit 59 Oct. 3; Sep. 27,,,FAD,25
+ELK,ELK-1-132,Unit 2 Oct. 18-22,Unit 2 Oct. 18-22,2025-10-18,2025-10-22,MB,85
+ELK,ELK-1-133,Unit 2 Dec. 13-17,Unit 2 Dec. 13-17,2025-12-13,2025-12-17,A,125
+ELK,ELK-1-134,Unit 2 youth only Dec. 13-17,Unit 2 youth only Dec. 13-17,2025-12-13,2025-12-17,A,75
+ELK,ELK-1-135,Unit 2C Dec. 6-10,Unit 2C Dec. 6-10,2025-12-06,2025-12-10,A,75
+ELK,ELK-1-138,Unit 5A public land only Oct. 11-15,Unit 5A public land only Oct. 11-15,2025-10-11,2025-10-15,MB,10
+ELK,ELK-1-139,Unit 5A public land only Oct. 11-15,Unit 5A public land only Oct. 11-15,2025-10-11,2025-10-15,A,10
+ELK,ELK-1-140,Unit 5A public land only Oct. 18-22,Unit 5A public land only Oct. 18-22,2025-10-18,2025-10-22,MB,10
+ELK,ELK-1-141,Unit 5A public land only Oct. 18-22,Unit 5A public land only Oct. 18-22,2025-10-18,2025-10-22,A,10
+ELK,ELK-1-142,Unit 5A public land only Oct. 25-29,Unit 5A public land only Oct. 25-29,2025-10-25,2025-10-29,MB,10
+ELK,ELK-1-143,Unit 5A public land only Oct. 25-29,Unit 5A public land only Oct. 25-29,2025-10-25,2025-10-29,A,10
+ELK,ELK-1-144,Unit 5A public land only Nov. 1-5,Unit 5A public land only Nov. 1-5,2025-11-01,2025-11-05,MB,10
+ELK,ELK-1-145,Unit 5A public land only Nov. 1-5,Unit 5A public land only Nov. 1-5,2025-11-01,2025-11-05,A,10
+ELK,ELK-1-160,Unit 10 Oct. 18-22,Unit 10 Oct. 18-22,2025-10-18,2025-10-22,MB,70
+ELK,ELK-1-161,Unit 10 youth only Nov. 15-19,Unit 10 youth only Nov. 15-19,2025-11-15,2025-11-19,A,120
+ELK,ELK-1-162,Unit 10 Dec. 6-10,Unit 10 Dec. 6-10,2025-12-06,2025-12-10,A,100
+ELK,ELK-1-165,Unit 4: Sargent WMA only Oct. 11-15,Unit 4: Sargent WMA only Oct. 11-15,2025-10-11,2025-10-15,MB/A,10
+ELK,ELK-1-166,Unit 4: Sargent WMA only Oct. 18-22,Unit 4: Sargent WMA only Oct. 18-22,2025-10-18,2025-10-22,MB/A,10
+ELK,ELK-1-167,Unit 4: Sargent WMA only Oct. 25-29,Unit 4: Sargent WMA only Oct. 25-29,2025-10-25,2025-10-29,MB/A,10
+ELK,ELK-1-168,Unit 4: Sargent WMA only Nov. 1-5,Unit 4: Sargent WMA only Nov. 1-5,2025-11-01,2025-11-05,MB/A,10
+ELK,ELK-1-169,Unit 4: Sargent WMA only Nov. 1-5,Unit 4: Sargent WMA only Nov. 1-5,2025-11-01,2025-11-05,A,10
+ELK,ELK-1-170,"Unit 4: Sargent WMA only, youth only Nov. 1-5","Unit 4: Sargent WMA only, youth only Nov. 1-5",2025-11-01,2025-11-05,A,10
+ELK,ELK-1-173,Unit 4: Humphries/ Rio Chama WMAs only Oct. 11-15,Unit 4: Humphries/ Rio Chama WMAs only Oct. 11-15,2025-10-11,2025-10-15,MB/A,15
+ELK,ELK-1-174,Unit 4: Humphries/ Rio Chama WMAs only Oct. 18-22,Unit 4: Humphries/ Rio Chama WMAs only Oct. 18-22,2025-10-18,2025-10-22,MB/A,15
+ELK,ELK-1-175,Unit 4: Humphries/ Rio Chama WMAs only Nov. 1-5,Unit 4: Humphries/ Rio Chama WMAs only Nov. 1-5,2025-11-01,2025-11-05,A,10
+ELK,ELK-1-176,"Unit 4: Humphries/ Rio Chama WMAs only, youth only Nov. 1-5","Unit 4: Humphries/ Rio Chama WMAs only, youth only Nov. 1-5",2025-11-01,2025-11-05,A,15
+ELK,ELK-1-177,Unit 4: Rio Chama WMA only Nov. 8-12,Unit 4: Rio Chama WMA only Nov. 8-12,2025-11-08,2025-11-12,A,20
+ELK,ELK-1-180,Unit 5B Oct. 11-15,Unit 5B Oct. 11-15,2025-10-11,2025-10-15,MB,86
+ELK,ELK-1-181,Unit 5B Oct. 18-22,Unit 5B Oct. 18-22,2025-10-18,2025-10-22,A,59
+ELK,ELK-1-182,Unit 5B Oct. 25-29,Unit 5B Oct. 25-29,2025-10-25,2025-10-29,MB,86
+ELK,ELK-1-183,Unit 5B Nov. 1-5,Unit 5B Nov. 1-5,2025-11-01,2025-11-05,A,59
+ELK,ELK-1-184,Unit 5B Nov. 1-5,Unit 5B Nov. 1-5,2025-11-01,2025-11-05,MB,87
+ELK,ELK-1-185,Unit 5B Nov. 8-12,Unit 5B Nov. 8-12,2025-11-08,2025-11-12,A,59
+ELK,ELK-1-186,Unit 5B Dec. 20-24,Unit 5B Dec. 20-24,2025-12-20,2025-12-24,MB,87
+ELK,ELK-1-189,Unit 50 Oct. 11-15,Unit 50 Oct. 11-15,2025-10-11,2025-10-15,MB,120
+ELK,ELK-1-190,Unit 50 Oct. 18-22,Unit 50 Oct. 18-22,2025-10-18,2025-10-22,MB,125
+ELK,ELK-1-191,Unit 50 Nov. 8-12,Unit 50 Nov. 8-12,2025-11-08,2025-11-12,A,42
+ELK,ELK-1-192,Unit 50 Nov. 22-26,Unit 50 Nov. 22-26,2025-11-22,2025-11-26,A,45
+ELK,ELK-1-195,Unit 51 Oct. 11-15,Unit 51 Oct. 11-15,2025-10-11,2025-10-15,MB,220
+ELK,ELK-1-196,Unit 51 Oct. 18-22,Unit 51 Oct. 18-22,2025-10-18,2025-10-22,MB,220
+ELK,ELK-1-197,Unit 51 Oct. 25-29,Unit 51 Oct. 25-29,2025-10-25,2025-10-29,MB,220
+ELK,ELK-1-198,Unit 51 Nov. 8-12,Unit 51 Nov. 8-12,2025-11-08,2025-11-12,A,251
+ELK,ELK-1-199,Unit 51 Nov. 15-19,Unit 51 Nov. 15-19,2025-11-15,2025-11-19,A,251
+ELK,ELK-1-200,Unit 51 Nov. 22-26,Unit 51 Nov. 22-26,2025-11-22,2025-11-26,A,252
+ELK,ELK-1-207,Unit 52 Oct. 18-22,Unit 52 Oct. 18-22,2025-10-18,2025-10-22,MB,230
+ELK,ELK-1-208,Unit 52 Oct. 25-29,Unit 52 Oct. 25-29,2025-10-25,2025-10-29,MB,230
+ELK,ELK-1-209,Unit 52 youth only Nov. 15-19,Unit 52 youth only Nov. 15-19,2025-11-15,2025-11-19,A,80
+ELK,ELK-1-210,Unit 52 mobility impaired only Nov. 22-26,Unit 52 mobility impaired only Nov. 22-26,2025-11-22,2025-11-26,A,56
+ELK,ELK-1-211,Unit 52 Nov. 15-19,Unit 52 Nov. 15-19,2025-11-15,2025-11-19,A,73
+ELK,ELK-1-212,Unit 52 Dec. 6-10,Unit 52 Dec. 6-10,2025-12-06,2025-12-10,A,115
+ELK,ELK-1-216,Unit 6A Oct. 18-22,Unit 6A Oct. 18-22,2025-10-18,2025-10-22,MB,100
+ELK,ELK-1-217,Unit 6A Oct. 25-29,Unit 6A Oct. 25-29,2025-10-25,2025-10-29,MB,103
+ELK,ELK-1-218,Unit 6A Nov. 8-12,Unit 6A Nov. 8-12,2025-11-08,2025-11-12,A,99
+ELK,ELK-1-225,Unit 6B Oct. 18-22,Unit 6B Oct. 18-22,2025-10-18,2025-10-22,ES,15
+ELK,ELK-1-226,Unit 6B Oct. 18-22,Unit 6B Oct. 18-22,2025-10-18,2025-10-22,A,20
+ELK,ELK-1-227,Unit 6B Oct. 25-29,Unit 6B Oct. 25-29,2025-10-25,2025-10-29,ES,20
+ELK,ELK-1-228,Unit 6B Oct. 25-29,Unit 6B Oct. 25-29,2025-10-25,2025-10-29,A,15
+ELK,ELK-1-229,Unit 6B youth only Nov. 1-5,Unit 6B youth only Nov. 1-5,2025-11-01,2025-11-05,A,35
+ELK,ELK-1-230,Unit 6B Nov. 8-12,Unit 6B Nov. 8-12,2025-11-08,2025-11-12,A,35
+ELK,ELK-1-231,Unit 6B Nov. 22-26,Unit 6B Nov. 22-26,2025-11-22,2025-11-26,A,35
+ELK,ELK-1-232,Unit 6B youth only Dec. 3; Nov. 29,Unit 6B youth only Dec. 3; Nov. 29,,,A,35
+ELK,ELK-1-233,Unit 6B Dec. 6-10,Unit 6B Dec. 6-10,2025-12-06,2025-12-10,A,35
+ELK,ELK-1-237,Unit 6C Oct. 18-22,Unit 6C Oct. 18-22,2025-10-18,2025-10-22,MB,105
+ELK,ELK-1-238,Unit 6C Oct. 25-29,Unit 6C Oct. 25-29,2025-10-25,2025-10-29,MB,105
+ELK,ELK-1-239,Unit 6C Nov. 8-12,Unit 6C Nov. 8-12,2025-11-08,2025-11-12,A,110
+ELK,ELK-1-240,Unit 6C Nov. 22-26,Unit 6C Nov. 22-26,2025-11-22,2025-11-26,A,110
+ELK,ELK-1-244,Unit 7 Oct. 18-22,Unit 7 Oct. 18-22,2025-10-18,2025-10-22,MB,30
+ELK,ELK-1-245,Unit 7 Oct. 25-29,Unit 7 Oct. 25-29,2025-10-25,2025-10-29,A,50
+ELK,ELK-1-248,Unit 12 Oct. 11-15,Unit 12 Oct. 11-15,2025-10-11,2025-10-15,MB,35
+ELK,ELK-1-249,Unit 12 Oct. 18-22,Unit 12 Oct. 18-22,2025-10-18,2025-10-22,MB,60
+ELK,ELK-1-250,Unit 12 Oct. 25-29,Unit 12 Oct. 25-29,2025-10-25,2025-10-29,MB,80
+ELK,ELK-1-251,Unit 12 Nov. 15-19,Unit 12 Nov. 15-19,2025-11-15,2025-11-19,MB,80
+ELK,ELK-1-252,Unit 12 Nov. 22-26,Unit 12 Nov. 22-26,2025-11-22,2025-11-26,A,60
+ELK,ELK-1-253,Unit 12 Dec. 3; Nov. 29,Unit 12 Dec. 3; Nov. 29,,,A,60
+ELK,ELK-1-254,Unit 12 Dec. 6-10,Unit 12 Dec. 6-10,2025-12-06,2025-12-10,A,64
+ELK,ELK-1-274,Unit 16A mobility impaired only Oct. 11-15,Unit 16A mobility impaired only Oct. 11-15,2025-10-11,2025-10-15,MB,25
+ELK,ELK-1-275,Unit 16A Oct. 18-22,Unit 16A Oct. 18-22,2025-10-18,2025-10-22,MB,75
+ELK,ELK-1-276,Unit 16A Oct. 25-29,Unit 16A Oct. 25-29,2025-10-25,2025-10-29,MB,100
+ELK,ELK-1-277,Unit 16A Dec. 6-10,Unit 16A Dec. 6-10,2025-12-06,2025-12-10,A,75
+ELK,ELK-1-278,Unit 16A Dec. 13-17,Unit 16A Dec. 13-17,2025-12-13,2025-12-17,A,75
+ELK,ELK-1-281,Unit 16B/22 Oct. 11-15,Unit 16B/22 Oct. 11-15,2025-10-11,2025-10-15,MB,25
+ELK,ELK-1-282,Unit 16B/22 Oct. 18-22,Unit 16B/22 Oct. 18-22,2025-10-18,2025-10-22,MB,80
+ELK,ELK-1-283,Unit 16B/22 Oct. 25-29,Unit 16B/22 Oct. 25-29,2025-10-25,2025-10-29,MB,120
+ELK,ELK-1-286,Unit 16C youth only Oct. 11-15,Unit 16C youth only Oct. 11-15,2025-10-11,2025-10-15,ES,25
+ELK,ELK-1-287,Unit 16C Oct. 18-22,Unit 16C Oct. 18-22,2025-10-18,2025-10-22,MB,35
+ELK,ELK-1-288,Unit 16C Oct. 25-29,Unit 16C Oct. 25-29,2025-10-25,2025-10-29,MB,65
+ELK,ELK-1-289,Unit 16C Dec. 6-10,Unit 16C Dec. 6-10,2025-12-06,2025-12-10,A,50
+ELK,ELK-1-290,Unit 16C Dec. 13-17,Unit 16C Dec. 13-17,2025-12-13,2025-12-17,A,48
+ELK,ELK-1-293,Unit 16D mobility impaired only Oct. 11-15,Unit 16D mobility impaired only Oct. 11-15,2025-10-11,2025-10-15,MB,25
+ELK,ELK-1-294,Unit 16D Oct. 18-22,Unit 16D Oct. 18-22,2025-10-18,2025-10-22,MB,55
+ELK,ELK-1-295,Unit 16D Oct. 25-29,Unit 16D Oct. 25-29,2025-10-25,2025-10-29,MB,50
+ELK,ELK-1-296,Unit 16D Dec. 6-10,Unit 16D Dec. 6-10,2025-12-06,2025-12-10,A,50
+ELK,ELK-1-297,Unit 16D Dec. 13-17,Unit 16D Dec. 13-17,2025-12-13,2025-12-17,A,50
+ELK,ELK-1-300,Unit 16E youth only Oct. 11-15,Unit 16E youth only Oct. 11-15,2025-10-11,2025-10-15,ES,25
+ELK,ELK-1-302,Unit 16E Oct. 25-29,Unit 16E Oct. 25-29,2025-10-25,2025-10-29,MB,53
+ELK,ELK-1-303,Unit 16E Dec. 6-10,Unit 16E Dec. 6-10,2025-12-06,2025-12-10,A,75
+ELK,ELK-1-304,Unit 16E Dec. 13-17,Unit 16E Dec. 13-17,2025-12-13,2025-12-17,A,75
+ELK,ELK-1-316,Unit 21A Oct. 11-15,Unit 21A Oct. 11-15,2025-10-11,2025-10-15,MB,15
+ELK,ELK-1-317,Unit 21A Oct. 18-22,Unit 21A Oct. 18-22,2025-10-18,2025-10-22,MB,35
+ELK,ELK-1-318,Unit 21A Oct. 25-29,Unit 21A Oct. 25-29,2025-10-25,2025-10-29,MB,55
+ELK,ELK-1-319,Unit 21A Dec. 6-10,Unit 21A Dec. 6-10,2025-12-06,2025-12-10,A,30
+ELK,ELK-1-323,Unit 21B Oct. 1-5,Unit 21B Oct. 1-5,2025-10-01,2025-10-05,MB,10
+ELK,ELK-1-324,Unit 21B Oct. 18-22,Unit 21B Oct. 18-22,2025-10-18,2025-10-22,MB,15
+ELK,ELK-1-325,Unit 21B Oct. 25-29,Unit 21B Oct. 25-29,2025-10-25,2025-10-29,MB,25
+ELK,ELK-1-326,Unit 21B Nov. 22-26,Unit 21B Nov. 22-26,2025-11-22,2025-11-26,A,15
+ELK,ELK-1-327,Unit 21B Dec. 3; Nov. 29,Unit 21B Dec. 3; Nov. 29,,,A,15
+ELK,ELK-1-328,Unit 21B Dec. 6-10,Unit 21B Dec. 6-10,2025-12-06,2025-12-10,A,15
+ELK,ELK-1-329,Unit 21B Dec. 13-17,Unit 21B Dec. 13-17,2025-12-13,2025-12-17,A,20
+ELK,ELK-1-333,Unit 23 youth only Oct. 11-15,Unit 23 youth only Oct. 11-15,2025-10-11,2025-10-15,ES,25
+ELK,ELK-1-335,Unit 23 Oct. 25-29,Unit 23 Oct. 25-29,2025-10-25,2025-10-29,MB,75
+ELK,ELK-1-336,Unit 23 Dec. 6-10,Unit 23 Dec. 6-10,2025-12-06,2025-12-10,A,20
+ELK,ELK-1-338,Unit 23: south of NM 78 Dec. 20-28,Unit 23: south of NM 78 Dec. 20-28,2025-12-20,2025-12-28,A,20
+ELK,ELK-1-342,Unit 24: excluding Ft. Bayard Dec. 20-24,Unit 24: excluding Ft. Bayard Dec. 20-24,2025-12-20,2025-12-24,MB,15
+ELK,ELK-1-343,"Unit 24: including Ft. Bayard, youth only Oct. 11-15","Unit 24: including Ft. Bayard, youth only Oct. 11-15",2025-10-11,2025-10-15,ES,5
+ELK,ELK-1-344,"Unit 24: including Ft. Bayard, youth only Oct. 25-29","Unit 24: including Ft. Bayard, youth only Oct. 25-29",2025-10-25,2025-10-29,A,5
+ELK,ELK-1-347,Unit 34 youth only Oct. 11-15,Unit 34 youth only Oct. 11-15,2025-10-11,2025-10-15,ES,75
+ELK,ELK-1-348,Unit 34 youth only Oct. 11-15,Unit 34 youth only Oct. 11-15,2025-10-11,2025-10-15,A,120
+ELK,ELK-1-349,Unit 34 mobility impaired Oct. 11-15,Unit 34 mobility impaired Oct. 11-15,2025-10-11,2025-10-15,ES,50
+ELK,ELK-1-351,Unit 34 Oct. 25-29,Unit 34 Oct. 25-29,2025-10-25,2025-10-29,ES,150
+ELK,ELK-1-352,Unit 34 Dec. 3; Nov. 29,Unit 34 Dec. 3; Nov. 29,,,A,350
+ELK,ELK-1-353,Unit 34 Dec. 6-10,Unit 34 Dec. 6-10,2025-12-06,2025-12-10,A,350
+ELK,ELK-1-354,Unit 34 Dec. 13-17,Unit 34 Dec. 13-17,2025-12-13,2025-12-17,A,350
+ELK,ELK-1-356,"Unit 34 Jan. 24-28, '26","Unit 34 Jan. 24-28, '26",2025-01-24,2025-01-28,A,200
+ELK,ELK-1-357,"Unit 34 Feb. 7-11, '26","Unit 34 Feb. 7-11, '26",2025-02-07,2025-02-11,A,200
+ELK,ELK-1-361,Unit 36 Oct. 18-22,Unit 36 Oct. 18-22,2025-10-18,2025-10-22,ES,140
+ELK,ELK-1-362,Unit 36 Nov. 1-5,Unit 36 Nov. 1-5,2025-11-01,2025-11-05,ES,140
+ELK,ELK-1-363,Unit 36 Dec. 6-10,Unit 36 Dec. 6-10,2025-12-06,2025-12-10,A,100
+ELK,ELK-1-364,Unit 36 Dec. 13-17,Unit 36 Dec. 13-17,2025-12-13,2025-12-17,A,100
+ELK,ELK-1-365,"Unit 36 Jan. 24-28, '26","Unit 36 Jan. 24-28, '26",2025-01-24,2025-01-28,A,100
+ELK,ELK-1-369,Unit 45 Oct. 18-22,Unit 45 Oct. 18-22,2025-10-18,2025-10-22,MB,140
+ELK,ELK-1-370,Unit 45 Oct. 25-29,Unit 45 Oct. 25-29,2025-10-25,2025-10-29,MB,140
+ELK,ELK-1-375,Unit 48 Oct. 18-22,Unit 48 Oct. 18-22,2025-10-18,2025-10-22,MB,75
+ELK,ELK-1-376,Unit 48 Oct. 25-29,Unit 48 Oct. 25-29,2025-10-25,2025-10-29,MB,64
+ELK,ELK-1-377,Unit 48 Nov. 15-19,Unit 48 Nov. 15-19,2025-11-15,2025-11-19,A,50
+ELK,ELK-1-378,Unit 48 Dec. 6-10,Unit 48 Dec. 6-10,2025-12-06,2025-12-10,A,54
+ELK,ELK-1-381,Unit 49 Oct. 11-15,Unit 49 Oct. 11-15,2025-10-11,2025-10-15,MB,77
+ELK,ELK-1-382,Unit 49 Oct. 18-22,Unit 49 Oct. 18-22,2025-10-18,2025-10-22,MB,76
+ELK,ELK-1-383,Unit 49 Nov. 8-12,Unit 49 Nov. 8-12,2025-11-08,2025-11-12,A,77
+ELK,ELK-1-384,Unit 49 Nov. 15-19,Unit 49 Nov. 15-19,2025-11-15,2025-11-19,A,77
+ELK,ELK-1-388,Unit 53: excluding Cerro portion Oct. 18-22,Unit 53: excluding Cerro portion Oct. 18-22,2025-10-18,2025-10-22,MB,80
+ELK,ELK-1-389,Unit 53: excluding Cerro portion Oct. 25-29,Unit 53: excluding Cerro portion Oct. 25-29,2025-10-25,2025-10-29,MB,131
+ELK,ELK-1-390,Unit 53: excluding Cerro portion Nov. 15-19,Unit 53: excluding Cerro portion Nov. 15-19,2025-11-15,2025-11-19,A,94
+ELK,ELK-1-391,Unit 53: excluding Cerro portion Nov. 22-26,Unit 53: excluding Cerro portion Nov. 22-26,2025-11-22,2025-11-26,A,94
+ELK,ELK-1-392,Unit 14 Oct. 1-5,Unit 14 Oct. 1-5,2025-10-01,2025-10-05,ES,10
+ELK,ELK-1-395,Unit 18 Oct. 1-5,Unit 18 Oct. 1-5,2025-10-01,2025-10-05,ES,10
+ELK,ELK-1-396,"Unit 28: McGregor range only, military only Dec. 13-17","Unit 28: McGregor range only, military only Dec. 13-17",2025-12-13,2025-12-17,ES,10
+ELK,ELK-1-397,Unit 28: McGregor range only Dec. 13-17,Unit 28: McGregor range only Dec. 13-17,2025-12-13,2025-12-17,ES,10
+ELK,ELK-1-400,"Units 29, 30 Oct. 1-5","Units 29, 30 Oct. 1-5",2025-10-01,2025-10-05,ES,20
+ELK,ELK-1-401,"Units 29, 30 Oct. 11-15","Units 29, 30 Oct. 11-15",2025-10-11,2025-10-15,ES,30
+ELK,ELK-1-404,Unit 37 Oct. 1-5,Unit 37 Oct. 1-5,2025-10-01,2025-10-05,MB,30
+ELK,ELK-1-405,Unit 37 Oct. 18-22,Unit 37 Oct. 18-22,2025-10-18,2025-10-22,MB,30
+ELK,ELK-1-406,Unit 37 Nov. 22-26,Unit 37 Nov. 22-26,2025-11-22,2025-11-26,A,45
+ELK,ELK-1-408,Unit 38 Oct. 1-5,Unit 38 Oct. 1-5,2025-10-01,2025-10-05,ES,10
+ELK,ELK-1-409,Unit 38 Oct. 18-22,Unit 38 Oct. 18-22,2025-10-18,2025-10-22,ES,10
+ELK,ELK-1-410,"Units 39, 43 Oct. 1-5","Units 39, 43 Oct. 1-5",2025-10-01,2025-10-05,ES,30
+ELK,ELK-1-413,"Units 42, 47, 59 Oct. 1-5","Units 42, 47, 59 Oct. 1-5",2025-10-01,2025-10-05,ES,13
+ELK,ELK-1-416,Unit 56 Oct. 1-5,Unit 56 Oct. 1-5,2025-10-01,2025-10-05,MB,10
+ELK,ELK-1-417,Unit 56 Oct. 18-22,Unit 56 Oct. 18-22,2025-10-18,2025-10-22,A,10
+ELK,ELK-1-422,"Units 57 (excluding Sugarite Canyon S.P.), 58 Oct. 1-5","Units 57 (excluding Sugarite Canyon S.P.), 58 Oct. 1-5",2025-10-01,2025-10-05,MB,5
+ELK,ELK-1-423,"Units 57 (excluding Sugarite Canyon S.P.), 58 Oct. 18-22","Units 57 (excluding Sugarite Canyon S.P.), 58 Oct. 18-22",2025-10-18,2025-10-22,MB,10
+ELK,ELK-1-424,"Units 57 (excluding Sugarite Canyon S.P.), 58 Dec. 13-17","Units 57 (excluding Sugarite Canyon S.P.), 58 Dec. 13-17",2025-12-13,2025-12-17,A,10
+ELK,ELK-1-428,Unit 54/55: Colin Neblett WMA only Oct. 18-22,Unit 54/55: Colin Neblett WMA only Oct. 18-22,2025-10-18,2025-10-22,MB,20
+ELK,ELK-1-429,Unit 54/55: Colin Neblett WMA only Oct. 25-29,Unit 54/55: Colin Neblett WMA only Oct. 25-29,2025-10-25,2025-10-29,MB,20
+ELK,ELK-1-430,Unit 54/55: Colin Neblett WMA only Nov. 8-12,Unit 54/55: Colin Neblett WMA only Nov. 8-12,2025-11-08,2025-11-12,A,20
+ELK,ELK-1-433,Unit 55A: ES Barker WMA only Oct. 11-15,Unit 55A: ES Barker WMA only Oct. 11-15,2025-10-11,2025-10-15,MB,10
+ELK,ELK-1-437,Unit 55A: Urraca WMA only Oct. 18-22,Unit 55A: Urraca WMA only Oct. 18-22,2025-10-18,2025-10-22,MB,10
+ELK,ELK-1-438,Unit 55A: Urraca WMA only Nov. 8-12,Unit 55A: Urraca WMA only Nov. 8-12,2025-11-08,2025-11-12,MB,10
+ELK,ELK-1-439,Unit 55A: Urraca WMA only Nov. 15-19,Unit 55A: Urraca WMA only Nov. 15-19,2025-11-15,2025-11-19,A,15
+ELK,ELK-1-440,Unit 55A: Urraca WMA only Nov. 22-26,Unit 55A: Urraca WMA only Nov. 22-26,2025-11-22,2025-11-26,A,15
+ELK,ELK-1-444,Unit 55A: Valle Vidal only Oct. 18-22,Unit 55A: Valle Vidal only Oct. 18-22,2025-10-18,2025-10-22,MB,35
+ELK,ELK-1-445,Unit 55A: Valle Vidal only Oct. 25-29,Unit 55A: Valle Vidal only Oct. 25-29,2025-10-25,2025-10-29,MB,30
+ELK,ELK-1-446,"Unit 55A: Valle Vidal only, youth only Nov. 1-5","Unit 55A: Valle Vidal only, youth only Nov. 1-5",2025-11-01,2025-11-05,MB,20
+ELK,ELK-1-447,"Unit 55A: Valle Vidal only, youth only Nov. 1-5","Unit 55A: Valle Vidal only, youth only Nov. 1-5",2025-11-01,2025-11-05,A,30
+ELK,ELK-1-448,Unit 55A: Valle Vidal only Nov. 8-12,Unit 55A: Valle Vidal only Nov. 8-12,2025-11-08,2025-11-12,A,30
+ELK,ELK-1-449,Unit 55A: Valle Vidal only Nov. 15-19,Unit 55A: Valle Vidal only Nov. 15-19,2025-11-15,2025-11-19,A,30
+ELK,ELK-1-700,"statewide Jan. 31, '26; Sep. 1","statewide Jan. 31, '26; Sep. 1",,,MB,1
+ELK,ELK-2-129,Unit 2 Sep. 1-14,Unit 2 Sep. 1-14,2025-09-01,2025-09-14,ES,120
+ELK,ELK-2-130,Unit 2 Sep. 15-24,Unit 2 Sep. 15-24,2025-09-15,2025-09-24,ES,120
+ELK,ELK-2-136,Unit 5A public land only Sep. 1-14,Unit 5A public land only Sep. 1-14,2025-09-01,2025-09-14,ES,5
+ELK,ELK-2-137,Unit 5A public land only Sep. 15-24,Unit 5A public land only Sep. 15-24,2025-09-15,2025-09-24,ES,5
+ELK,ELK-2-146,Unit 9 Marquez/LBar WMA only Sep. 1-14,Unit 9 Marquez/LBar WMA only Sep. 1-14,2025-09-01,2025-09-14,ES,15
+ELK,ELK-2-147,Unit 9 Marquez/LBar WMA only Sep. 15-24,Unit 9 Marquez/LBar WMA only Sep. 15-24,2025-09-15,2025-09-24,ES,15
+ELK,ELK-2-151,"Unit 9, including Water Canyon WMA Sep. 1-14","Unit 9, including Water Canyon WMA Sep. 1-14",2025-09-01,2025-09-14,ES,82
+ELK,ELK-2-152,"Unit 9, including Water Canyon WMA Sep. 15-24","Unit 9, including Water Canyon WMA Sep. 15-24",2025-09-15,2025-09-24,ES,82
+ELK,ELK-2-157,Unit 10 Sep. 1-14,Unit 10 Sep. 1-14,2025-09-01,2025-09-14,ES,125
+ELK,ELK-2-158,Unit 10 Sep. 15-24,Unit 10 Sep. 15-24,2025-09-15,2025-09-24,ES,125
+ELK,ELK-2-163,Unit 4: Sargent WMA only Sep. 1-14,Unit 4: Sargent WMA only Sep. 1-14,2025-09-01,2025-09-14,ES,10
+ELK,ELK-2-164,Unit 4: Sargent WMA only Sep. 15-24,Unit 4: Sargent WMA only Sep. 15-24,2025-09-15,2025-09-24,ES,10
+ELK,ELK-2-171,Unit 4: Humphries/Rio Chama WMAs only Sep. 1-14,Unit 4: Humphries/Rio Chama WMAs only Sep. 1-14,2025-09-01,2025-09-14,ES,10
+ELK,ELK-2-172,Unit 4: Humphries/Rio Chama WMAs only Sep. 15-24,Unit 4: Humphries/Rio Chama WMAs only Sep. 15-24,2025-09-15,2025-09-24,ES,10
+ELK,ELK-2-178,Unit 5B Sep. 1-14,Unit 5B Sep. 1-14,2025-09-01,2025-09-14,ES,76
+ELK,ELK-2-179,Unit 5B Sep. 15-24,Unit 5B Sep. 15-24,2025-09-15,2025-09-24,ES,75
+ELK,ELK-2-187,Unit 50 Sep. 1-14,Unit 50 Sep. 1-14,2025-09-01,2025-09-14,ES,60
+ELK,ELK-2-188,Unit 50 Sep. 15-24,Unit 50 Sep. 15-24,2025-09-15,2025-09-24,ES,55
+ELK,ELK-2-193,Unit 51 Sep. 1-14,Unit 51 Sep. 1-14,2025-09-01,2025-09-14,ES,180
+ELK,ELK-2-194,Unit 51 Sep. 15-24,Unit 51 Sep. 15-24,2025-09-15,2025-09-24,ES,180
+ELK,ELK-2-202,Unit 52 Sep. 1-14,Unit 52 Sep. 1-14,2025-09-01,2025-09-14,ES,230
+ELK,ELK-2-203,Unit 52 Sep. 15-24,Unit 52 Sep. 15-24,2025-09-15,2025-09-24,ES,230
+ELK,ELK-2-213,Unit 6A Sep. 1-14,Unit 6A Sep. 1-14,2025-09-01,2025-09-14,ES,150
+ELK,ELK-2-214,Unit 6A Sep. 15-24,Unit 6A Sep. 15-24,2025-09-15,2025-09-24,ES,102
+ELK,ELK-2-219,Unit 6B Sep. 1-14,Unit 6B Sep. 1-14,2025-09-01,2025-09-14,ES,25
+ELK,ELK-2-220,Unit 6B Sep. 1-14,Unit 6B Sep. 1-14,2025-09-01,2025-09-14,A,10
+ELK,ELK-2-221,Unit 6B Sep. 15-24,Unit 6B Sep. 15-24,2025-09-15,2025-09-24,ES,25
+ELK,ELK-2-222,Unit 6B Sep. 15-24,Unit 6B Sep. 15-24,2025-09-15,2025-09-24,A,10
+ELK,ELK-2-234,Unit 6C Sep. 1-14,Unit 6C Sep. 1-14,2025-09-01,2025-09-14,ES,150
+ELK,ELK-2-235,Unit 6C Sep. 15-24,Unit 6C Sep. 15-24,2025-09-15,2025-09-24,ES,105
+ELK,ELK-2-241,Unit 7 Sep. 1-14,Unit 7 Sep. 1-14,2025-09-01,2025-09-14,ES,15
+ELK,ELK-2-242,Unit 7 Sep. 15-24,Unit 7 Sep. 15-24,2025-09-15,2025-09-24,ES,14
+ELK,ELK-2-246,Unit 12 Sep. 1-14,Unit 12 Sep. 1-14,2025-09-01,2025-09-14,ES,36
+ELK,ELK-2-247,Unit 12 Sep. 15-24,Unit 12 Sep. 15-24,2025-09-15,2025-09-24,ES,35
+ELK,ELK-2-255,Unit 12 Dec. 13-17,Unit 12 Dec. 13-17,2025-12-13,2025-12-17,APRE/6,25
+ELK,ELK-2-256,Unit 13 Sep. 1-14,Unit 13 Sep. 1-14,2025-09-01,2025-09-14,ES,202
+ELK,ELK-2-257,Unit 13 Sep. 15-24,Unit 13 Sep. 15-24,2025-09-15,2025-09-24,ES,148
+ELK,ELK-2-264,Unit 15 Sep. 1-14,Unit 15 Sep. 1-14,2025-09-01,2025-09-14,ES,350
+ELK,ELK-2-265,Unit 15 Sep. 15-24,Unit 15 Sep. 15-24,2025-09-15,2025-09-24,ES,250
+ELK,ELK-2-272,Unit 16A Sep. 1-14,Unit 16A Sep. 1-14,2025-09-01,2025-09-14,ES,250
+ELK,ELK-2-273,Unit 16A Sep. 15-24,Unit 16A Sep. 15-24,2025-09-15,2025-09-24,ES,150
+ELK,ELK-2-279,Unit 16B/22 Sep. 1-14,Unit 16B/22 Sep. 1-14,2025-09-01,2025-09-14,ES,225
+ELK,ELK-2-280,Unit 16B/22 Sep. 15-24,Unit 16B/22 Sep. 15-24,2025-09-15,2025-09-24,ES,165
+ELK,ELK-2-284,Unit 16C Sep. 1-14,Unit 16C Sep. 1-14,2025-09-01,2025-09-14,ES,144
+ELK,ELK-2-285,Unit 16C Sep. 15-24,Unit 16C Sep. 15-24,2025-09-15,2025-09-24,ES,100
+ELK,ELK-2-291,Unit 16D Sep. 1-14,Unit 16D Sep. 1-14,2025-09-01,2025-09-14,ES,90
+ELK,ELK-2-292,Unit 16D Sep. 15-24,Unit 16D Sep. 15-24,2025-09-15,2025-09-24,ES,60
+ELK,ELK-2-298,Unit 16E Sep. 1-14,Unit 16E Sep. 1-14,2025-09-01,2025-09-14,ES,90
+ELK,ELK-2-299,Unit 16E Sep. 15-24,Unit 16E Sep. 15-24,2025-09-15,2025-09-24,ES,60
+ELK,ELK-2-305,Unit 17 Sep. 1-14,Unit 17 Sep. 1-14,2025-09-01,2025-09-14,ES,125
+ELK,ELK-2-306,Unit 17 Sep. 15-24,Unit 17 Sep. 15-24,2025-09-15,2025-09-24,ES,75
+ELK,ELK-2-314,Unit 21A Sep. 1-14,Unit 21A Sep. 1-14,2025-09-01,2025-09-14,ES,50
+ELK,ELK-2-315,Unit 21A Sep. 15-24,Unit 21A Sep. 15-24,2025-09-15,2025-09-24,ES,50
+ELK,ELK-2-320,Unit 21A Dec. 20-24,Unit 21A Dec. 20-24,2025-12-20,2025-12-24,MB,15
+ELK,ELK-2-321,Unit 21B Sep. 1-14,Unit 21B Sep. 1-14,2025-09-01,2025-09-14,ES,25
+ELK,ELK-2-322,Unit 21B Sep. 15-24,Unit 21B Sep. 15-24,2025-09-15,2025-09-24,ES,25
+ELK,ELK-2-330,Unit 21B Dec. 20-24,Unit 21B Dec. 20-24,2025-12-20,2025-12-24,MB,15
+ELK,ELK-2-331,Unit 23 Sep. 1-14,Unit 23 Sep. 1-14,2025-09-01,2025-09-14,ES,125
+ELK,ELK-2-332,Unit 23 Sep. 15-24,Unit 23 Sep. 15-24,2025-09-15,2025-09-24,ES,75
+ELK,ELK-2-337,Unit 23 Dec. 20-24,Unit 23 Dec. 20-24,2025-12-20,2025-12-24,MB,15
+ELK,ELK-2-339,Unit 24: excluding Ft. Bayard Sep. 1-14,Unit 24: excluding Ft. Bayard Sep. 1-14,2025-09-01,2025-09-14,ES,15
+ELK,ELK-2-340,Unit 24: excluding Ft. Bayard Sep. 15-24,Unit 24: excluding Ft. Bayard Sep. 15-24,2025-09-15,2025-09-24,ES,10
+ELK,ELK-2-345,Unit 34 Sep. 1-14,Unit 34 Sep. 1-14,2025-09-01,2025-09-14,ES,200
+ELK,ELK-2-346,Unit 34 Sep. 15-24,Unit 34 Sep. 15-24,2025-09-15,2025-09-24,ES,200
+ELK,ELK-2-355,Unit 34 Dec. 20-24,Unit 34 Dec. 20-24,2025-12-20,2025-12-24,APRE/6/A,200
+ELK,ELK-2-358,Unit 36 Sep. 1-14,Unit 36 Sep. 1-14,2025-09-01,2025-09-14,ES,140
+ELK,ELK-2-359,Unit 36 Sep. 15-24,Unit 36 Sep. 15-24,2025-09-15,2025-09-24,ES,140
+ELK,ELK-2-366,Unit 45 Sep. 1-14,Unit 45 Sep. 1-14,2025-09-01,2025-09-14,ES,75
+ELK,ELK-2-367,Unit 45 Sep. 15-24,Unit 45 Sep. 15-24,2025-09-15,2025-09-24,ES,73
+ELK,ELK-2-372,Unit 48 Sep. 1-14,Unit 48 Sep. 1-14,2025-09-01,2025-09-14,ES,80
+ELK,ELK-2-373,Unit 48 Sep. 15-24,Unit 48 Sep. 15-24,2025-09-15,2025-09-24,ES,80
+ELK,ELK-2-379,Unit 49 Sep. 1-14,Unit 49 Sep. 1-14,2025-09-01,2025-09-14,ES,60
+ELK,ELK-2-380,Unit 49 Sep. 15-24,Unit 49 Sep. 15-24,2025-09-15,2025-09-24,ES,59
+ELK,ELK-2-385,Unit 53 Sep. 1-14,Unit 53 Sep. 1-14,2025-09-01,2025-09-14,ES,65
+ELK,ELK-2-386,Unit 53 Sep. 15-24,Unit 53 Sep. 15-24,2025-09-15,2025-09-24,ES,60
+ELK,ELK-2-393,Unit 18 Sep. 1-14,Unit 18 Sep. 1-14,2025-09-01,2025-09-14,ES,25
+ELK,ELK-2-394,Unit 18 Sep. 15-24,Unit 18 Sep. 15-24,2025-09-15,2025-09-24,ES,25
+ELK,ELK-2-398,"Units 29, 30 Sep. 1-14","Units 29, 30 Sep. 1-14",2025-09-01,2025-09-14,ES,20
+ELK,ELK-2-399,"Units 29, 30 Sep. 15-24","Units 29, 30 Sep. 15-24",2025-09-15,2025-09-24,ES,20
+ELK,ELK-2-402,Unit 37 Sep. 1-14,Unit 37 Sep. 1-14,2025-09-01,2025-09-14,ES,40
+ELK,ELK-2-403,Unit 37 Sep. 15-24,Unit 37 Sep. 15-24,2025-09-15,2025-09-24,ES,30
+ELK,ELK-2-407,Unit 37 Dec. 6-10,Unit 37 Dec. 6-10,2025-12-06,2025-12-10,APRE/6,50
+ELK,ELK-2-411,"Units 42, 47, 59 Sep. 1-14","Units 42, 47, 59 Sep. 1-14",2025-09-01,2025-09-14,ES,13
+ELK,ELK-2-412,"Units 42, 47, 59 Sep. 15-24","Units 42, 47, 59 Sep. 15-24",2025-09-15,2025-09-24,ES,13
+ELK,ELK-2-414,Unit 56 Sep. 1-14,Unit 56 Sep. 1-14,2025-09-01,2025-09-14,ES,5
+ELK,ELK-2-415,Unit 56 Sep. 15-24,Unit 56 Sep. 15-24,2025-09-15,2025-09-24,ES,5
+ELK,ELK-2-418,Unit 57: Sugarite Canyon S.P. only Sep. 1-14,Unit 57: Sugarite Canyon S.P. only Sep. 1-14,2025-09-01,2025-09-14,ES,3
+ELK,ELK-2-419,Unit 57: Sugarite Canyon S.P. only Sep. 15-24,Unit 57: Sugarite Canyon S.P. only Sep. 15-24,2025-09-15,2025-09-24,ES,2
+ELK,ELK-2-420,"Units 57 (excluding Sugarite Canyon S.P.), 58 Sep. 1-14","Units 57 (excluding Sugarite Canyon S.P.), 58 Sep. 1-14",2025-09-01,2025-09-14,ES,5
+ELK,ELK-2-421,"Units 57 (excluding Sugarite Canyon S.P.), 58 Sep. 15-24","Units 57 (excluding Sugarite Canyon S.P.), 58 Sep. 15-24",2025-09-15,2025-09-24,ES,5
+ELK,ELK-2-425,Unit 54/55A: Colin Neblett WMA only Sep. 1-14,Unit 54/55A: Colin Neblett WMA only Sep. 1-14,2025-09-01,2025-09-14,ES,10
+ELK,ELK-2-426,Unit 54/55A: Colin Neblett WMA only Sep. 15-24,Unit 54/55A: Colin Neblett WMA only Sep. 15-24,2025-09-15,2025-09-24,ES,10
+ELK,ELK-2-431,Unit 55A: ES Barker WMA only Sep. 1-14,Unit 55A: ES Barker WMA only Sep. 1-14,2025-09-01,2025-09-14,ES,5
+ELK,ELK-2-432,Unit 55A: ES Barker WMA only Sep. 15-24,Unit 55A: ES Barker WMA only Sep. 15-24,2025-09-15,2025-09-24,ES,5
+ELK,ELK-2-434,Unit 55A: Urraca WMA only Sep. 1-14,Unit 55A: Urraca WMA only Sep. 1-14,2025-09-01,2025-09-14,ES,5
+ELK,ELK-2-435,Unit 55A: Urraca WMA only Sep. 15-24,Unit 55A: Urraca WMA only Sep. 15-24,2025-09-15,2025-09-24,ES,5
+ELK,ELK-2-441,Unit 55A: Valle Vidal only Sep. 1-14,Unit 55A: Valle Vidal only Sep. 1-14,2025-09-01,2025-09-14,ES,25
+ELK,ELK-2-442,Unit 55A: Valle Vidal only Sep. 15-24,Unit 55A: Valle Vidal only Sep. 15-24,2025-09-15,2025-09-24,ES,25
+ELK,ELK-3-131,Unit 2 Oct. 11-15,Unit 2 Oct. 11-15,2025-10-11,2025-10-15,MB,135
+ELK,ELK-3-148,Unit 9 Marquez/LBar WMA only Oct. 11-15,Unit 9 Marquez/LBar WMA only Oct. 11-15,2025-10-11,2025-10-15,MB,15
+ELK,ELK-3-149,Unit 9 Marquez/LBar WMA only Oct. 18-22,Unit 9 Marquez/LBar WMA only Oct. 18-22,2025-10-18,2025-10-22,MB,15
+ELK,ELK-3-150,Unit 9 Marquez/LBar WMA only Oct. 25-29,Unit 9 Marquez/LBar WMA only Oct. 25-29,2025-10-25,2025-10-29,MB,15
+ELK,ELK-3-153,"Unit 9, including Water Canyon WMA - mobility impaired only Oct. 11-15","Unit 9, including Water Canyon WMA - mobility impaired only Oct. 11-15",2025-10-11,2025-10-15,MB,21
+ELK,ELK-3-154,"Unit 9, including Water Canyon WMA Oct. 18-22","Unit 9, including Water Canyon WMA Oct. 18-22",2025-10-18,2025-10-22,MB,35
+ELK,ELK-3-155,"Unit 9, including Water Canyon WMA Oct. 25-29","Unit 9, including Water Canyon WMA Oct. 25-29",2025-10-25,2025-10-29,MB,35
+ELK,ELK-3-156,"Unit 9, including Water Canyon WMA Nov. 1-5","Unit 9, including Water Canyon WMA Nov. 1-5",2025-11-01,2025-11-05,MB,21
+ELK,ELK-3-159,Unit 10 Oct. 11-15,Unit 10 Oct. 11-15,2025-10-11,2025-10-15,MB,70
+ELK,ELK-3-201,Unit 51 Dec. 6-10,Unit 51 Dec. 6-10,2025-12-06,2025-12-10,ES,145
+ELK,ELK-3-204,Unit 52 mobility impaired only Oct. 11-15,Unit 52 mobility impaired only Oct. 11-15,2025-10-11,2025-10-15,MB,50
+ELK,ELK-3-205,Unit 52 Oct. 11-15,Unit 52 Oct. 11-15,2025-10-11,2025-10-15,MB,120
+ELK,ELK-3-206,Unit 52 Oct. 11-15,Unit 52 Oct. 11-15,2025-10-11,2025-10-15,A,50
+ELK,ELK-3-215,Unit 6A Oct. 11-15,Unit 6A Oct. 11-15,2025-10-11,2025-10-15,MB,104
+ELK,ELK-3-223,Unit 6B Oct. 11-15,Unit 6B Oct. 11-15,2025-10-11,2025-10-15,ES,15
+ELK,ELK-3-224,Unit 6B Oct. 11-15,Unit 6B Oct. 11-15,2025-10-11,2025-10-15,A,20
+ELK,ELK-3-236,Unit 6C Oct. 11-15,Unit 6C Oct. 11-15,2025-10-11,2025-10-15,MB,155
+ELK,ELK-3-243,Unit 7 Oct. 11-15,Unit 7 Oct. 11-15,2025-10-11,2025-10-15,MB,24
+ELK,ELK-3-258,Unit 13 youth only Oct. 11-15,Unit 13 youth only Oct. 11-15,2025-10-11,2025-10-15,ES,30
+ELK,ELK-3-259,Unit 13 Oct. 18-22,Unit 13 Oct. 18-22,2025-10-18,2025-10-22,MB,86
+ELK,ELK-3-260,Unit 13 Oct. 25-29,Unit 13 Oct. 25-29,2025-10-25,2025-10-29,MB,126
+ELK,ELK-3-261,Unit 13 Nov. 22-26,Unit 13 Nov. 22-26,2025-11-22,2025-11-26,MB,126
+ELK,ELK-3-262,Unit 13 Dec. 6-10,Unit 13 Dec. 6-10,2025-12-06,2025-12-10,A,117
+ELK,ELK-3-263,Unit 13 Dec. 13-17,Unit 13 Dec. 13-17,2025-12-13,2025-12-17,A,116
+ELK,ELK-3-266,Unit 15 youth only Oct. 11-15,Unit 15 youth only Oct. 11-15,2025-10-11,2025-10-15,ES,25
+ELK,ELK-3-267,Unit 15 Oct. 18-22,Unit 15 Oct. 18-22,2025-10-18,2025-10-22,MB,200
+ELK,ELK-3-268,Unit 15 Oct. 25-29,Unit 15 Oct. 25-29,2025-10-25,2025-10-29,MB,245
+ELK,ELK-3-269,Unit 15 Nov. 15-19,Unit 15 Nov. 15-19,2025-11-15,2025-11-19,MB,250
+ELK,ELK-3-270,Unit 15 Dec. 6-10,Unit 15 Dec. 6-10,2025-12-06,2025-12-10,A,250
+ELK,ELK-3-271,Unit 15 Dec. 13-17,Unit 15 Dec. 13-17,2025-12-13,2025-12-17,A,250
+ELK,ELK-3-301,Unit 16E Oct. 18-22,Unit 16E Oct. 18-22,2025-10-18,2025-10-22,MB,70
+ELK,ELK-3-307,Unit 17 youth only Oct. 11-15,Unit 17 youth only Oct. 11-15,2025-10-11,2025-10-15,ES,25
+ELK,ELK-3-308,Unit 17 Oct. 18-22,Unit 17 Oct. 18-22,2025-10-18,2025-10-22,MB,100
+ELK,ELK-3-309,Unit 17 Oct. 25-29,Unit 17 Oct. 25-29,2025-10-25,2025-10-29,MB,100
+ELK,ELK-3-310,Unit 17 Nov. 22-26,Unit 17 Nov. 22-26,2025-11-22,2025-11-26,MB,25
+ELK,ELK-3-311,Unit 17 Nov. 22-26,Unit 17 Nov. 22-26,2025-11-22,2025-11-26,A,25
+ELK,ELK-3-312,Unit 17 Dec. 6-10,Unit 17 Dec. 6-10,2025-12-06,2025-12-10,A,100
+ELK,ELK-3-313,Unit 17 Dec. 13-17,Unit 17 Dec. 13-17,2025-12-13,2025-12-17,A,100
+ELK,ELK-3-334,Unit 23 Oct. 18-22,Unit 23 Oct. 18-22,2025-10-18,2025-10-22,MB,75
+ELK,ELK-3-341,Unit 24: excluding Ft. Bayard Oct. 18-22,Unit 24: excluding Ft. Bayard Oct. 18-22,2025-10-18,2025-10-22,MB,15
+ELK,ELK-3-350,Unit 34 Oct. 18-22,Unit 34 Oct. 18-22,2025-10-18,2025-10-22,ES,250
+ELK,ELK-3-360,Unit 36 Oct. 11-15,Unit 36 Oct. 11-15,2025-10-11,2025-10-15,ES,140
+ELK,ELK-3-368,Unit 45 Oct. 11-15,Unit 45 Oct. 11-15,2025-10-11,2025-10-15,MB,136
+ELK,ELK-3-371,Unit 45 Nov. 15-19,Unit 45 Nov. 15-19,2025-11-15,2025-11-19,A,49
+ELK,ELK-3-374,Unit 48 Oct. 11-15,Unit 48 Oct. 11-15,2025-10-11,2025-10-15,MB,60
+ELK,ELK-3-387,Unit 53: excluding Cerro portion Oct. 11-15,Unit 53: excluding Cerro portion Oct. 11-15,2025-10-11,2025-10-15,ES,50
+ELK,ELK-3-427,Unit 54/55A: Colin Neblett WMA only Oct. 11-15,Unit 54/55A: Colin Neblett WMA only Oct. 11-15,2025-10-11,2025-10-15,MB,20
+ELK,ELK-3-436,Unit 55A: Urraca WMA only Oct. 11-15,Unit 55A: Urraca WMA only Oct. 11-15,2025-10-11,2025-10-15,MB,10
+ELK,ELK-3-443,Unit 55A: Valle Vidal only Oct. 11-15,Unit 55A: Valle Vidal only Oct. 11-15,2025-10-11,2025-10-15,MB,20
+IBEX,IBX-1-101,"Unit 25 Florida mountains, once-in-a-lifetime Nov. 15-29","Unit 25 Florida mountains, once-in-a-lifetime Nov. 15-29",2025-11-15,2025-11-29,ES,15
+IBEX,IBX-1-102,Unit 25 Florida mountains Dec. 13-17,Unit 25 Florida mountains Dec. 13-17,2025-12-13,2025-12-17,F-IM,20
+IBEX,IBX-1-103,"Unit 25 Florida mountains, once-in-a-youth Dec. 27; Jan. 10, '26","Unit 25 Florida mountains, once-in-a-youth Dec. 27; Jan. 10, '26",,,ES,5
+IBEX,IBX-1-105,"Unit 25 Florida mountains Feb. 7-11, '26","Unit 25 Florida mountains Feb. 7-11, '26",2025-02-07,2025-02-11,F-IM,20
+IBEX,IBX-2-100,Unit 25 Florida mountains Oct. 1-15,Unit 25 Florida mountains Oct. 1-15,2025-10-01,2025-10-15,ES,100
+IBEX,IBX-2-104,"Unit 25 Florida mountains Jan. 15-29, '26","Unit 25 Florida mountains Jan. 15-29, '26",2025-01-15,2025-01-29,ES,100
+IBEX,IBX-3-106,"Unit 25 Florida mountains Feb. 21-27, '26","Unit 25 Florida mountains Feb. 21-27, '26",2025-02-21,2025-02-27,ES,15
+JAVELINA,JAV-1-100,"Statewide except GMU 28, youth only Feb. 1; Mar. 31","Statewide except GMU 28, youth only Feb. 1; Mar. 31",,,ES,180
+JAVELINA,JAV-1-102,"GMUs 19, 23, 24, 25, 26 and 27 Feb. 1; Mar. 31","GMUs 19, 23, 24, 25, 26 and 27 Feb. 1; Mar. 31",,,ES,1100
+JAVELINA,JAV-1-105,"GMU 28 McGregor range, military only Dec. 27-28","GMU 28 McGregor range, military only Dec. 27-28",2025-12-27,2025-12-28,ES,5
+JAVELINA,JAV-1-106,GMU 28 McGregor range Dec. 27-28,GMU 28 McGregor range Dec. 27-28,2025-12-27,2025-12-28,ES,5
+JAVELINA,JAV-2-101,"GMUs 19, 23, 24, 25, 26 and 27 Jan. 1-31","GMUs 19, 23, 24, 25, 26 and 27 Jan. 1-31",2025-01-01,2025-01-31,ES,330
+ORYX,ORX-1-100,GMU 19 WSMR: Stallion Range Sep. 5-7,GMU 19 WSMR: Stallion Range Sep. 5-7,2025-09-05,2025-09-07,ES,70
+ORYX,ORX-1-101,GMU 19 WSMR: Rhodes Canyon Sep. 19-21,GMU 19 WSMR: Rhodes Canyon Sep. 19-21,2025-09-19,2025-09-21,ES,70
+ORYX,ORX-1-102,"GMU 19 WSMR: Rhodes Canyon, resident veteran only Oct. 17-19","GMU 19 WSMR: Rhodes Canyon, resident veteran only Oct. 17-19",2025-10-17,2025-10-19,ES,75
+ORYX,ORX-1-103,GMU 19 WSMR: Stallion Range Nov. 2; Oct. 31,GMU 19 WSMR: Stallion Range Nov. 2; Oct. 31,,,ES,70
+ORYX,ORX-1-104,GMU 19 WSMR: Rhodes Canyon Nov. 28-30,GMU 19 WSMR: Rhodes Canyon Nov. 28-30,2025-11-28,2025-11-30,ES,70
+ORYX,ORX-1-105,"GMU 19 WSMR: Stallion Range Jan. 9-11, '26","GMU 19 WSMR: Stallion Range Jan. 9-11, '26",2025-01-09,2025-01-11,ES,70
+ORYX,ORX-1-106,"GMU 19 WSMR: Rhodes Canyon Jan. 23-25, '26","GMU 19 WSMR: Rhodes Canyon Jan. 23-25, '26",2025-01-23,2025-01-25,ES,70
+ORYX,ORX-1-107,"GMU 19 WSMR: Stallion Range Feb. 6-8, '26","GMU 19 WSMR: Stallion Range Feb. 6-8, '26",2025-02-06,2025-02-08,ES,70
+ORYX,ORX-1-108,"GMU 19 WSMR: Rhodes Canyon Feb. 20-22, '26","GMU 19 WSMR: Rhodes Canyon Feb. 20-22, '26",2025-02-20,2025-02-22,ES,70
+ORYX,ORX-1-109,GMU 19 WSMR: Stallion Range,GMU 19 WSMR: Stallion Range,,,ES,70
+ORYX,ORX-1-110,"GMU 19 WSMR: Stallion Range, mobility impaired Oct. 3-5","GMU 19 WSMR: Stallion Range, mobility impaired Oct. 3-5",2025-10-03,2025-10-05,ES,20
+ORYX,ORX-1-111,"GMU 19 WSMR: Stallion Range, once-in-a-youth Oct. 3-5","GMU 19 WSMR: Stallion Range, once-in-a-youth Oct. 3-5",2025-10-03,2025-10-05,ES,40
+ORYX,ORX-1-112,GMU 19 WSMR: Stallion Range Sep. 5-7,GMU 19 WSMR: Stallion Range Sep. 5-7,2025-09-05,2025-09-07,BHO,15
+ORYX,ORX-1-113,GMU 19 WSMR: Rhodes Canyon Sep. 19-21,GMU 19 WSMR: Rhodes Canyon Sep. 19-21,2025-09-19,2025-09-21,BHO,15
+ORYX,ORX-1-114,GMU 19 WSMR: Stallion Range Nov. 2; Oct. 31,GMU 19 WSMR: Stallion Range Nov. 2; Oct. 31,,,BHO,15
+ORYX,ORX-1-115,GMU 19 WSMR: Rhodes Canyon Nov. 28-30,GMU 19 WSMR: Rhodes Canyon Nov. 28-30,2025-11-28,2025-11-30,BHO,15
+ORYX,ORX-1-116,"GMU 19 WSMR: Stallion Range Jan. 9-11, '26","GMU 19 WSMR: Stallion Range Jan. 9-11, '26",2025-01-09,2025-01-11,BHO,15
+ORYX,ORX-1-117,"GMU 19 WSMR: Rhodes Canyon Jan. 23-25, '26","GMU 19 WSMR: Rhodes Canyon Jan. 23-25, '26",2025-01-23,2025-01-25,BHO,15
+ORYX,ORX-1-118,"GMU 19 WSMR: Stallion Range Feb. 6-8, '26","GMU 19 WSMR: Stallion Range Feb. 6-8, '26",2025-02-06,2025-02-08,BHO,15
+ORYX,ORX-1-119,"GMU 19 WSMR: Rhodes Canyon Feb. 20-22, '26","GMU 19 WSMR: Rhodes Canyon Feb. 20-22, '26",2025-02-20,2025-02-22,BHO,15
+ORYX,ORX-1-120,"GMU 19 WSMR: Stallion Range Mar. 6-8, '26","GMU 19 WSMR: Stallion Range Mar. 6-8, '26",2025-03-06,2025-03-08,BHO,15
+ORYX,ORX-1-204,"statewide, off-range Jun. 1-30","statewide, off-range Jun. 1-30",2025-06-01,2025-06-30,ES,96
+ORYX,ORX-1-205,"statewide, off-range, youth only Jun. 1-30","statewide, off-range, youth only Jun. 1-30",2025-06-01,2025-06-30,ES,24
+ORYX,ORX-1-206,"statewide, off-range Jul. 1-31","statewide, off-range Jul. 1-31",2025-07-01,2025-07-31,ES,96
+ORYX,ORX-1-207,"statewide, off-range, youth only Jul. 1-31","statewide, off-range, youth only Jul. 1-31",2025-07-01,2025-07-31,ES,24
+ORYX,ORX-1-208,"statewide, off-range Aug. 1-31","statewide, off-range Aug. 1-31",2025-08-01,2025-08-31,ES,96
+ORYX,ORX-1-209,"statewide, off-range, youth only Aug. 1-31","statewide, off-range, youth only Aug. 1-31",2025-08-01,2025-08-31,ES,24
+ORYX,ORX-1-210,"statewide, off-range Sep. 1-30","statewide, off-range Sep. 1-30",2025-09-01,2025-09-30,ES,96
+ORYX,ORX-1-211,"statewide, off-range, youth only Sep. 1-30","statewide, off-range, youth only Sep. 1-30",2025-09-01,2025-09-30,ES,24
+ORYX,ORX-1-212,"statewide, off-range Oct. 1-31","statewide, off-range Oct. 1-31",2025-10-01,2025-10-31,ES,96
+ORYX,ORX-1-213,"statewide, off-range, youth only Oct. 1-31","statewide, off-range, youth only Oct. 1-31",2025-10-01,2025-10-31,ES,24
+ORYX,ORX-1-214,"statewide, off-range Nov. 1-30","statewide, off-range Nov. 1-30",2025-11-01,2025-11-30,ES,96
+ORYX,ORX-1-215,"statewide, off-range, youth only Nov. 1-30","statewide, off-range, youth only Nov. 1-30",2025-11-01,2025-11-30,ES,24
+ORYX,ORX-1-216,"statewide, off-range Dec. 1-31","statewide, off-range Dec. 1-31",2025-12-01,2025-12-31,ES,96
+ORYX,ORX-1-217,"statewide, off-range, youth only Dec. 1-31","statewide, off-range, youth only Dec. 1-31",2025-12-01,2025-12-31,ES,24
+ORYX,ORX-1-218,"statewide, off-range Jan. 1-31, '26","statewide, off-range Jan. 1-31, '26",2025-01-01,2025-01-31,ES,96
+ORYX,ORX-1-219,"statewide, off-range, youth only Jan. 1-31, '26","statewide, off-range, youth only Jan. 1-31, '26",2025-01-01,2025-01-31,ES,24
+ORYX,ORX-1-220,"statewide, off-range Feb. 1-28, '26","statewide, off-range Feb. 1-28, '26",2025-02-01,2025-02-28,ES,80
+ORYX,ORX-1-221,"statewide, off-range, youth only Feb. 1-28, '26","statewide, off-range, youth only Feb. 1-28, '26",2025-02-01,2025-02-28,ES,20
+ORYX,ORX-1-222,"statewide, off-range, age 70 and older Feb. 1-28, '26","statewide, off-range, age 70 and older Feb. 1-28, '26",2025-02-01,2025-02-28,ES,40
+ORYX,ORX-1-223,"statewide, off-range Mar. 1-31, '26","statewide, off-range Mar. 1-31, '26",2025-03-01,2025-03-31,ES,96
+ORYX,ORX-1-224,"statewide, off-range, youth only Mar. 1-31, '26","statewide, off-range, youth only Mar. 1-31, '26",2025-03-01,2025-03-31,ES,24
+ORYX,ORX-1-225,GMU 28 McGregor range Dec. 20-21,GMU 28 McGregor range Dec. 20-21,2025-12-20,2025-12-21,ES,25
+ORYX,ORX-1-226,"GMU 28 McGregor range, military only Dec. 20-21","GMU 28 McGregor range, military only Dec. 20-21",2025-12-20,2025-12-21,ES,25
+ORYX,ORX-1-227,"GMU 28 McGregor range Jan. 3-4, '26","GMU 28 McGregor range Jan. 3-4, '26",2025-01-03,2025-01-04,ES,25
+ORYX,ORX-1-228,"GMU 28 McGregor range, military only Jan. 3-4, '26","GMU 28 McGregor range, military only Jan. 3-4, '26",2025-01-03,2025-01-04,ES,25

@@ -1,0 +1,53 @@
+import SidebarNav from "./SidebarNav";
+import TenantSwitcher from "./TenantSwitcher";
+import LogoutButton from "./LogoutButton";
+
+type Membership = {
+  outfitter_id: string;
+  outfitter_name: string;
+  role: string;
+  status: string;
+};
+
+export default function AppShell({
+  children,
+  memberships,
+  userEmail,
+}: {
+  children: React.ReactNode;
+  memberships: Membership[];
+  userEmail: string;
+}) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", minHeight: "100vh" }}>
+      <aside style={{ borderRight: "1px solid #eee", padding: 16 }}>
+        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 12 }}>HUNTCO</div>
+        <SidebarNav />
+      </aside>
+
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <header
+          style={{
+            borderBottom: "1px solid #eee",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <TenantSwitcher memberships={memberships} />
+          </div>
+
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <span style={{ fontSize: 12, opacity: 0.75 }}>{userEmail}</span>
+            <LogoutButton />
+          </div>
+        </header>
+
+        <main style={{ padding: 16 }}>{children}</main>
+      </div>
+    </div>
+  );
+}

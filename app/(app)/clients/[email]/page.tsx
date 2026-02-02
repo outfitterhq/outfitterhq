@@ -1,0 +1,540 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+
+interface Client {
+  email: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone?: string | null;
+  address_line1?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postal_code?: string | null;
+}
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start_time: string;
+  end_time: string;
+  camp_name?: string;
+  species?: string;
+  unit?: string;
+  status?: string;
+  guide_username?: string;
+}
+
+interface Document {
+  id: string;
+  storage_path?: string | null;
+  linked_type?: string | null;
+  linked_id?: string | null;
+  created_at?: string | null;
+  document_type: "contract" | "waiver" | "questionnaire" | "predraw" | "other";
+  status: string;
+  client_signed_at?: string | null;
+  admin_signed_at?: string | null;
+}
+
+const DOC_TYPE_LABEL: Record<string, string> = {
+  predraw: "Pre-Draw Contract",
+  questionnaire: "Pre-Hunt Questionnaire",
+  waiver: "Waiver / Liability",
+  contract: "Hunt Contract",
+  other: "Other",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  not_submitted: "Not submitted",
+  submitted: "Submitted",
+  client_signed: "Client signed",
+  admin_signed: "Reviewed ✓",
+  fully_executed: "Fully executed ✓",
+};
+
+export default function ClientDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const email = decodeURIComponent(params.email as string);
+
+  const [client, setClient] = useState<Client | null>(null);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [adminSigningId, setAdminSigningId] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadClientData();
+  }, [email]);
+
+  async function loadClientData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/clients/${encodeURIComponent(email)}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to load client");
+      }
+      const data = await res.json();
+      setClient(data.client);
+      setCalendarEvents(data.calendarEvents || []);
+      setDocuments(data.documents || []);
+    } catch (e: any) {
+      setError(String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function getClientName(): string {
+    if (!client) return email;
+    if (client.first_name || client.last_name) {
+      return `${client.first_name || ""} ${client.last_name || ""}`.trim();
+    }
+    return email;
+  }
+
+  function formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return dateString;
+    }
+  }
+
+  async function adminSign(docId: string) {
+    if (adminSigningId) return;
+    setAdminSigningId(docId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/documents/${docId}/admin-sign`, { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Admin sign failed");
+      await loadClientData();
+    } catch (e: any) {
+      setError(String(e));
+    } finally {
+      setAdminSigningId(null);
+    }
+  }
+
+  function canAdminSign(doc: Document): boolean {
+    if (doc.id.startsWith("placeholder-") || !doc.storage_path) return false;
+    return ["submitted", "client_signed", "admin_signed"].includes(doc.status);
+  }
+
+  if (loading) {
+    return (
+      <main style={{ maxWidth: 1200, margin: "32px auto", padding: 16 }}>
+        <p>Loading client details...</p>
+      </main>
+    );
+  }
+
+  if (error || !client) {
+    return (
+      <main style={{ maxWidth: 1200, margin: "32px auto", padding: 16 }}>
+        <div style={{ background: "#fee", padding: 12, borderRadius: 8, marginBottom: 16 }}>
+          {error || "Client not found"}
+        </div>
+        <Link href="/clients" style={{ color: "#0070f3" }}>
+          ← Back to Clients
+        </Link>
+      </main>
+    );
+  }
+
+  const upcomingHunts = calendarEvents.filter((e) => {
+    const endDate = new Date(e.end_time);
+    return endDate >= new Date();
+  });
+
+  const pastHunts = calendarEvents.filter((e) => {
+    const endDate = new Date(e.end_time);
+    return endDate < new Date();
+  });
+
+  return (
+    <main style={{ maxWidth: 1200, margin: "32px auto", padding: 16 }}>
+      <div style={{ marginBottom: 24 }}>
+        <Link
+          href="/clients"
+          style={{
+            color: "#0070f3",
+            textDecoration: "none",
+            marginBottom: 16,
+            display: "inline-block",
+          }}
+        >
+          ← Back to Clients
+        </Link>
+        <h1 style={{ margin: "8px 0" }}>{getClientName()}</h1>
+        <p style={{ marginTop: 6, opacity: 0.75, fontSize: 16 }}>{email}</p>
+      </div>
+
+      {/* Client Info Section */}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 16, fontSize: 20, fontWeight: 600 }}>Client Information</h2>
+        <div
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            padding: 20,
+            background: "#fafafa",
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 12, marginBottom: 12 }}>
+            <strong>Name:</strong>
+            <span>{getClientName()}</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 12, marginBottom: 12 }}>
+            <strong>Email:</strong>
+            <span>{email}</span>
+          </div>
+          {client.phone && (
+            <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 12, marginBottom: 12 }}>
+              <strong>Phone:</strong>
+              <span>{client.phone}</span>
+            </div>
+          )}
+          {(client.address_line1 || client.city || client.state || client.postal_code) && (
+            <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: 12, marginBottom: 12 }}>
+              <strong>Address:</strong>
+              <span>
+                {[
+                  client.address_line1,
+                  client.city,
+                  client.state,
+                  client.postal_code,
+                ]
+                  .filter(Boolean)
+                  .join(", ")}
+              </span>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Upcoming Hunts */}
+      {upcomingHunts.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ marginBottom: 16, fontSize: 20, fontWeight: 600 }}>Upcoming Hunts</h2>
+          <div
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              overflow: "hidden",
+            }}
+          >
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#f5f5f5" }}>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Hunt</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Dates</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Species/Unit</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Guide</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcomingHunts.map((hunt) => (
+                  <tr key={hunt.id} style={{ borderTop: "1px solid #eee" }}>
+                    <td style={{ padding: 12 }}>
+                      <strong>{hunt.title}</strong>
+                      {hunt.camp_name && (
+                        <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+                          {hunt.camp_name}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {formatDate(hunt.start_time)} - {formatDate(hunt.end_time)}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {hunt.species && <div>{hunt.species}</div>}
+                      {hunt.unit && <div style={{ fontSize: 12, color: "#666" }}>Unit {hunt.unit}</div>}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      <span
+                        style={{
+                          padding: "4px 8px",
+                          background: "#e3f2fd",
+                          borderRadius: 4,
+                          fontSize: 12,
+                        }}
+                      >
+                        {hunt.status || "Inquiry"}
+                      </span>
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {hunt.guide_username || <span style={{ color: "#999" }}>—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* Past Hunts */}
+      {pastHunts.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ marginBottom: 16, fontSize: 20, fontWeight: 600 }}>Hunt History</h2>
+          <div
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              overflow: "hidden",
+            }}
+          >
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#f5f5f5" }}>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Hunt</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Dates</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Species/Unit</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Guide</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pastHunts.map((hunt) => (
+                  <tr key={hunt.id} style={{ borderTop: "1px solid #eee" }}>
+                    <td style={{ padding: 12 }}>
+                      <strong>{hunt.title}</strong>
+                      {hunt.camp_name && (
+                        <div style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+                          {hunt.camp_name}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {formatDate(hunt.start_time)} - {formatDate(hunt.end_time)}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {hunt.species && <div>{hunt.species}</div>}
+                      {hunt.unit && <div style={{ fontSize: 12, color: "#666" }}>Unit {hunt.unit}</div>}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      <span
+                        style={{
+                          padding: "4px 8px",
+                          background: "#e8f5e9",
+                          borderRadius: 4,
+                          fontSize: 12,
+                        }}
+                      >
+                        {hunt.status || "Completed"}
+                      </span>
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {hunt.guide_username || <span style={{ color: "#999" }}>—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* Documents Section */}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 16, fontSize: 20, fontWeight: 600 }}>Documents & Forms</h2>
+        <p style={{ marginBottom: 16, opacity: 0.8, fontSize: 14 }}>
+          Contract(s), Waiver / liability, Questionnaire, and other required client docs. Status: Not submitted → Submitted → Signed → Fully executed.
+        </p>
+        <div
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: 8,
+            overflow: "hidden",
+          }}
+        >
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "#f5f5f5" }}>
+                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Document type</th>
+                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Status</th>
+                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Timestamp</th>
+                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>View / Download</th>
+                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Admin sign</th>
+              </tr>
+            </thead>
+            <tbody>
+              {documents.map((doc) => {
+                const isPlaceholder = doc.id.startsWith("placeholder-") || !doc.storage_path;
+                const timestamp =
+                  doc.admin_signed_at || doc.client_signed_at || doc.created_at
+                    ? formatDate(
+                        (doc.admin_signed_at || doc.client_signed_at || doc.created_at) as string
+                      )
+                    : "—";
+                const showAdminSign = canAdminSign(doc);
+                const signing = adminSigningId === doc.id;
+                return (
+                  <tr key={doc.id} style={{ borderTop: "1px solid #eee" }}>
+                    <td style={{ padding: 12 }}>
+                      {DOC_TYPE_LABEL[doc.document_type] || doc.document_type}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      <span
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          fontSize: 12,
+                          background:
+                            doc.status === "fully_executed" || doc.status === "admin_signed"
+                              ? "#e8f5e9"
+                              : doc.status === "not_submitted"
+                                ? "#fff3e0"
+                                : "#e3f2fd",
+                          color:
+                            doc.status === "fully_executed" || doc.status === "admin_signed"
+                              ? "#2e7d32"
+                              : undefined,
+                          fontWeight:
+                            doc.status === "fully_executed" || doc.status === "admin_signed"
+                              ? 600
+                              : undefined,
+                        }}
+                      >
+                        {STATUS_LABEL[doc.status] || doc.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: 12 }}>{timestamp}</td>
+                    <td style={{ padding: 12 }}>
+                      {doc.document_type === "questionnaire" && doc.status !== "not_submitted" ? (
+                        <Link
+                          href={`/clients/${encodeURIComponent(email)}/questionnaire`}
+                          style={{
+                            padding: "6px 12px",
+                            background: "#0070f3",
+                            color: "white",
+                            textDecoration: "none",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            display: "inline-block",
+                          }}
+                        >
+                          View Details
+                        </Link>
+                      ) : doc.document_type === "predraw" && doc.status !== "not_submitted" ? (
+                        <Link
+                          href={`/clients/${encodeURIComponent(email)}/predraw`}
+                          style={{
+                            padding: "6px 12px",
+                            background: "#0070f3",
+                            color: "white",
+                            textDecoration: "none",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            display: "inline-block",
+                          }}
+                        >
+                          View Details
+                        </Link>
+                      ) : doc.document_type === "waiver" && doc.status !== "not_submitted" ? (
+                        <Link
+                          href={`/clients/${encodeURIComponent(email)}/waiver`}
+                          style={{
+                            padding: "6px 12px",
+                            background: "#0070f3",
+                            color: "white",
+                            textDecoration: "none",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            display: "inline-block",
+                          }}
+                        >
+                          View Details
+                        </Link>
+                      ) : !isPlaceholder && doc.storage_path ? (
+                        <a
+                          href={`/api/documents/${doc.id}/view`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            padding: "6px 12px",
+                            background: "#0070f3",
+                            color: "white",
+                            textDecoration: "none",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            display: "inline-block",
+                          }}
+                        >
+                          View / Download
+                        </a>
+                      ) : (
+                        <span style={{ color: "#999", fontSize: 12 }}>
+                          {doc.status === "not_submitted" ? "—" : "No file available"}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {showAdminSign ? (
+                        <button
+                          type="button"
+                          onClick={() => adminSign(doc.id)}
+                          disabled={!!adminSigningId}
+                          style={{
+                            padding: "6px 12px",
+                            background: "#2e7d32",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            cursor: adminSigningId ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {signing ? "Signing…" : "Countersign"}
+                        </button>
+                      ) : (
+                        <span style={{ color: "#999", fontSize: 12 }}>
+                          {doc.status === "fully_executed" ? "Done" : "—"}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {documents.length === 0 && (
+          <div
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              padding: 20,
+              background: "#fafafa",
+              textAlign: "center",
+              color: "#666",
+              marginTop: 16,
+            }}
+          >
+            <p>No documents tracked for this client yet.</p>
+          </div>
+        )}
+      </section>
+
+      {calendarEvents.length === 0 && (
+        <div style={{ textAlign: "center", padding: 48, color: "#666" }}>
+          <p>No hunt history found for this client.</p>
+        </div>
+      )}
+    </main>
+  );
+}

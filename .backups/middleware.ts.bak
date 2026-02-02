@@ -1,0 +1,50 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const OUTFITTER_COOKIE = "hc_outfitter"; // ✅ matches what you actually have
+
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Always allow public/auth routes
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/auth")
+  ) {
+    return NextResponse.next();
+  }
+
+  // Allow select-outfitter always (prevents loops)
+  if (pathname.startsWith("/select-outfitter")) {
+    return NextResponse.next();
+  }
+
+  // ✅ Detect Supabase SSR auth cookie (project-scoped)
+  const hasSupabaseSession = req.cookies
+    .getAll()
+    .some((c) => c.name.endsWith("-auth-token") && c.name.startsWith("sb-"));
+
+  if (!hasSupabaseSession) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // ✅ Require outfitter cookie only for dashboard
+  const hasOutfitter = req.cookies.get(OUTFITTER_COOKIE);
+
+  if (!hasOutfitter && pathname.startsWith("/dashboard")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/select-outfitter";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/select-outfitter/:path*"],
+};

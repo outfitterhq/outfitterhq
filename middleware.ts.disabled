@@ -1,0 +1,58 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const OUTFITTER_COOKIE = "hc_outfitter";
+const ROLE_COOKIE = "hc_role"; // owner | admin | guide | client | ""
+
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // Always allow public/auth + guide routes + next internals
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/guide") ||
+    pathname.startsWith("/logout")
+  ) {
+    return NextResponse.next();
+  }
+
+  // If role hint exists and user is not owner/admin: redirect immediately
+  // (This is only a fast-path; definitive enforcement is in app/(app)/layout.tsx)
+  const roleHint = req.cookies.get(ROLE_COOKIE)?.value;
+  if (roleHint && roleHint !== "owner" && roleHint !== "admin") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/guide";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  // Preserve your existing behavior: require outfitter selection for dashboard
+  const hasOutfitter = req.cookies.get(OUTFITTER_COOKIE);
+  if (!hasOutfitter && pathname.startsWith("/dashboard")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/select-outfitter";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    "/dashboard/:path*",
+    "/guides/:path*",
+    "/documents/:path*",
+    "/permits/:path*",
+    "/pricing/:path*",
+    "/private-land-tags/:path*",
+    "/calendar/:path*",
+    "/settings/:path*",
+    "/guide-portal-access/:path*",
+    "/select-outfitter/:path*",
+  ],
+};

@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 @theme inline {
@@ -19,8 +23,130 @@
   }
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+/* Prevent iOS zoom on input focus - 16px minimum */
+input, select, textarea, button {
+  font-size: max(16px, 1rem);
+}
+
+/* Touch-friendly tap targets (min 44px) */
+@media (max-width: 768px) {
+  .root-banner {
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+  }
+
+  /* Admin AppShell mobile */
+  .app-shell header {
+    padding: 10px 16px !important;
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .app-shell .app-shell-header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .app-shell .app-shell-header-title {
+    font-size: 16px !important;
+    min-width: 0;
+  }
+  .app-shell nav.nav-bar {
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+  }
+  .app-shell .nav-bar button[aria-label="Toggle menu"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .app-shell main {
+    padding: 16px !important;
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+  }
+  .app-shell footer {
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+    padding-bottom: max(24px, var(--safe-bottom)) !important;
+  }
+
+  /* Client portal mobile */
+  .client-shell header {
+    padding: 10px 16px !important;
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .client-shell .client-shell-header-right {
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .client-shell .client-shell-header-title {
+    font-size: 16px !important;
+    min-width: 0;
+  }
+  .client-shell nav.client-tabs-desktop {
+    display: none !important;
+  }
+  .client-shell nav.client-tabs-mobile {
+    display: flex !important;
+  }
+  .client-shell main {
+    padding: 16px !important;
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+    padding-bottom: max(24px, var(--safe-bottom)) !important;
+  }
+  .client-shell footer {
+    padding-left: max(16px, var(--safe-left)) !important;
+    padding-right: max(16px, var(--safe-right)) !important;
+    padding-bottom: max(24px, var(--safe-bottom)) !important;
+  }
+  .client-shell .nav-link {
+    min-height: 44px;
+    padding: 14px 16px !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 769px) {
+  .client-shell nav.client-tabs-mobile {
+    display: none !important;
+  }
+}
+
+/* Touch-friendly form inputs on mobile */
+@media (max-width: 768px) {
+  main input[type="text"],
+  main input[type="email"],
+  main input[type="password"],
+  main input[type="tel"],
+  main input[type="number"],
+  main select,
+  main textarea {
+    min-height: 44px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+  }
+  main button[type="submit"] {
+    min-height: 48px;
+    padding: 12px 24px;
+  }
 }
