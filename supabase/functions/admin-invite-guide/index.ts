@@ -75,11 +75,17 @@ Deno.serve(async (req) => {
     // NEVER use app_confirm_url from client - it may contain localhost
     const webAppUrl = Deno.env.get("WEB_APP_URL") || Deno.env.get("NEXT_PUBLIC_WEB_APP_URL");
     
+    // Log for debugging
+    console.log("[admin-invite-guide] WEB_APP_URL from env:", webAppUrl ? "SET" : "NOT SET");
+    console.log("[admin-invite-guide] Received app_confirm_url from client:", app_confirm_url);
+    
     if (!webAppUrl) {
+      console.error("[admin-invite-guide] ERROR: WEB_APP_URL secret not set in Supabase Edge Function secrets");
       return json(400, { 
         error: "Production URL not configured. Set WEB_APP_URL in Supabase Edge Function secrets.",
         hint: "Go to Supabase Dashboard → Edge Functions → admin-invite-guide → Settings → Secrets",
-        received_app_confirm_url: app_confirm_url
+        received_app_confirm_url: app_confirm_url,
+        debug: "WEB_APP_URL environment variable is not set"
       });
     }
 
@@ -94,6 +100,8 @@ Deno.serve(async (req) => {
     // ALWAYS use the production URL from env var, never trust client-provided URL
     const baseUrl = webAppUrl.replace(/\/$/, ""); // Remove trailing slash
     const app_confirm_url_final = `${baseUrl}/guide/accept-invite`;
+    
+    console.log("[admin-invite-guide] Using production URL:", app_confirm_url_final);
 
     // Caller-scoped client (uses JWT)
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
