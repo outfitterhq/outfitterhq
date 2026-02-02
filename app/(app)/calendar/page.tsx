@@ -454,22 +454,60 @@ export default function CalendarPage() {
                             const clientInfo = item.client_email ? ` — ${item.client_email}` : "";
                             return (
                               <li key={`${item.contract_id}-assign`} style={{ marginBottom: 8 }}>
-                                <Link
-                                  href={`/calendar?assign_contract=${item.contract_id}`}
+                                <button
+                                  onClick={async () => {
+                                    // Open event editor directly with contract details
+                                    const startDate = item.start_time 
+                                      ? new Date(item.start_time)
+                                      : new Date();
+                                    const endDate = item.start_time
+                                      ? new Date(new Date(item.start_time).getTime() + 7 * 24 * 60 * 60 * 1000)
+                                      : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                    
+                                    const newEvent: CalendarEvent = {
+                                      id: "",
+                                      title: item.title,
+                                      notes: item.client_email 
+                                        ? `Client: ${item.client_email}\n\nContract ID: ${item.contract_id}\n(This event will be linked to the contract when saved)`
+                                        : `Contract ID: ${item.contract_id}\n(This event will be linked to the contract when saved)`,
+                                      start_date: startDate.toISOString(),
+                                      end_date: endDate.toISOString(),
+                                      camp_name: null,
+                                      client_email: item.client_email,
+                                      guide_username: null,
+                                      audience: "internalOnly",
+                                      species: null,
+                                      unit: null,
+                                      status: "Pending",
+                                      weapon: null,
+                                    };
+                                    
+                                    // Store contract ID to link after saving
+                                    (newEvent as any).contractIdForLinking = item.contract_id;
+                                    
+                                    setEditingEvent(newEvent);
+                                    setShowEditor(true);
+                                  }}
                                   style={{ 
                                     fontWeight: 600, 
                                     color: "#1565c0",
                                     textDecoration: "none",
-                                    fontSize: 14
+                                    fontSize: 14,
+                                    background: "none",
+                                    border: "none",
+                                    padding: 0,
+                                    cursor: "pointer",
+                                    textAlign: "left",
+                                    width: "100%"
                                   }}
                                   onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
                                   onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
                                 >
                                   {item.title}
-                                </Link>
+                                </button>
                                 {dateStr && <span style={{ color: "#666", marginLeft: 8 }}>({dateStr})</span>}
                                 {clientInfo && <span style={{ color: "#666", marginLeft: 8 }}>{clientInfo}</span>}
-                                <span style={{ marginLeft: 8, color: "#e65100", fontWeight: 500 }}>→ Click to assign</span>
+                                <span style={{ marginLeft: 8, color: "#e65100", fontWeight: 500 }}>→ Click to open editor</span>
                               </li>
                             );
                           })}
@@ -500,22 +538,52 @@ export default function CalendarPage() {
                                 const clientInfo = item.client_email ? ` — ${item.client_email}` : "";
                                 return (
                                   <li key={`${item.hunt_id}-complete`} style={{ marginBottom: 8 }}>
-                                    <Link
-                                      href={`/calendar?event=${item.hunt_id}`}
+                                    <button
+                                      onClick={async () => {
+                                        // Fetch event and open editor directly
+                                        try {
+                                          const res = await fetch(`/api/calendar/${item.hunt_id}`);
+                                          if (res.ok) {
+                                            const data = await res.json();
+                                            const e = data.event;
+                                            if (e) {
+                                              const mapped: CalendarEvent = {
+                                                ...e,
+                                                start_date: e.start_time || e.start_date,
+                                                end_date: e.end_time || e.end_date,
+                                                notes: e.notes || e.description,
+                                              };
+                                              setEditingEvent(mapped);
+                                              setShowEditor(true);
+                                            }
+                                          } else {
+                                            alert("Failed to load event");
+                                          }
+                                        } catch (error) {
+                                          console.error("Failed to load event:", error);
+                                          alert("Failed to load event");
+                                        }
+                                      }}
                                       style={{ 
                                         fontWeight: 600, 
                                         color: "#1565c0",
                                         textDecoration: "none",
-                                        fontSize: 14
+                                        fontSize: 14,
+                                        background: "none",
+                                        border: "none",
+                                        padding: 0,
+                                        cursor: "pointer",
+                                        textAlign: "left",
+                                        width: "100%"
                                       }}
                                       onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
                                       onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
                                     >
                                       {item.title}
-                                    </Link>
+                                    </button>
                                     {dateStr && <span style={{ color: "#666", marginLeft: 8 }}>({dateStr})</span>}
                                     {clientInfo && <span style={{ color: "#666", marginLeft: 8 }}>{clientInfo}</span>}
-                                    <span style={{ marginLeft: 8, color: "#e65100", fontWeight: 500 }}>→ Fill all fields to mark as Booked</span>
+                                    <span style={{ marginLeft: 8, color: "#e65100", fontWeight: 500 }}>→ Click to open editor</span>
                                   </li>
                                 );
                               })}
@@ -753,7 +821,7 @@ export default function CalendarPage() {
             await loadEvents();
             setShowEditor(false);
             setEditingEvent(null);
-            loadPendingActions();
+            await loadPendingActions();
           }}
         />
       )}
@@ -1307,6 +1375,30 @@ function EventEditor({
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Failed to save");
+      }
+
+      // Get the saved event ID from response (for new events)
+      const savedEvent = await res.json().catch(() => null);
+      const savedEventId = savedEvent?.event?.id || event?.id;
+      
+      // If this was a new event created from a contract, link it now
+      const contractId = (event as any)?.contractIdForLinking;
+      if (contractId && savedEventId && !event?.id) {
+        try {
+          const linkRes = await fetch("/api/calendar/assign-contract", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              contract_id: contractId,
+              hunt_id: savedEventId 
+            }),
+          });
+          if (!linkRes.ok) {
+            console.error("Failed to link contract to event");
+          }
+        } catch (error) {
+          console.error("Failed to link contract:", error);
+        }
       }
 
       onSave();
