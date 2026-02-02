@@ -203,20 +203,11 @@ Deno.serve(async (req) => {
 
     if (!targetUserId) {
       // Fallback: try to find user ID after invite
-      if (!targetUserId) {
-        targetUserId = await findUserIdByEmail(admin, email);
-      }
+      targetUserId = await findUserIdByEmail(admin, email);
       if (!targetUserId) {
         return json(500, { error: "User lookup returned null after invite" });
       }
     }
-
-    // Resolve target user id
-    let targetUserId: string | null = linkData?.user?.id ?? null;
-    if (!targetUserId) {
-      targetUserId = await findUserIdByEmail(admin, email);
-    }
-    if (!targetUserId) return json(500, { error: "User lookup returned null" });
 
     // ALWAYS upsert membership row
     const nowIso = new Date().toISOString();
