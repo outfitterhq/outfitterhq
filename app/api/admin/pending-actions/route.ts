@@ -76,7 +76,7 @@ export async function GET() {
     // 2) Events with status "Pending" - need to be completed (all fields filled) before they can be "Booked"
     const { data: pendingEvents } = await supabase
       .from("calendar_events")
-      .select("id, title, start_time, client_email, guide_username, species, unit, weapon, camp_name, status")
+      .select("id, title, start_time, end_time, client_email, guide_username, species, unit, weapon, camp_name, status")
       .eq("outfitter_id", outfitterId)
       .eq("status", "Pending")
       .gte("end_time", now) // future or current hunts only
