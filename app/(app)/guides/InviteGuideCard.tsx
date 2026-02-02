@@ -118,18 +118,27 @@ export default function InviteGuideCard() {
           const urlData = await urlRes.json();
           webAppUrl = urlData.webAppUrl;
           
+          console.log('[InviteGuide] Received webAppUrl from API:', webAppUrl);
+          
           // If API returned localhost, show error message to user
           if (webAppUrl.includes('localhost') || webAppUrl.includes('127.0.0.1')) {
-            setMsg('⚠️ ERROR: Invite links are using localhost. This will not work in production.\n\nPlease set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables to your production URL (e.g., https://outfitterhq.vercel.app)');
+            const debugInfo = await fetch("/api/debug/web-app-url").then(r => r.json()).catch(() => ({}));
+            setMsg(
+              `⚠️ ERROR: Invite links are using localhost (${webAppUrl}). This will not work in production.\n\n` +
+              `Please set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables to your production URL.\n\n` +
+              `Debug info: ${JSON.stringify(debugInfo, null, 2)}`
+            );
             setBusy(false);
             return;
           }
         } else {
-          setMsg('Failed to get production URL. Please set NEXT_PUBLIC_WEB_APP_URL in Vercel.');
+          const errorText = await urlRes.text().catch(() => 'Unknown error');
+          setMsg(`Failed to get production URL (${urlRes.status}): ${errorText}\n\nPlease set NEXT_PUBLIC_WEB_APP_URL in Vercel.`);
           setBusy(false);
           return;
         }
       } catch (err) {
+        console.error('[InviteGuide] Error fetching web app URL:', err);
         setMsg(`Failed to fetch web app URL: ${String(err)}\n\nPlease set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables.`);
         setBusy(false);
         return;
