@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { supabaseRoute } from "@/lib/supabase/server";
 import { OUTFITTER_COOKIE } from "@/lib/tenant";
 
-export type PendingActionType = "generate_contract" | "send_docusign" | "admin_sign";
+export type PendingActionType = "assign_to_calendar" | "generate_contract" | "send_docusign" | "admin_sign";
 
 export interface PendingActionItem {
   hunt_id: string;
