@@ -256,9 +256,9 @@ export async function createOrUpdateCalendarEventFromContract(
     console.log(`   - Title: ${title}`);
     console.log(`   - Client: ${contract.client_email}${clientName ? ` (${clientName})` : ""}`);
     console.log(`   - Dates: ${huntStart} to ${huntEnd}`);
-    console.log(`   - Species: ${speciesMatch ? speciesMatch[1].trim() : "Not set"}`);
-    console.log(`   - Weapon: ${weaponMatch ? weaponMatch[1].trim() : "Not set"}`);
-    console.log(`   - Camp: ${campMatch ? campMatch[1].trim() : "Not set"}`);
+    console.log(`   - Species: ${species || "Not set"}`);
+    console.log(`   - Weapon: ${weapon || "Not set"}`);
+    console.log(`   - Camp: ${camp || "Not set"}`);
     console.log(`   - Status: Pending (admin needs to assign guide/cook)`);
     console.log(`   - Audience: internalOnly (only visible to admin until setup complete)`);
   } catch (error) {
