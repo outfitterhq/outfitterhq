@@ -102,7 +102,7 @@ export async function createOrUpdateCalendarEventFromContract(
     if (contract.hunt_id) {
       const { data: existingEvent, error: eventError } = await supabase
         .from("calendar_events")
-        .select("id, title, species, unit, weapon, camp_name, hunt_code, client_email, start_time, end_time")
+        .select("id, title, species, unit, weapon, camp_name, hunt_code, client_email, start_time, end_time, guide_username, status, audience, notes")
         .eq("id", contract.hunt_id)
         .single();
 
