@@ -20,6 +20,7 @@ interface TimeOffRequest {
 export default function CalendarPage() {
   const searchParams = useSearchParams();
   const eventIdFromUrl = searchParams.get("event");
+  const assignContractId = searchParams.get("assign_contract");
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
@@ -41,7 +42,7 @@ export default function CalendarPage() {
   const [speciesOptions, setSpeciesOptions] = useState<string[]>(["Elk", "Mule / Coues Deer", "Antelope", "Oryx", "Ibex", "Bighorn", "Aoudad"]);
   const [pendingActions, setPendingActions] = useState<{
     total: number;
-    counts: { generate_contract: number; send_docusign: number; admin_sign: number };
+    counts: { assign_to_calendar: number; generate_contract: number; send_docusign: number; admin_sign: number };
     items: Array<{ hunt_id: string; contract_id?: string; action: string; title: string; start_time: string | null; client_email: string | null }>;
   } | null>(null);
   const [showPendingActions, setShowPendingActions] = useState(true);
@@ -82,6 +83,64 @@ export default function CalendarPage() {
       cancelled = true;
     };
   }, [eventIdFromUrl]);
+
+  // Handle assign_contract URL parameter - create calendar event from contract
+  useEffect(() => {
+    if (!assignContractId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/calendar/assign-contract", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contract_id: assignContractId }),
+        });
+        if (!res.ok || cancelled) {
+          const error = await res.json().catch(() => ({}));
+          alert(error.error || "Failed to assign contract to calendar");
+          return;
+        }
+        const data = await res.json();
+        // Reload events and pending actions
+        await loadEvents();
+        await loadPendingActions();
+        // Open the newly created event
+        if (data.hunt_id) {
+          window.history.replaceState({}, "", `/calendar?event=${data.hunt_id}`);
+          // Force re-trigger event opening
+          setTimeout(async () => {
+            try {
+              const eventRes = await fetch(`/api/calendar/${data.hunt_id}`);
+              if (eventRes.ok) {
+                const eventData = await eventRes.json();
+                const e = eventData.event;
+                if (e) {
+                  const mapped: CalendarEvent = {
+                    ...e,
+                    start_date: e.start_time || e.start_date,
+                    end_date: e.end_time || e.end_date,
+                    notes: e.notes || e.description,
+                  };
+                  setSelectedDate(new Date(e.start_time || e.start_date));
+                  setEditingEvent(mapped);
+                  setShowEditor(true);
+                  setOpenedEventId(data.hunt_id);
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }, 500);
+        }
+      } catch (e) {
+        console.error("Failed to assign contract:", e);
+        alert("Failed to assign contract to calendar");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [assignContractId]);
 
   // Load guides for filter dropdown
   useEffect(() => {
@@ -365,18 +424,25 @@ export default function CalendarPage() {
               <ul style={{ margin: 0, paddingLeft: 20, listStyle: "disc" }}>
                 {pendingActions.items.map((item) => {
                   const actionLabel =
-                    item.action === "generate_contract"
-                      ? "Generate contract"
-                      : item.action === "send_docusign"
-                        ? "Send to DocuSign"
-                        : "Sign (admin)";
+                    item.action === "assign_to_calendar"
+                      ? "Assign to calendar"
+                      : item.action === "generate_contract"
+                        ? "Generate contract"
+                        : item.action === "send_docusign"
+                          ? "Send to DocuSign"
+                          : "Sign (admin)";
                   const dateStr = item.start_time
                     ? new Date(item.start_time).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
                     : "";
+                  const linkUrl = item.action === "assign_to_calendar" && item.contract_id
+                    ? `/calendar?assign_contract=${item.contract_id}`
+                    : item.hunt_id
+                      ? `/calendar?event=${encodeURIComponent(item.hunt_id)}`
+                      : "#";
                   return (
-                    <li key={`${item.hunt_id}-${item.action}`} style={{ marginBottom: 6 }}>
+                    <li key={`${item.hunt_id || item.contract_id}-${item.action}`} style={{ marginBottom: 6 }}>
                       <Link
-                        href={`/calendar?event=${encodeURIComponent(item.hunt_id)}`}
+                        href={linkUrl}
                         style={{ fontWeight: 500, color: "#1565c0" }}
                       >
                         {item.title}

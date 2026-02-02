@@ -44,6 +44,14 @@ export async function GET(
       .eq("client_email", decodedEmail)
       .order("start_time", { ascending: false });
 
+    // Get hunt contracts for this client
+    const { data: huntContracts } = await supabase
+      .from("hunt_contracts")
+      .select("id, status, client_email, hunt_id, created_at, client_signed_at, admin_signed_at, content")
+      .eq("outfitter_id", outfitterId)
+      .eq("client_email", decodedEmail)
+      .order("created_at", { ascending: false });
+
     // Get documents linked to this client (document_type, status, signing timestamps)
     // First get client ID to query by client_id column
     let clientIdForDocs: string | null = clientData?.id || null;
@@ -253,6 +261,7 @@ export async function GET(
           source: "calendar",
         },
         calendarEvents: calendarEvents || [],
+        huntContracts: huntContracts || [],
         documents,
       },
       { status: 200 }

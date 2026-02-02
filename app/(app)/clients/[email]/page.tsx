@@ -62,6 +62,14 @@ export default function ClientDetailPage() {
 
   const [client, setClient] = useState<Client | null>(null);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [huntContracts, setHuntContracts] = useState<Array<{
+    id: string;
+    status: string;
+    hunt_id: string | null;
+    created_at: string;
+    client_signed_at: string | null;
+    admin_signed_at: string | null;
+  }>>([]);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +91,7 @@ export default function ClientDetailPage() {
       const data = await res.json();
       setClient(data.client);
       setCalendarEvents(data.calendarEvents || []);
+      setHuntContracts(data.huntContracts || []);
       setDocuments(data.documents || []);
     } catch (e: any) {
       setError(String(e));
@@ -340,6 +349,91 @@ export default function ClientDetailPage() {
                     </td>
                     <td style={{ padding: 12 }}>
                       {hunt.guide_username || <span style={{ color: "#999" }}>—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* Hunt Contracts Section */}
+      {huntContracts.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ marginBottom: 16, fontSize: 20, fontWeight: 600 }}>Hunt Contracts</h2>
+          <p style={{ marginBottom: 16, opacity: 0.8, fontSize: 14 }}>
+            All hunt contracts for this client. Assign to calendar to create calendar events.
+          </p>
+          <div
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              overflow: "hidden",
+            }}
+          >
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#f5f5f5" }}>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Contract ID</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Created</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Calendar Event</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {huntContracts.map((contract) => (
+                  <tr key={contract.id} style={{ borderTop: "1px solid #eee" }}>
+                    <td style={{ padding: 12 }}>
+                      <code style={{ fontSize: 12 }}>{contract.id.slice(0, 8)}...</code>
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      <span
+                        style={{
+                          padding: "4px 8px",
+                          background: contract.status === "fully_executed" ? "#e8f5e9" : "#fff3cd",
+                          borderRadius: 4,
+                          fontSize: 12,
+                        }}
+                      >
+                        {contract.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {formatDate(contract.created_at)}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {contract.hunt_id ? (
+                        <Link
+                          href={`/calendar?event=${contract.hunt_id}`}
+                          style={{ color: "#0070f3", textDecoration: "none" }}
+                        >
+                          View Event
+                        </Link>
+                      ) : (
+                        <span style={{ color: "#d32f2f", fontSize: 12 }}>Not assigned</span>
+                      )}
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      {!contract.hunt_id ? (
+                        <Link
+                          href={`/calendar?assign_contract=${contract.id}`}
+                          style={{
+                            padding: "6px 12px",
+                            background: "#0070f3",
+                            color: "white",
+                            textDecoration: "none",
+                            borderRadius: 6,
+                            fontSize: 14,
+                            display: "inline-block",
+                          }}
+                        >
+                          Assign to Calendar
+                        </Link>
+                      ) : (
+                        <span style={{ color: "#999", fontSize: 12 }}>Assigned</span>
+                      )}
                     </td>
                   </tr>
                 ))}

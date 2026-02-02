@@ -47,18 +47,20 @@ export async function createOrUpdateCalendarEventFromContract(
     console.log(`📅 [CALENDAR EVENT] client_signed_at: ${contractWithSignatures?.client_signed_at || 'null'}`);
     console.log(`📅 [CALENDAR EVENT] admin_signed_at: ${contractWithSignatures?.admin_signed_at || 'null'}`);
     
-    // Create event if contract is fully_executed OR if both parties have signed
-    if (contract.status !== "fully_executed" && !bothSigned) {
-      console.log(`⚠️ [CALENDAR EVENT] Contract not fully executed and both parties haven't signed. Skipping calendar event.`);
-      console.log(`   Status: ${contract.status}, Both signed: ${bothSigned}`);
+    // Only create/update calendar event if contract is fully_executed
+    // If contract doesn't have hunt_id yet, admin needs to assign it from calendar page first
+    if (contract.status !== "fully_executed") {
+      console.log(`⚠️ [CALENDAR EVENT] Contract status is ${contract.status}, not fully_executed. Skipping calendar event creation.`);
+      console.log(`   Admin should assign this contract to calendar from the calendar page.`);
       return;
     }
     
-    if (bothSigned && contract.status !== "fully_executed") {
-      console.log(`📅 [CALENDAR EVENT] Both parties signed but status is ${contract.status}. Creating calendar event anyway.`);
+    // If contract is fully_executed but has no hunt_id, create calendar event now
+    if (!contract.hunt_id) {
+      console.log(`📅 [CALENDAR EVENT] Contract fully executed but no calendar event. Creating now...`);
+    } else {
+      console.log(`📅 [CALENDAR EVENT] Contract fully executed, updating existing calendar event ${contract.hunt_id}...`);
     }
-    
-    console.log(`📅 [CALENDAR EVENT] Proceeding with calendar event creation...`);
 
     // Get client completion data to extract dates and details
     const completionData = (contract.client_completion_data as any) || {};

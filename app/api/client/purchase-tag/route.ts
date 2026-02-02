@@ -108,7 +108,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to reserve tag" }, { status: 500 });
   }
 
-  // Create a hunt (calendar event) for this tag – auto-fill from tag + hunt code so contract has full details
+  // DO NOT create calendar event here - admin will create/assign it from calendar page
+  // Just mark tag as sold and create contract (contract will be linked to calendar event later by admin)
+  
+  // Create hunt contract directly (without calendar event) - admin will assign to calendar later
+  // Contract needs: client_email, outfitter_id, tag info
+  const clientName = client.first_name && client.last_name
+    ? `${client.first_name} ${client.last_name}`
+    : userEmail;
+
   const isPrivateLand = tag.tag_type === "private_land";
   const isUnitWide = tag.tag_type === "unit_wide";
   const options = (tag.hunt_code_options || "").split(",").map((c: string) => c.trim()).filter(Boolean);
@@ -125,99 +133,82 @@ export async function POST(req: Request) {
     huntCode = isPrivateLand ? (tag.hunt_code || null) : (tag.hunt_code || null);
   }
 
-  let startTimeIso: string;
-  let endTimeIso: string;
+  // Get hunt window dates if hunt code exists
   let huntWindowStart: string | null = null;
   let huntWindowEnd: string | null = null;
-  let weaponLabel: string | null = null; // Rifle, Archery, Muzzleloader for display
-
   if (huntCode) {
     const { getHuntCodeByCode } = await import("@/lib/hunt-codes-server");
-    const { weaponDigitToTagType } = await import("@/lib/hunt-codes");
     const codeRow = getHuntCodeByCode(huntCode);
     if (codeRow?.start_date && codeRow?.end_date) {
       huntWindowStart = new Date(codeRow.start_date + "T00:00:00Z").toISOString();
       huntWindowEnd = new Date(codeRow.end_date + "T23:59:59Z").toISOString();
     }
-    const parts = huntCode.trim().split("-");
-    if (parts.length >= 2 && parts[1]) {
-      weaponLabel = weaponDigitToTagType(parts[1]);
-    }
   }
 
+  // Determine dates from client input or hunt window
+  let startTimeIso: string | null = null;
+  let endTimeIso: string | null = null;
   if (client_start_date && client_end_date) {
     startTimeIso = new Date(client_start_date + "T00:00:00Z").toISOString();
     endTimeIso = new Date(client_end_date + "T23:59:59Z").toISOString();
   } else if (huntWindowStart && huntWindowEnd) {
     startTimeIso = huntWindowStart;
     endTimeIso = huntWindowEnd;
-  } else {
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 30);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 5);
-    startTimeIso = startDate.toISOString();
-    endTimeIso = endDate.toISOString();
   }
 
-  const clientName = client.first_name && client.last_name
-    ? `${client.first_name} ${client.last_name}`
-    : userEmail;
+  // Create contract directly (no calendar event yet - admin will create/assign from calendar)
+  const contractContent = `HUNT CONTRACT\n\n` +
+    `Client: ${clientName}\n` +
+    `Email: ${userEmail}\n\n` +
+    `Tag: ${tag.tag_name}\n` +
+    `Species: ${tag.species || "Not specified"}\n` +
+    `Unit: ${tag.unit || "Not specified"}\n` +
+    `${huntCode ? `Hunt Code: ${huntCode}\n` : ""}` +
+    `${startTimeIso ? `Start Date: ${new Date(startTimeIso).toISOString().slice(0, 10)}\n` : ""}` +
+    `${endTimeIso ? `End Date: ${new Date(endTimeIso).toISOString().slice(0, 10)}\n` : ""}\n` +
+    `This contract is for a private land tag hunt. Complete your booking to add guide fees and dates, then sign the contract.\n\n` +
+    `Generated: ${new Date().toISOString().slice(0, 10)}`;
 
-  // Calendar weapon: DB uses Rifle, Muzzleloader, Bow (map Archery -> Bow)
-  const calendarWeapon =
-    weaponLabel === "Archery" ? "Bow" : weaponLabel === "Rifle" ? "Rifle" : weaponLabel === "Muzzleloader" ? "Muzzleloader" : null;
-
-  const title = weaponLabel
-    ? `${tag.species} Hunt - ${weaponLabel}`
-    : `${tag.species} Hunt - ${clientName}`;
-
-  const insertPayload: Record<string, unknown> = {
-    outfitter_id: outfitterId,
-    title,
-    notes: `${isPrivateLand ? "Private land" : "Unit-wide"} tag purchase: ${tag.tag_name}\n${huntCode ? `Hunt Code: ${huntCode}` : "Hunt code to be set by admin"}\nClient: ${clientName}\nEmail: ${userEmail}`,
-    start_time: startTimeIso,
-    end_time: endTimeIso,
-    client_email: userEmail,
-    species: tag.species ?? null,
-    unit: tag.unit ?? null,
-    status: "Pending", // Admin needs to assign guide/cook before client can see it
-    audience: "internalOnly", // Only visible to admin until contract is fully executed and guide assigned
-    hunt_type: "private_land",
-    tag_status: "confirmed",
+  const clientCompletionData: Record<string, unknown> = {
+    tag_id: tag_id,
+    tag_name: tag.tag_name,
+    species: tag.species,
+    unit: tag.unit,
     hunt_code: huntCode,
     private_land_tag_id: tag_id,
   };
-  if (calendarWeapon) (insertPayload as Record<string, unknown>).weapon = calendarWeapon;
-  if (huntWindowStart) insertPayload.hunt_window_start = huntWindowStart;
-  if (huntWindowEnd) insertPayload.hunt_window_end = huntWindowEnd;
+  if (startTimeIso) clientCompletionData.client_start_date = new Date(startTimeIso).toISOString().slice(0, 10);
+  if (endTimeIso) clientCompletionData.client_end_date = new Date(endTimeIso).toISOString().slice(0, 10);
+  if (huntWindowStart) clientCompletionData.hunt_window_start = huntWindowStart;
+  if (huntWindowEnd) clientCompletionData.hunt_window_end = huntWindowEnd;
 
-  const { data: hunt, error: huntError } = await admin
-    .from("calendar_events")
-    .insert(insertPayload as Record<string, unknown>)
-    .select()
+  const { data: contract, error: contractError } = await admin
+    .from("hunt_contracts")
+    .insert({
+      outfitter_id: outfitterId,
+      hunt_id: null, // No calendar event yet - admin will assign from calendar page
+      client_email: userEmail,
+      client_name: clientName,
+      content: contractContent,
+      status: "pending_client_completion",
+      client_completion_data: clientCompletionData,
+    })
+    .select("id, status")
     .single();
 
-  if (huntError) {
-    console.error("Hunt creation error:", huntError);
+  if (contractError) {
+    console.error("Contract creation error:", contractError);
     await admin
       .from("private_land_tags")
       .update({ is_available: true, client_email: null })
       .eq("id", tag_id);
     return NextResponse.json(
       {
-        error: "Failed to create hunt booking",
-        details: huntError.message,
-        code: huntError.code,
+        error: "Failed to create hunt contract",
+        details: contractError.message,
       },
       { status: 500 }
     );
-  }
-
-  // Create hunt contract immediately so client and admin see it (complete-booking will update dates/guide fee later)
-  const { contractId, error: contractError } = await createHuntContractIfNeeded(admin, hunt.id);
-  if (!contractId) {
-    console.warn("[purchase-tag] createHuntContractIfNeeded did not create contract for hunt", hunt.id, contractError);
   }
 
   return NextResponse.json({
@@ -231,17 +222,11 @@ export async function POST(req: Request) {
         tag_name: tag.tag_name,
         price: tag.price,
       },
-      hunt: {
-        id: hunt.id,
-        title: hunt.title,
-        start_date: hunt.start_time,
-        end_date: hunt.end_time,
+      contract: {
+        id: contract.id,
+        status: contract.status,
       },
-      contract_generated: Boolean(contractId),
-      contract_error: contractError ?? undefined,
-      note: contractId
-        ? "Your contract is ready. Complete your booking on the next page, then sign it under Documents → Hunt Contract."
-        : "Your outfitter will generate the hunt contract.",
+      note: "Your outfitter will assign this hunt to the calendar. Complete your booking to add guide fees and dates.",
     },
     note: "This is a simulated purchase. No actual payment was processed.",
   });

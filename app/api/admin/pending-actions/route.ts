@@ -47,7 +47,33 @@ export async function GET() {
     const items: PendingActionItem[] = [];
     const now = new Date().toISOString();
 
-    // 1) Needs contract: hunts with client, tag drawn/confirmed, no contract yet
+    // 1) Contracts without calendar events - need to assign to calendar
+    const { data: contractsNoHunt } = await supabase
+      .from("hunt_contracts")
+      .select("id, client_email, status, created_at, client_completion_data")
+      .eq("outfitter_id", outfitterId)
+      .is("hunt_id", null) // Contracts without calendar events
+      .in("status", ["pending_client_completion", "ready_for_signature", "client_signed", "fully_executed"])
+      .order("created_at", { ascending: true });
+
+    for (const contract of contractsNoHunt ?? []) {
+      const completionData = (contract.client_completion_data as any) || {};
+      const title = completionData.species 
+        ? `${completionData.species} Hunt`
+        : "Hunt Contract";
+      items.push({
+        hunt_id: "", // No hunt_id yet
+        contract_id: contract.id,
+        action: "assign_to_calendar" as any, // New action type
+        title: title,
+        start_time: completionData.client_start_date 
+          ? new Date(completionData.client_start_date + "T00:00:00Z").toISOString()
+          : null,
+        client_email: contract.client_email,
+      });
+    }
+
+    // 2) Needs contract: hunts with client, tag drawn/confirmed, no contract yet
     const { data: huntsNoContract } = await supabase
       .from("calendar_events")
       .select("id, title, start_time, client_email")
@@ -121,6 +147,7 @@ export async function GET() {
     }
 
     const counts = {
+      assign_to_calendar: items.filter((i) => i.action === "assign_to_calendar").length,
       generate_contract: items.filter((i) => i.action === "generate_contract").length,
       send_docusign: items.filter((i) => i.action === "send_docusign").length,
       admin_sign: items.filter((i) => i.action === "admin_sign").length,
