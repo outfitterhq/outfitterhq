@@ -102,9 +102,25 @@ export default function InviteCookCard() {
 
       const fnUrl = `${base}/functions/v1/admin-invite-cook`;
 
-      // Get production web app URL from environment variable, fallback to current origin
-      // This ensures invite links always point to production, not localhost or preview URLs
-      const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
+      // Get production web app URL from server-side API (uses env vars or Vercel URL)
+      let webAppUrl: string;
+      try {
+        const urlRes = await fetch("/api/web-app-url");
+        if (urlRes.ok) {
+          const urlData = await urlRes.json();
+          webAppUrl = urlData.webAppUrl || window.location.origin;
+        } else {
+          webAppUrl = window.location.origin;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch web app URL, using current origin:", err);
+        webAppUrl = window.location.origin;
+      }
+      
+      // Warn if using localhost
+      if (webAppUrl.includes('localhost') || webAppUrl.includes('127.0.0.1')) {
+        console.warn('⚠️ Invite link will use localhost. Set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables.');
+      }
 
       // Redirect URL includes outfitter_id so the cook lands with the correct outfitter (the one who sent the invite)
       const payload = {

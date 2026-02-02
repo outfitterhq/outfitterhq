@@ -110,9 +110,14 @@ export default function InviteGuideCard() {
 
       const fnUrl = `${base}/functions/v1/admin-invite-guide`;
 
-      // Get production web app URL from environment variable, fallback to current origin
-      // This ensures invite links always point to production, not localhost or preview URLs
+      // Get production web app URL from environment variable
+      // In production, this MUST be set to avoid localhost links
       const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
+      
+      // Warn if using localhost in what appears to be production
+      if (webAppUrl.includes('localhost') || webAppUrl.includes('127.0.0.1')) {
+        console.warn('⚠️ Invite link will use localhost. Set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables.');
+      }
       
       // Redirect URL includes outfitter_id so the guide lands with the correct outfitter (the one who sent the invite)
       const payload = {
