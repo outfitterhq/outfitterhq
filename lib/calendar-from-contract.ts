@@ -129,14 +129,17 @@ export async function createOrUpdateCalendarEventFromContract(
         }
 
         // Update existing event with dates from contract
-        // If event doesn't have guide assigned yet, keep status as "Pending"
+        // If event doesn't have guide assigned yet, keep status as "Pending" and internalOnly
+        // Once guide is assigned, status becomes "Booked" and audience becomes "all" (handled in calendar/[id]/route.ts)
         const needsSetup = !existingEvent.guide_username;
         const updateData: any = {
           client_email: contract.client_email, // Ensure client_email is set
           tag_status: "confirmed", // Mark as confirmed when contract is signed
           status: needsSetup ? "Pending" : "Booked", // Keep as "Pending" if guide not assigned
-          audience: needsSetup ? "internalOnly" : "all", // Only show to admin until setup complete
+          audience: needsSetup ? "internalOnly" : "all", // Only show to admin until guide assigned
         };
+        
+        console.log(`📅 [CALENDAR EVENT] Updating event ${contract.hunt_id}: needsSetup=${needsSetup}, will set status=${updateData.status}, audience=${updateData.audience}`);
 
         // Update notes with client info
         if (clientName) {

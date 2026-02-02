@@ -175,14 +175,14 @@ export async function POST(req: Request) {
   const insertPayload: Record<string, unknown> = {
     outfitter_id: outfitterId,
     title,
-    notes: `${isPrivateLand ? "Private land" : "Unit-wide"} tag purchase: ${tag.tag_name}\n${huntCode ? `Hunt Code: ${huntCode}` : "Hunt code to be set by admin"}`,
+    notes: `${isPrivateLand ? "Private land" : "Unit-wide"} tag purchase: ${tag.tag_name}\n${huntCode ? `Hunt Code: ${huntCode}` : "Hunt code to be set by admin"}\nClient: ${clientName}\nEmail: ${userEmail}`,
     start_time: startTimeIso,
     end_time: endTimeIso,
     client_email: userEmail,
     species: tag.species ?? null,
     unit: tag.unit ?? null,
-    status: "Pending",
-    audience: "all",
+    status: "Pending", // Admin needs to assign guide/cook before client can see it
+    audience: "internalOnly", // Only visible to admin until contract is fully executed and guide assigned
     hunt_type: "private_land",
     tag_status: "confirmed",
     hunt_code: huntCode,
