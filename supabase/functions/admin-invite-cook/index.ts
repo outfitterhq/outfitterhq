@@ -70,13 +70,14 @@ Deno.serve(async (req) => {
     if (!isValidEmail(email)) return json(400, { error: "Invalid email address", email });
 
     // Get production URL from environment variable (set in Supabase Edge Function secrets)
-    // Fallback to app_confirm_url if provided, but prefer WEB_APP_URL env var
-    const webAppUrl = Deno.env.get("WEB_APP_URL") || Deno.env.get("NEXT_PUBLIC_WEB_APP_URL") || app_confirm_url;
+    // NEVER use app_confirm_url from client - it may contain localhost
+    const webAppUrl = Deno.env.get("WEB_APP_URL") || Deno.env.get("NEXT_PUBLIC_WEB_APP_URL");
     
     if (!webAppUrl) {
       return json(400, { 
         error: "Production URL not configured. Set WEB_APP_URL in Supabase Edge Function secrets.",
-        hint: "Go to Supabase Dashboard → Edge Functions → admin-invite-cook → Settings → Secrets"
+        hint: "Go to Supabase Dashboard → Edge Functions → admin-invite-cook → Settings → Secrets",
+        received_app_confirm_url: app_confirm_url
       });
     }
 
@@ -88,11 +89,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use the production URL from env var, or the provided app_confirm_url if it's valid
+    // ALWAYS use the production URL from env var, never trust client-provided URL
     const baseUrl = webAppUrl.replace(/\/$/, ""); // Remove trailing slash
-    const app_confirm_url_final = app_confirm_url && !app_confirm_url.includes("localhost") 
-      ? app_confirm_url 
-      : `${baseUrl}/cook/accept-invite`;
+    const app_confirm_url_final = `${baseUrl}/cook/accept-invite`;
 
     // Caller-scoped client (uses JWT)
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
