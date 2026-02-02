@@ -116,18 +116,23 @@ export default function InviteGuideCard() {
         const urlRes = await fetch("/api/web-app-url");
         if (urlRes.ok) {
           const urlData = await urlRes.json();
-          webAppUrl = urlData.webAppUrl || window.location.origin;
+          webAppUrl = urlData.webAppUrl;
+          
+          // If API returned localhost, show error message to user
+          if (webAppUrl.includes('localhost') || webAppUrl.includes('127.0.0.1')) {
+            setMsg('⚠️ ERROR: Invite links are using localhost. This will not work in production.\n\nPlease set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables to your production URL (e.g., https://outfitterhq.vercel.app)');
+            setBusy(false);
+            return;
+          }
         } else {
-          webAppUrl = window.location.origin;
+          setMsg('Failed to get production URL. Please set NEXT_PUBLIC_WEB_APP_URL in Vercel.');
+          setBusy(false);
+          return;
         }
       } catch (err) {
-        console.warn("Failed to fetch web app URL, using current origin:", err);
-        webAppUrl = window.location.origin;
-      }
-      
-      // Warn if using localhost
-      if (webAppUrl.includes('localhost') || webAppUrl.includes('127.0.0.1')) {
-        console.warn('⚠️ Invite link will use localhost. Set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables.');
+        setMsg(`Failed to fetch web app URL: ${String(err)}\n\nPlease set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables.`);
+        setBusy(false);
+        return;
       }
       
       // Redirect URL includes outfitter_id so the guide lands with the correct outfitter (the one who sent the invite)
