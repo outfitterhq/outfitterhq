@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { supabaseRoute } from "@/lib/supabase/server";
 import { OUTFITTER_COOKIE } from "@/lib/tenant";
 
-export type PendingActionType = "assign_to_calendar" | "generate_contract" | "send_docusign" | "admin_sign";
+export type PendingActionType = "assign_to_calendar" | "complete_event" | "generate_contract" | "send_docusign" | "admin_sign";
 
 export interface PendingActionItem {
   hunt_id: string;
@@ -73,13 +73,43 @@ export async function GET() {
       });
     }
 
-    // 2) Needs contract: hunts with client, tag drawn/confirmed, no contract yet
+    // 2) Events with status "Pending" - need to be completed (all fields filled) before they can be "Booked"
+    const { data: pendingEvents } = await supabase
+      .from("calendar_events")
+      .select("id, title, start_time, client_email, guide_username, species, unit, weapon, camp_name, status")
+      .eq("outfitter_id", outfitterId)
+      .eq("status", "Pending")
+      .gte("end_time", now) // future or current hunts only
+      .order("start_time", { ascending: true });
+
+    for (const event of pendingEvents ?? []) {
+      // Check if event is missing required fields
+      const missingFields: string[] = [];
+      if (!event.guide_username) missingFields.push("guide");
+      if (!event.start_time) missingFields.push("start date");
+      if (!event.end_time) missingFields.push("end date");
+      if (!event.species) missingFields.push("species");
+      if (!event.client_email) missingFields.push("client");
+      
+      if (missingFields.length > 0) {
+        items.push({
+          hunt_id: event.id,
+          action: "complete_event" as any,
+          title: event.title || "Hunt Event",
+          start_time: event.start_time,
+          client_email: event.client_email,
+        });
+      }
+    }
+
+    // 3) Needs contract: hunts with client, tag drawn/confirmed, no contract yet
     const { data: huntsNoContract } = await supabase
       .from("calendar_events")
       .select("id, title, start_time, client_email")
       .eq("outfitter_id", outfitterId)
       .not("client_email", "is", null)
       .in("tag_status", ["drawn", "confirmed"])
+      .not("status", "eq", "Pending") // Exclude pending events (already handled above)
       .gte("end_time", now) // future or current hunts only
       .order("start_time", { ascending: true });
 
@@ -106,7 +136,7 @@ export async function GET() {
       }
     }
 
-    // 2) Ready for DocuSign + 3) Needs admin sign
+    // 4) Ready for DocuSign + 5) Needs admin sign
     const { data: contractsActionable } = await supabase
       .from("hunt_contracts")
       .select(`
@@ -148,6 +178,7 @@ export async function GET() {
 
     const counts = {
       assign_to_calendar: items.filter((i) => i.action === "assign_to_calendar").length,
+      complete_event: items.filter((i) => i.action === "complete_event").length,
       generate_contract: items.filter((i) => i.action === "generate_contract").length,
       send_docusign: items.filter((i) => i.action === "send_docusign").length,
       admin_sign: items.filter((i) => i.action === "admin_sign").length,

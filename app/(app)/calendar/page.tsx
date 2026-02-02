@@ -42,7 +42,7 @@ export default function CalendarPage() {
   const [speciesOptions, setSpeciesOptions] = useState<string[]>(["Elk", "Mule / Coues Deer", "Antelope", "Oryx", "Ibex", "Bighorn", "Aoudad"]);
   const [pendingActions, setPendingActions] = useState<{
     total: number;
-    counts: { assign_to_calendar: number; generate_contract: number; send_docusign: number; admin_sign: number };
+    counts: { assign_to_calendar: number; complete_event: number; generate_contract: number; send_docusign: number; admin_sign: number };
     items: Array<{ hunt_id: string; contract_id?: string; action: string; title: string; start_time: string | null; client_email: string | null }>;
   } | null>(null);
   const [showPendingActions, setShowPendingActions] = useState(true); // Always show by default
@@ -402,14 +402,20 @@ export default function CalendarPage() {
         >
           <span>
             📋 Work Queue: {pendingActions ? pendingActions.total : 0} item{(pendingActions?.total || 0) !== 1 ? "s" : ""} need attention
-            {pendingActions && pendingActions.counts.assign_to_calendar > 0 && (
+            {pendingActions && (pendingActions.counts.assign_to_calendar > 0 || pendingActions.counts.complete_event > 0) && (
               <span style={{ marginLeft: 12, color: "#e65100", fontSize: 15, fontWeight: 700 }}>
-                ⚠️ {pendingActions.counts.assign_to_calendar} contract{pendingActions.counts.assign_to_calendar !== 1 ? "s" : ""} need calendar assignment
+                {pendingActions.counts.assign_to_calendar > 0 && (
+                  <span>⚠️ {pendingActions.counts.assign_to_calendar} contract{pendingActions.counts.assign_to_calendar !== 1 ? "s" : ""} need calendar assignment</span>
+                )}
+                {pendingActions.counts.assign_to_calendar > 0 && pendingActions.counts.complete_event > 0 && " • "}
+                {pendingActions.counts.complete_event > 0 && (
+                  <span>📝 {pendingActions.counts.complete_event} event{pendingActions.counts.complete_event !== 1 ? "s" : ""} need completion</span>
+                )}
               </span>
             )}
-            {pendingActions && pendingActions.counts.assign_to_calendar === 0 && (
+            {pendingActions && pendingActions.counts.assign_to_calendar === 0 && pendingActions.counts.complete_event === 0 && (
               <span style={{ marginLeft: 12, color: "#666", fontSize: 14, fontWeight: 400 }}>
-                All contracts assigned
+                All contracts assigned and events completed
               </span>
             )}
           </span>
@@ -463,6 +469,52 @@ export default function CalendarPage() {
                           })}
                       </ul>
                     </div>
+                  </div>
+                )}
+                {pendingActions.counts.complete_event > 0 && (
+                  <div style={{ marginBottom: 12 }}>
+                        <h3 style={{ margin: pendingActions.counts.assign_to_calendar > 0 ? "16px 0 8px 0" : "0 0 8px 0", fontSize: 14, fontWeight: 600, color: "#e65100" }}>
+                          Events Needing Completion ({pendingActions.counts.complete_event})
+                        </h3>
+                        <div style={{ 
+                          background: "white", 
+                          border: "1px solid #ffcc80", 
+                          borderRadius: 8, 
+                          padding: 12,
+                          maxHeight: 300,
+                          overflowY: "auto"
+                        }}>
+                          <ul style={{ margin: 0, paddingLeft: 20, listStyle: "disc" }}>
+                            {pendingActions.items
+                              .filter((item) => item.action === "complete_event")
+                              .map((item) => {
+                                const dateStr = item.start_time
+                                  ? new Date(item.start_time).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                                  : "";
+                                const clientInfo = item.client_email ? ` — ${item.client_email}` : "";
+                                return (
+                                  <li key={`${item.hunt_id}-complete`} style={{ marginBottom: 8 }}>
+                                    <Link
+                                      href={`/calendar?event=${item.hunt_id}`}
+                                      style={{ 
+                                        fontWeight: 600, 
+                                        color: "#1565c0",
+                                        textDecoration: "none",
+                                        fontSize: 14
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
+                                      onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
+                                    >
+                                      {item.title}
+                                    </Link>
+                                    {dateStr && <span style={{ color: "#666", marginLeft: 8 }}>({dateStr})</span>}
+                                    {clientInfo && <span style={{ color: "#666", marginLeft: 8 }}>{clientInfo}</span>}
+                                    <span style={{ marginLeft: 8, color: "#e65100", fontWeight: 500 }}>→ Fill all fields to mark as Booked</span>
+                                  </li>
+                                );
+                              })}
+                          </ul>
+                        </div>
                   </div>
                 )}
                 {(pendingActions.counts.generate_contract > 0 || pendingActions.counts.send_docusign > 0 || pendingActions.counts.admin_sign > 0) && (

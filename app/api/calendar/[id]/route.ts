@@ -94,12 +94,46 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (body.hunt_type !== undefined) updateData.hunt_type = body.hunt_type || 'draw';
     if (body.tag_status !== undefined) updateData.tag_status = body.tag_status || 'pending';
 
-    // Auto-update status and audience when guide is assigned to a "Pending" event
-    // If guide is being assigned and event is currently "Pending", change to "Booked" and make visible to client
-    if (body.guide_username && currentEvent?.status === "Pending" && !currentEvent?.guide_username) {
-      updateData.status = "Booked";
-      updateData.audience = "all"; // Make visible to client once guide is assigned
-      console.log(`📅 Auto-updating event ${id}: guide assigned, changing status to "Booked" and audience to "all"`);
+    // Validate that all required fields are filled before allowing status change to "Booked"
+    // Required fields: guide_username, start_time, end_time, species, client_email
+    if (body.status === "Booked" || (body.guide_username && currentEvent?.status === "Pending" && !currentEvent?.guide_username)) {
+      // Get the full event data to validate all fields
+      const { data: fullEvent } = await supabase
+        .from("calendar_events")
+        .select("guide_username, start_time, end_time, species, client_email, title")
+        .eq("id", id)
+        .eq("outfitter_id", outfitterId)
+        .single();
+
+      const finalGuide = body.guide_username || fullEvent?.guide_username;
+      const finalStartTime = body.start_date || fullEvent?.start_time;
+      const finalEndTime = body.end_date || fullEvent?.end_time;
+      const finalSpecies = body.species !== undefined ? body.species : fullEvent?.species;
+      const finalClientEmail = body.client_email !== undefined ? body.client_email : fullEvent?.client_email;
+
+      const missingFields: string[] = [];
+      if (!finalGuide) missingFields.push("Guide");
+      if (!finalStartTime) missingFields.push("Start Date");
+      if (!finalEndTime) missingFields.push("End Date");
+      if (!finalSpecies) missingFields.push("Species");
+      if (!finalClientEmail) missingFields.push("Client");
+
+      if (missingFields.length > 0) {
+        return NextResponse.json(
+          { 
+            error: `Cannot set status to "Booked". Missing required fields: ${missingFields.join(", ")}. Please fill in all required fields first.`,
+            missingFields 
+          },
+          { status: 400 }
+        );
+      }
+
+      // All fields are filled, allow status change to "Booked"
+      if (body.status === "Booked" || (body.guide_username && currentEvent?.status === "Pending")) {
+        updateData.status = "Booked";
+        updateData.audience = "all"; // Make visible to client once all fields are filled
+        console.log(`📅 Event ${id}: All required fields filled, changing status to "Booked" and audience to "all"`);
+      }
     }
 
     const { data, error } = await supabase
