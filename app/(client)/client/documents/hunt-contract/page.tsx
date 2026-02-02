@@ -276,8 +276,9 @@ export default function HuntContractPage() {
             hunt_id: contract.hunt_id ?? hunt?.id ?? null,
             hunt: hunt ? {
               title: hunt.title || "Hunt",
-              start_date: hunt.start_date,
-              end_date: hunt.end_date,
+              // API returns start_time/end_time, convert to start_date/end_date for consistency
+              start_date: hunt.start_time || hunt.start_date,
+              end_date: hunt.end_time || hunt.end_date,
               species: hunt.species,
               unit: hunt.unit,
               weapon: hunt.weapon ?? null,
@@ -317,6 +318,14 @@ export default function HuntContractPage() {
     if (!currentContract?.id) return;
 
     const hunt = currentContract?.hunt;
+    // Debug: log what we have
+    console.log("Contract submission - hunt object:", {
+      hunt: hunt,
+      start_date: hunt?.start_date,
+      end_date: hunt?.end_date,
+      start_time: (hunt as any)?.start_time,
+      end_time: (hunt as any)?.end_time,
+    });
     const huntCode =
       currentContract?.hunt_code ?? hunt?.hunt_code ?? null;
     const windowStart =
@@ -331,9 +340,11 @@ export default function HuntContractPage() {
     const hasWindow = Boolean(windowStart && windowEnd);
 
     // Dates come from hunt object (set in complete-booking flow), not from user input
+    // Handle both start_date/end_date and start_time/end_time (API might return either)
     const toYMD = (s: string | undefined) => (s && s.length >= 10 ? s.slice(0, 10) : "");
-    const startDate = toYMD(hunt?.start_date);
-    const endDate = toYMD(hunt?.end_date);
+    const huntAny = hunt as any;
+    const startDate = toYMD(hunt?.start_date || huntAny?.start_time);
+    const endDate = toYMD(hunt?.end_date || huntAny?.end_time);
 
     if (hasHuntCode && hasWindow && startDate && endDate && windowStart && windowEnd) {
       if (startDate < windowStart || endDate > windowEnd || startDate > endDate) {
