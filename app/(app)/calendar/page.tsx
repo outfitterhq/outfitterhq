@@ -219,12 +219,18 @@ export default function CalendarPage() {
       const res = await fetch("/api/admin/pending-actions");
       if (res.ok) {
         const data = await res.json();
+        console.log("[CALENDAR] Pending actions loaded:", data);
         setPendingActions(data);
       } else {
-        setPendingActions(null);
+        const errorData = await res.json().catch(() => ({}));
+        console.error("[CALENDAR] Failed to load pending actions:", res.status, errorData);
+        // Set empty state instead of null so queue still shows
+        setPendingActions({ total: 0, counts: { assign_to_calendar: 0, complete_event: 0, generate_contract: 0, send_docusign: 0, admin_sign: 0 }, items: [] });
       }
     } catch (e) {
-      setPendingActions(null);
+      console.error("[CALENDAR] Error loading pending actions:", e);
+      // Set empty state instead of null so queue still shows
+      setPendingActions({ total: 0, counts: { assign_to_calendar: 0, complete_event: 0, generate_contract: 0, send_docusign: 0, admin_sign: 0 }, items: [] });
     }
   }
 
