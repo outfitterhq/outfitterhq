@@ -147,14 +147,17 @@ Deno.serve(async (req) => {
       ? app_confirm_url_final 
       : app_confirm_url_final + sep + "outfitter_id=" + encodeURIComponent(outfitter_id);
 
-    // Try invite first; if already exists, use recovery
-    let linkData: any = null;
-    let linkErr: any = null;
+    // Try to invite user - this will send an email automatically if email is configured
+    // First check if user already exists
+    let targetUserId: string | null = null;
+    const existingUser = await findUserIdByEmail(admin, email);
+    
+    let inviteSent = false;
+    let invite_link: string | null = null;
 
-    const inviteRes = await admin.auth.admin.generateLink({
-      type: "invite",
-      email,
-      options: {
+    if (!existingUser) {
+      // User doesn't exist - send invite email
+      const inviteRes = await admin.auth.admin.inviteUserByEmail(email, {
         redirectTo: emailRedirectTo,
         data: {
           name: name || null,
@@ -162,38 +165,51 @@ Deno.serve(async (req) => {
           invited_outfitter_id: outfitter_id,
           role: "guide",
         },
-      },
-    });
+      });
 
-    linkData = inviteRes.data;
-    linkErr = inviteRes.error;
-
-    if (linkErr) {
-      const msg = String(linkErr.message ?? "").toLowerCase();
-      const alreadyExists = msg.includes("already") && (msg.includes("registered") || msg.includes("exists"));
-      if (alreadyExists) {
-        const recRes = await admin.auth.admin.generateLink({
-          type: "recovery",
-          email,
-          options: {
-            redirectTo: emailRedirectTo,
-            data: {
-              name: name || null,
-              invited_by: caller.id,
-              invited_outfitter_id: outfitter_id,
-              role: "guide",
-            },
-          },
-        });
-        linkData = recRes.data;
-        linkErr = recRes.error;
+      if (inviteRes.error) {
+        return json(500, { error: "Failed to send invite email", details: inviteRes.error.message });
       }
+
+      inviteSent = true;
+      invite_link = inviteRes.data?.user?.email ? "Email sent successfully" : null;
+      targetUserId = inviteRes.data?.user?.id ?? null;
+      
+      console.log("[admin-invite-guide] Invite email sent to:", email);
+    } else {
+      // User already exists - generate recovery link instead
+      targetUserId = existingUser;
+      const recRes = await admin.auth.admin.generateLink({
+        type: "recovery",
+        email,
+        options: {
+          redirectTo: emailRedirectTo,
+          data: {
+            name: name || null,
+            invited_by: caller.id,
+            invited_outfitter_id: outfitter_id,
+            role: "guide",
+          },
+        },
+      });
+
+      if (recRes.error) {
+        return json(500, { error: "Failed to generate recovery link", details: recRes.error.message });
+      }
+
+      invite_link = recRes.data?.properties?.action_link ?? null;
+      console.log("[admin-invite-guide] Recovery link generated for existing user:", email);
     }
 
-    if (linkErr) return json(500, { error: "Failed to generate link", details: linkErr.message });
-
-    const invite_link = linkData?.properties?.action_link ?? null;
-    if (!invite_link) return json(500, { error: "Invite link missing from Supabase response" });
+    if (!targetUserId) {
+      // Fallback: try to find user ID after invite
+      if (!targetUserId) {
+        targetUserId = await findUserIdByEmail(admin, email);
+      }
+      if (!targetUserId) {
+        return json(500, { error: "User lookup returned null after invite" });
+      }
+    }
 
     // Resolve target user id
     let targetUserId: string | null = linkData?.user?.id ?? null;
@@ -220,7 +236,16 @@ Deno.serve(async (req) => {
 
     if (upsertErr) return json(500, { error: "Failed to upsert membership", details: upsertErr.message });
 
-    return json(200, { ok: true, invite_link, outfitter_id, invited_user_id: targetUserId });
+    return json(200, { 
+      ok: true, 
+      invite_link: invite_link || (inviteSent ? "Email sent successfully" : null),
+      email_sent: inviteSent,
+      outfitter_id, 
+      invited_user_id: targetUserId,
+      message: inviteSent 
+        ? "Invite email sent successfully" 
+        : "Recovery link generated for existing user"
+    });
   } catch (err) {
     return json(500, { error: "Unhandled error", details: String(err) });
   }
