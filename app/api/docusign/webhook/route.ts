@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     // Find the contract by envelope ID
     const { data: contract, error: findErr } = await supabase
       .from("hunt_contracts")
-      .select("id, status, client_email")
+      .select("id, status, client_email, outfitter_id")
       .eq("docusign_envelope_id", envelopeId)
       .single();
 
