@@ -10,7 +10,7 @@ export async function createOrUpdateCalendarEventFromContract(
   outfitterId: string
 ) {
   try {
-    console.log(`📅 Creating/updating calendar event for contract ${contractId}`);
+    console.log(`📅 [CALENDAR EVENT] Starting creation for contract ${contractId}, outfitter ${outfitterId}`);
     
     // Get the contract with all needed details
     const { data: contract, error: contractError } = await supabase
@@ -29,11 +29,11 @@ export async function createOrUpdateCalendarEventFromContract(
       .single();
 
     if (contractError || !contract) {
-      console.error("❌ Failed to fetch contract for calendar event:", contractError);
-      return;
+      console.error("❌ [CALENDAR EVENT] Failed to fetch contract:", contractError);
+      throw new Error(`Failed to fetch contract: ${contractError?.message || "Contract not found"}`);
     }
     
-    console.log(`📅 Contract status: ${contract.status}, hunt_id: ${contract.hunt_id || 'none'}`);
+    console.log(`📅 [CALENDAR EVENT] Contract status: ${contract.status}, hunt_id: ${contract.hunt_id || 'none'}`);
     
     // Also check if contract has both signatures (even if status isn't fully_executed yet)
     const { data: contractWithSignatures } = await supabase
@@ -43,17 +43,22 @@ export async function createOrUpdateCalendarEventFromContract(
       .single();
     
     const bothSigned = contractWithSignatures?.client_signed_at && contractWithSignatures?.admin_signed_at;
-    console.log(`📅 Both signatures present: ${bothSigned}`);
+    console.log(`📅 [CALENDAR EVENT] Both signatures present: ${bothSigned}`);
+    console.log(`📅 [CALENDAR EVENT] client_signed_at: ${contractWithSignatures?.client_signed_at || 'null'}`);
+    console.log(`📅 [CALENDAR EVENT] admin_signed_at: ${contractWithSignatures?.admin_signed_at || 'null'}`);
     
     // Create event if contract is fully_executed OR if both parties have signed
     if (contract.status !== "fully_executed" && !bothSigned) {
-      console.log(`⚠️ Contract not fully executed and both parties haven't signed. Skipping calendar event.`);
+      console.log(`⚠️ [CALENDAR EVENT] Contract not fully executed and both parties haven't signed. Skipping calendar event.`);
+      console.log(`   Status: ${contract.status}, Both signed: ${bothSigned}`);
       return;
     }
     
     if (bothSigned && contract.status !== "fully_executed") {
-      console.log(`📅 Both parties signed but status is ${contract.status}. Creating calendar event anyway.`);
+      console.log(`📅 [CALENDAR EVENT] Both parties signed but status is ${contract.status}. Creating calendar event anyway.`);
     }
+    
+    console.log(`📅 [CALENDAR EVENT] Proceeding with calendar event creation...`);
 
     // Get client completion data to extract dates and details
     const completionData = (contract.client_completion_data as any) || {};
@@ -242,8 +247,16 @@ export async function createOrUpdateCalendarEventFromContract(
       .single();
 
     if (insertError) {
-      console.error("❌ Failed to create calendar event:", insertError);
-      return;
+      console.error("❌ [CALENDAR EVENT] Failed to create calendar event:", insertError);
+      console.error("   Insert data attempted:", {
+        outfitter_id: outfitterId,
+        title,
+        client_email: contract.client_email,
+        start_time: startTime,
+        end_time: endTime,
+        status: "Pending",
+      });
+      throw new Error(`Failed to create calendar event: ${insertError.message}`);
     }
 
     // Link the new event to the contract
@@ -262,6 +275,10 @@ export async function createOrUpdateCalendarEventFromContract(
     console.log(`   - Status: Pending (admin needs to assign guide/cook)`);
     console.log(`   - Audience: internalOnly (only visible to admin until setup complete)`);
   } catch (error) {
-    console.error("Error creating/updating calendar event from contract:", error);
+    console.error("❌ [CALENDAR EVENT] Unhandled error:", error);
+    console.error("   Contract ID:", contractId);
+    console.error("   Outfitter ID:", outfitterId);
+    // Don't throw - we don't want to break contract execution if calendar event creation fails
+    // But log it clearly so we can debug
   }
 }
