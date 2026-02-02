@@ -8,6 +8,7 @@ import {
   createRecipientView,
 } from "@/lib/docusign";
 import { createGuideFeePaymentItemIfNeeded } from "@/lib/guide-fee-bill-server";
+import { createOrUpdateCalendarEventFromContract } from "@/lib/calendar-from-contract";
 
 /**
  * POST: Admin gets embedded DocuSign signing URL to sign the hunt contract (counter-sign).
@@ -97,6 +98,10 @@ export async function POST(
       // Create guide fee payment item so it shows on client dashboard (tags-for-sale and draw)
       const admin = supabaseAdmin();
       await createGuideFeePaymentItemIfNeeded(admin, contractId);
+      
+      // Create/update calendar event when contract is fully executed
+      await createOrUpdateCalendarEventFromContract(admin, contractId, outfitterId);
+      
       return NextResponse.json({
         success: true,
         contract: updated,

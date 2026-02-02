@@ -136,7 +136,13 @@ export async function POST(req: Request) {
     // When contract becomes fully_executed, create guide fee payment item so it shows on client dashboard (tags-for-sale and draw)
     if (statusLower === "completed") {
       const { createGuideFeePaymentItemIfNeeded } = await import("@/lib/guide-fee-bill-server");
-      await createGuideFeePaymentItemIfNeeded(supabase, contract.id);
+      const { supabaseAdmin } = await import("@/lib/supabase/server");
+      const admin = supabaseAdmin();
+      await createGuideFeePaymentItemIfNeeded(admin, contract.id);
+      
+      // Create/update calendar event when contract is fully executed
+      const { createOrUpdateCalendarEventFromContract } = await import("@/lib/calendar-from-contract");
+      await createOrUpdateCalendarEventFromContract(admin, contract.id, contract.outfitter_id);
     }
 
     console.log(`DocuSign webhook: Updated contract ${contract.id} to ${mapped.docusignStatus}`);
