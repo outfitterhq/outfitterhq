@@ -110,11 +110,22 @@ export default function InviteGuideCard() {
 
       const fnUrl = `${base}/functions/v1/admin-invite-guide`;
 
-      // Get production web app URL from environment variable
-      // In production, this MUST be set to avoid localhost links
-      const webAppUrl = process.env.NEXT_PUBLIC_WEB_APP_URL || window.location.origin;
+      // Get production web app URL from server-side API (uses env vars or Vercel URL)
+      let webAppUrl: string;
+      try {
+        const urlRes = await fetch("/api/web-app-url");
+        if (urlRes.ok) {
+          const urlData = await urlRes.json();
+          webAppUrl = urlData.webAppUrl || window.location.origin;
+        } else {
+          webAppUrl = window.location.origin;
+        }
+      } catch (err) {
+        console.warn("Failed to fetch web app URL, using current origin:", err);
+        webAppUrl = window.location.origin;
+      }
       
-      // Warn if using localhost in what appears to be production
+      // Warn if using localhost
       if (webAppUrl.includes('localhost') || webAppUrl.includes('127.0.0.1')) {
         console.warn('⚠️ Invite link will use localhost. Set NEXT_PUBLIC_WEB_APP_URL in Vercel environment variables.');
       }
