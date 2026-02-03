@@ -1,14 +1,8 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { supabaseRoute } from "@/lib/supabase/server";
-import { OUTFITTER_COOKIE } from "@/lib/tenant";
-import type { PendingCloseoutHunt } from "@/lib/types/hunt-closeout";
 
-/**
- * GET /api/hunts/pending-closeout
- * Returns hunts that need closeout completion for the current guide
- */
-export async function GET() {
+// GET: List hunts pending closeout for the current guide
+export async function GET(req: Request) {
   try {
     const supabase = await supabaseRoute();
     const { data: userRes } = await supabase.auth.getUser();
@@ -16,60 +10,63 @@ export async function GET() {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const store = await cookies();
-    const outfitterId = store.get(OUTFITTER_COOKIE)?.value;
-    if (!outfitterId) {
-      return NextResponse.json({ error: "No outfitter selected" }, { status: 400 });
-    }
-
-    // Get guide username from guides table
-    const { data: guideData, error: guideError } = await supabase
+    // Get guide record
+    const { data: guide, error: guideError } = await supabase
       .from("guides")
-      .select("username")
+      .select("username, email, outfitter_id")
       .eq("user_id", userRes.user.id)
-      .eq("outfitter_id", outfitterId)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
 
-    if (guideError || !guideData) {
-      // Fallback: check if user is admin/owner (they can see all pending closeouts)
-      const { data: membershipData } = await supabase
-        .from("outfitter_memberships")
-        .select("role")
-        .eq("user_id", userRes.user.id)
-        .eq("outfitter_id", outfitterId)
-        .eq("status", "active")
-        .single();
-
-      if (membershipData?.role === "owner" || membershipData?.role === "admin") {
-        // Admin can see all pending closeouts
-        const { data: hunts, error } = await supabase.rpc("get_pending_closeout_hunts", {
-          p_guide_username: null, // null = all guides
-          p_outfitter_id: outfitterId,
-        });
-
-        if (error) {
-          return NextResponse.json({ error: error.message }, { status: 500 });
-        }
-
-        return NextResponse.json({ hunts: hunts || [] });
-      }
-
-      return NextResponse.json({ error: "Guide not found" }, { status: 403 });
+    if (guideError || !guide) {
+      return NextResponse.json({ error: "Guide record not found" }, { status: 404 });
     }
 
-    // Get pending closeout hunts for this guide
-    const { data: hunts, error } = await supabase.rpc("get_pending_closeout_hunts", {
-      p_guide_username: guideData.username,
-      p_outfitter_id: outfitterId,
+    // Get hunts that need closeout
+    // Use the database function or query directly
+    const { data: hunts, error: huntsError } = await supabase
+      .from("calendar_events")
+      .select(`
+        id,
+        title,
+        client_email,
+        species,
+        unit,
+        weapon,
+        start_time,
+        end_time
+      `)
+      .eq("status", "Pending Closeout")
+      .eq("outfitter_id", guide.outfitter_id)
+      .or(`guide_username.eq.${guide.username},guide_username.eq.${guide.email}`)
+      .order("end_time", { ascending: true });
+
+    if (huntsError) {
+      console.error("Error fetching pending closeout hunts:", huntsError);
+      return NextResponse.json({ error: huntsError.message }, { status: 500 });
+    }
+
+    // Calculate days pending for each hunt
+    const now = new Date();
+    const huntsWithDays = (hunts || []).map((hunt) => {
+      const endDate = new Date(hunt.end_time);
+      const daysPending = Math.floor((now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
+      return {
+        hunt_id: hunt.id,
+        hunt_title: hunt.title,
+        client_email: hunt.client_email,
+        species: hunt.species,
+        unit: hunt.unit,
+        weapon: hunt.weapon,
+        start_time: hunt.start_time,
+        end_time: hunt.end_time,
+        days_pending: daysPending,
+      };
     });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ hunts: hunts || [] });
+    return NextResponse.json({ hunts: huntsWithDays }, { status: 200 });
   } catch (e: any) {
+    console.error("Error in pending-closeout API:", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

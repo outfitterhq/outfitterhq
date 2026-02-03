@@ -81,7 +81,28 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (body.audience !== undefined) updateData.audience = body.audience;
     if (body.species !== undefined) updateData.species = body.species || null;
     if (body.unit !== undefined) updateData.unit = body.unit || null;
-    if (body.status !== undefined) updateData.status = body.status || "Inquiry";
+    if (body.status !== undefined) {
+      // Allow setting status to "Pending Closeout" if hunt has ended
+      if (body.status === "Pending Closeout") {
+        // Check if hunt has ended
+        const { data: eventCheck } = await supabase
+          .from("calendar_events")
+          .select("end_time")
+          .eq("id", id)
+          .single();
+        
+        if (eventCheck && new Date(eventCheck.end_time) <= new Date()) {
+          updateData.status = "Pending Closeout";
+        } else {
+          return NextResponse.json(
+            { error: "Cannot set status to 'Pending Closeout' - hunt has not ended yet" },
+            { status: 400 }
+          );
+        }
+      } else {
+        updateData.status = body.status || "Inquiry";
+      }
+    }
     if (body.weapon !== undefined) {
         if (body.weapon) {
             updateData.weapon = body.weapon;
