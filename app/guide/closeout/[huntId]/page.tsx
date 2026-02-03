@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import type { PendingCloseoutHunt, HuntCloseoutInput, HuntPhoto } from "@/lib/types/hunt-closeout";
@@ -25,7 +25,6 @@ export default function HuntCloseoutPage() {
   const [state, setState] = useState("");
   const [huntDates, setHuntDates] = useState<string[]>([]);
   const [successSummary, setSuccessSummary] = useState("");
-  const [weatherConditions, setWeatherConditions] = useState("");
   const [animalQualityNotes, setAnimalQualityNotes] = useState("");
 
   // Photo state
@@ -36,6 +35,7 @@ export default function HuntCloseoutPage() {
     approvedForMarketing: boolean;
     isPrivate: boolean;
   }>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadHuntData();
@@ -127,6 +127,10 @@ export default function HuntCloseoutPage() {
     setError(null);
 
     try {
+      // Validate required fields
+      if (!successSummary.trim()) {
+        throw new Error("Success summary is required");
+      }
       if (photos.length === 0) {
         throw new Error("At least one photo is required");
       }
@@ -138,8 +142,7 @@ export default function HuntCloseoutPage() {
       if (unit) formData.append("unit", unit);
       if (state) formData.append("state", state);
       if (huntDates.length > 0) formData.append("hunt_dates", JSON.stringify(huntDates));
-      if (successSummary) formData.append("success_summary", successSummary);
-      if (weatherConditions) formData.append("weather_conditions", weatherConditions);
+      formData.append("success_summary", successSummary); // Required field
       if (animalQualityNotes) formData.append("animal_quality_notes", animalQualityNotes);
 
       // Add photos
@@ -307,32 +310,20 @@ export default function HuntCloseoutPage() {
           </div>
         </section>
 
-        {/* Optional Notes */}
+        {/* Hunt Summary */}
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Optional Notes</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Hunt Summary</h2>
           
           <div style={{ marginBottom: 16 }}>
             <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
-              Success Summary
+              Success Summary <span style={{ color: "#dc2626" }}>*</span>
             </label>
             <textarea
               value={successSummary}
               onChange={(e) => setSuccessSummary(e.target.value)}
               placeholder="Brief summary of the hunt..."
-              rows={3}
-              style={{ width: "100%", padding: 8, border: "1px solid #ccc", borderRadius: 4 }}
-            />
-          </div>
-
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
-              Weather Conditions
-            </label>
-            <input
-              type="text"
-              value={weatherConditions}
-              onChange={(e) => setWeatherConditions(e.target.value)}
-              placeholder="e.g., Clear, 65°F"
+              rows={4}
+              required
               style={{ width: "100%", padding: 8, border: "1px solid #ccc", borderRadius: 4 }}
             />
           </div>
@@ -367,8 +358,26 @@ export default function HuntCloseoutPage() {
             accept="image/*"
             multiple
             onChange={handlePhotoAdd}
-            style={{ marginBottom: 16 }}
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            id="photo-upload-input"
           />
+          <label
+            htmlFor="photo-upload-input"
+            style={{
+              display: "inline-block",
+              padding: "12px 24px",
+              background: "#059669",
+              color: "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+              fontWeight: 600,
+              marginBottom: 16,
+            }}
+          >
+            📷 Upload Photos
+          </label>
 
           {photos.length > 0 && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
@@ -449,14 +458,14 @@ export default function HuntCloseoutPage() {
           </Link>
           <button
             type="submit"
-            disabled={submitting || photos.length === 0}
+            disabled={submitting || photos.length === 0 || !successSummary.trim()}
             style={{
               padding: "12px 24px",
-              background: submitting ? "#ccc" : "#059669",
+              background: submitting || photos.length === 0 || !successSummary.trim() ? "#ccc" : "#059669",
               color: "white",
               border: "none",
               borderRadius: 8,
-              cursor: submitting ? "not-allowed" : "pointer",
+              cursor: submitting || photos.length === 0 || !successSummary.trim() ? "not-allowed" : "pointer",
               fontWeight: 600,
             }}
           >
