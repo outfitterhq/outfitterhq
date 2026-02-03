@@ -41,11 +41,11 @@ export async function POST(
     // Verify user is the assigned guide or admin
     const { data: guideData } = await supabase
       .from("guides")
-      .select("username")
+      .select("username, email")
       .eq("user_id", userRes.user.id)
       .eq("outfitter_id", outfitterId)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
 
     const { data: membershipData } = await supabase
       .from("outfitter_memberships")
@@ -53,13 +53,33 @@ export async function POST(
       .eq("user_id", userRes.user.id)
       .eq("outfitter_id", outfitterId)
       .eq("status", "active")
-      .single();
+      .maybeSingle();
 
     const isAdmin = membershipData?.role === "owner" || membershipData?.role === "admin";
-    const isGuide = guideData && guideData.username === hunt.guide_username;
+    // Check if guide matches by username OR email (since hunts can be assigned by either)
+    const isGuide = guideData && (
+      guideData.username === hunt.guide_username || 
+      guideData.email === hunt.guide_username ||
+      guideData.username === hunt.guide_username ||
+      guideData.email === hunt.guide_username
+    );
 
     if (!isAdmin && !isGuide) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+      console.error("[closeout] Authorization failed:", {
+        userId: userRes.user.id,
+        guideData,
+        huntGuideUsername: hunt.guide_username,
+        isAdmin,
+        isGuide,
+      });
+      return NextResponse.json({ 
+        error: "Not authorized. You must be the assigned guide or an admin.",
+        debug: {
+          guideUsername: guideData?.username,
+          guideEmail: guideData?.email,
+          huntGuideUsername: hunt.guide_username,
+        }
+      }, { status: 403 });
     }
 
     // Check if closeout already exists
@@ -177,6 +197,11 @@ export async function POST(
       const approvedForMarketing = formData.get(`photo_${i}_approved_for_marketing`) === "true";
       const isPrivate = formData.get(`photo_${i}_is_private`) === "true";
 
+      // Photos uploaded by guides are NOT automatically approved for marketing
+      // Admin must review and approve them to add to "past successes" or keep in "admin photos"
+      // Set approved_for_marketing to false by default - admin will approve later
+      const finalApprovedForMarketing = isAdmin ? approvedForMarketing : false;
+
       // Insert photo record (admin bypasses RLS so insert always succeeds after auth check above)
       const { data: photoData, error: photoError } = await admin
         .from("hunt_photos")
@@ -189,7 +214,7 @@ export async function POST(
           file_size: file.size,
           content_type: file.type,
           category: category,
-          approved_for_marketing: approvedForMarketing,
+          approved_for_marketing: finalApprovedForMarketing, // Admin must approve
           is_private: isPrivate,
           display_order: i,
           uploaded_by: guideUsername,
