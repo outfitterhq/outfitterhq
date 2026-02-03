@@ -78,6 +78,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (body.camp_name !== undefined) updateData.camp_name = body.camp_name || null;
     if (body.client_email !== undefined) updateData.client_email = body.client_email || null;
     if (body.guide_username !== undefined) updateData.guide_username = body.guide_username || null;
+    if (body.cook_username !== undefined) updateData.cook_username = body.cook_username || null;
     if (body.audience !== undefined) updateData.audience = body.audience;
     if (body.species !== undefined) updateData.species = body.species || null;
     if (body.unit !== undefined) updateData.unit = body.unit || null;

@@ -1144,6 +1144,9 @@ function EventEditor({
   const [guideUsername, setGuideUsername] = useState(
     event?.guide_username || ""
   );
+  const [cookUsername, setCookUsername] = useState(
+    (event as any)?.cook_username || ""
+  );
   const [audience, setAudience] = useState<CalendarAudience>(event?.audience || "all");
   const [species, setSpecies] = useState(event?.species || "");
   const [unit, setUnit] = useState(event?.unit || "");
@@ -1153,6 +1156,7 @@ function EventEditor({
   const [huntType, setHuntType] = useState<HuntType>(event?.hunt_type || "draw");
   const [tagStatus, setTagStatus] = useState<TagStatus>(event?.tag_status || "pending");
   const [guides, setGuides] = useState<Array<{ username: string; email?: string; name?: string }>>([]);
+  const [cooks, setCooks] = useState<Array<{ id: string; name: string; email?: string; identifier: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
   const [timeOffRequests, setTimeOffRequests] = useState<TimeOffRequest[]>([]);
@@ -1173,6 +1177,7 @@ function EventEditor({
 
   useEffect(() => {
     loadGuides();
+    loadCooks();
     loadAllEvents();
     loadTimeOffForEditor();
     loadSpecies();
@@ -1466,6 +1471,7 @@ function EventEditor({
         camp_name: campName.trim() || null,
         client_email: clientEmail.trim() || null,
         guide_username: guideUsername.trim() || null,
+        cook_username: cookUsername.trim() || null,
         audience,
         species: species.trim() || null,
         unit: unit.trim() || null,
@@ -1952,6 +1958,24 @@ function EventEditor({
             )}
           </div>
 
+          <div>
+            <label style={{ display: "block", marginBottom: 4, fontWeight: 600 }}>Assigned Cook (Optional)</label>
+            <select
+              value={cookUsername}
+              onChange={(e) => setCookUsername(e.target.value)}
+              style={{ width: "100%", padding: 8, border: "1px solid #ddd", borderRadius: 6 }}
+            >
+              <option value="">No Cook Assigned</option>
+              {cooks.map((c) => (
+                <option key={c.identifier} value={c.identifier}>
+                  {c.name} {c.email ? `(${c.email})` : ""}
+                </option>
+              ))}
+            </select>
+            <p style={{ fontSize: 12, color: "#666", marginTop: 4 }}>
+              Optional cook assignment for this hunt.
+            </p>
+          </div>
 
           <div>
             <label style={{ display: "block", marginBottom: 4, fontWeight: 600 }}>Notes</label>

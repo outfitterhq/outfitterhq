@@ -116,6 +116,7 @@ export async function POST(req: Request) {
         camp_name: body.camp_name || null,
         client_email: body.client_email || null,
         guide_username: body.guide_username || null,
+        cook_username: body.cook_username || null,
         audience: body.audience || "all",
         species: body.species || null,
         unit: body.unit || null,
