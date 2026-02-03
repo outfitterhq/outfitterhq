@@ -27,13 +27,11 @@ export default function HuntCloseoutPage() {
   const [successSummary, setSuccessSummary] = useState("");
   const [animalQualityNotes, setAnimalQualityNotes] = useState("");
 
-  // Photo state
+  // Photo state (guides can't set marketing/private - admin will set these)
   const [photos, setPhotos] = useState<Array<{
     file: File;
     preview: string;
     category: string;
-    approvedForMarketing: boolean;
-    isPrivate: boolean;
   }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,8 +99,6 @@ export default function HuntCloseoutPage() {
               file,
               preview: e.target?.result as string,
               category: "Harvest",
-              approvedForMarketing: true,
-              isPrivate: false,
             },
           ]);
         };
@@ -145,12 +141,13 @@ export default function HuntCloseoutPage() {
       formData.append("success_summary", successSummary); // Required field
       if (animalQualityNotes) formData.append("animal_quality_notes", animalQualityNotes);
 
-      // Add photos
+      // Add photos (guides can't set marketing/private - admin will set these)
       photos.forEach((photo, i) => {
         formData.append("photos", photo.file);
         formData.append(`photo_${i}_category`, photo.category);
-        formData.append(`photo_${i}_approved_for_marketing`, photo.approvedForMarketing.toString());
-        formData.append(`photo_${i}_is_private`, photo.isPrivate.toString());
+        // Marketing and private are set by admin only - always false for guide uploads
+        formData.append(`photo_${i}_approved_for_marketing`, "false");
+        formData.append(`photo_${i}_is_private`, "false");
       });
 
       const res = await fetch(`/api/hunts/${huntId}/closeout`, {
@@ -402,24 +399,9 @@ export default function HuntCloseoutPage() {
                       ))}
                     </select>
                   </div>
-                  <div style={{ marginBottom: 8 }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                      <input
-                        type="checkbox"
-                        checked={photo.approvedForMarketing}
-                        onChange={(e) => handlePhotoUpdate(index, "approvedForMarketing", e.target.checked)}
-                      />
-                      Marketing
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                      <input
-                        type="checkbox"
-                        checked={photo.isPrivate}
-                        onChange={(e) => handlePhotoUpdate(index, "isPrivate", e.target.checked)}
-                      />
-                      Private
-                    </label>
-                  </div>
+                  <p style={{ fontSize: 11, color: "#666", margin: "4px 0 0 0" }}>
+                    Admin will review and approve for marketing
+                  </p>
                   <button
                     type="button"
                     onClick={() => handlePhotoRemove(index)}
