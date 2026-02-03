@@ -22,6 +22,7 @@ function AcceptInviteContent() {
 
   const [stage, setStage] = useState<"verifying" | "form" | "saving" | "done" | "error">("verifying");
   const [error, setError] = useState<string | null>(null);
+  const [hasRunVerification, setHasRunVerification] = useState(false); // Prevent multiple runs
 
   // Required-ish for onboarding
   const [fullName, setFullName] = useState("");
@@ -51,8 +52,12 @@ function AcceptInviteContent() {
 
   // Single useEffect to handle all invite verification - prevents glitching from multiple redirects
   useEffect(() => {
+    // Prevent multiple runs - only run once
+    if (hasRunVerification) return;
+    
     (async () => {
       try {
+        setHasRunVerification(true);
         setError(null);
 
         // If outfitter_id missing from URL (e.g. link truncated), try to resolve from user's guide membership
@@ -135,8 +140,12 @@ function AcceptInviteContent() {
             if (!existingMembership || existingMembership.role !== "guide") {
               console.log("Signing out current user to allow invite session switch...");
               await supabase.auth.signOut();
-              // Wait a moment for signout to complete
-              await new Promise((r) => setTimeout(r, 500));
+              // Wait a moment for signout to complete and clear cookies
+              await new Promise((r) => setTimeout(r, 1000));
+              // Clear any redirects by ensuring we stay on this page
+              if (typeof window !== "undefined") {
+                window.history.replaceState({}, "", window.location.pathname + window.location.search + window.location.hash);
+              }
             }
           }
         }
@@ -255,9 +264,10 @@ function AcceptInviteContent() {
       } catch (e: any) {
         setStage("error");
         setError(String(e?.message ?? e));
+        setHasRunVerification(false); // Allow retry on error
       }
     })();
-  }, [supabase, outfitterIdFromUrl]); // Only run once on mount, or when outfitter_id changes
+  }, [supabase, outfitterIdFromUrl, hasRunVerification]); // Only run once on mount, or when outfitter_id changes
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
