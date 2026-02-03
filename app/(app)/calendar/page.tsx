@@ -896,11 +896,16 @@ export default function CalendarPage() {
             setEditingEvent(null);
             loadPendingActions();
           }}
-          onSave={async () => {
+          onSave={async (savedEventId, eventStartDate) => {
             // Reload events first to ensure new event appears in calendar
             await loadEvents();
             // Reload pending actions to update queue (remove completed items)
             await loadPendingActions();
+            // Navigate to the event's month if we have a start date
+            if (eventStartDate) {
+              const eventDate = new Date(eventStartDate);
+              setSelectedDate(new Date(eventDate.getFullYear(), eventDate.getMonth(), 1));
+            }
             // Close editor after everything is loaded
             setShowEditor(false);
             setEditingEvent(null);
@@ -1094,7 +1099,7 @@ function EventEditor({
 }: {
   event: CalendarEvent | null;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (savedEventId?: string, eventStartDate?: string) => void | Promise<void>;
 }) {
   const [title, setTitle] = useState(event?.title || "");
   const [notes, setNotes] = useState(event?.notes || "");
@@ -1465,12 +1470,6 @@ function EventEditor({
       const savedEventId = savedEvent?.event?.id || event?.id;
       const savedEventData = savedEvent?.event || savedEvent;
       
-      // Navigate to the event's month so it's visible
-      if (savedEventData?.start_time || savedEventData?.start_date) {
-        const eventDate = new Date(savedEventData.start_time || savedEventData.start_date);
-        setSelectedDate(new Date(eventDate.getFullYear(), eventDate.getMonth(), 1));
-      }
-      
       // If this was a new event created from a contract, link it now
       const contractId = (event as any)?.contractIdForLinking;
       if (contractId && savedEventId && !event?.id) {
@@ -1491,7 +1490,9 @@ function EventEditor({
         }
       }
 
-      onSave();
+      // Pass the saved event ID and start date to onSave so parent can navigate
+      const eventStartDate = savedEventData?.start_time || savedEventData?.start_date;
+      await onSave(savedEventId, eventStartDate);
     } catch (e: any) {
       alert("Error: " + String(e));
     } finally {
