@@ -61,6 +61,14 @@ export default function PhotoLibraryPage() {
     loadPhotos();
   }, [speciesFilter, weaponFilter, unitFilter, categoryFilter, marketingFilter]);
 
+  // Default to showing only unapproved photos (for admin review)
+  // Approved photos should only appear in "Past Successes"
+  useEffect(() => {
+    if (marketingFilter === "") {
+      setMarketingFilter("false"); // Default to unapproved only
+    }
+  }, []);
+
   async function loadPhotos() {
     try {
       setLoading(true);
@@ -152,7 +160,7 @@ export default function PhotoLibraryPage() {
         <div>
           <h1 style={{ fontSize: 32, fontWeight: 900, marginBottom: 8 }}>Photo Library</h1>
           <p style={{ opacity: 0.8, margin: 0 }}>
-            Manage all photos uploaded by guides. Delete unwanted photos or approve them for marketing.
+            Review and manage photos uploaded by guides. Approve photos for marketing to add them to Past Successes.
           </p>
         </div>
       </div>
@@ -250,9 +258,9 @@ export default function PhotoLibraryPage() {
             onChange={(e) => setMarketingFilter(e.target.value)}
             style={{ width: "100%", padding: 8, border: "1px solid #ccc", borderRadius: 4 }}
           >
-            <option value="">All</option>
-            <option value="true">Approved</option>
-            <option value="false">Not Approved</option>
+            <option value="">All Photos</option>
+            <option value="false">Not Approved (Review)</option>
+            <option value="true">Approved (In Past Successes)</option>
           </select>
         </div>
 
