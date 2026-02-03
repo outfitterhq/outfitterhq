@@ -230,10 +230,34 @@ Deno.serve(async (req) => {
 
         if (!resendRes.ok) {
           console.error("[admin-invite-guide] ERROR sending email via Resend:", resendData);
-          return json(500, { 
+          
+          // If it's a domain verification error, return the link anyway with helpful message
+          const isDomainError = resendData.message?.includes("verify a domain") || 
+                                resendData.message?.includes("testing emails");
+          
+          if (isDomainError) {
+            console.warn("[admin-invite-guide] Resend domain not verified - returning link for manual sending");
+            return json(200, {
+              ok: true,
+              invite_link,
+              email_sent: false,
+              message: "Email not sent: Resend domain not verified. The invite link has been generated - you can send it manually or verify your domain at resend.com/domains",
+              warning: "To send emails automatically, verify a domain in Resend and update the 'from' address in the Edge Function code",
+              outfitter_id,
+              invited_user_id: targetUserId
+            });
+          }
+          
+          // Other Resend errors - still return the link
+          return json(200, { 
+            ok: true,
+            invite_link,
+            email_sent: false,
             error: "Failed to send email via Resend", 
             details: resendData.message || "Unknown error",
-            invite_link: invite_link // Still return the link so user can use it manually
+            message: "Invite link generated but email not sent. You can send the link manually.",
+            outfitter_id,
+            invited_user_id: targetUserId
           });
         }
 
