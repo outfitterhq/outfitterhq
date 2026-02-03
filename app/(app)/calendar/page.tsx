@@ -204,8 +204,8 @@ export default function CalendarPage() {
         end_date: e.end_time || e.end_date,
         notes: e.notes || e.description,
       }));
-      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-      console.log(`[Admin Calendar] Loaded ${mappedEvents.length} events for ${monthNames[month]} ${year}`);
+      const monthNamesLocal = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      console.log(`[Admin Calendar] Loaded ${mappedEvents.length} events for ${monthNamesLocal[month]} ${year}`);
       if (mappedEvents.length > 0) {
         console.log("[Admin Calendar] Sample events:", mappedEvents.slice(0, 3).map((e: any) => ({
           id: e.id,
@@ -219,21 +219,33 @@ export default function CalendarPage() {
           outfitter_id: e.outfitter_id,
         })));
       } else {
-        console.warn(`[Admin Calendar] No events found for ${monthNames[month]} ${year}. Check if events exist in database for this month.`);
+        console.warn(`[Admin Calendar] No events found for ${monthNamesLocal[month]} ${year}. Check if events exist in database for this month.`);
         // Try loading ALL events (no date filter) to see if any exist
         const allEventsRes = await fetch(`/api/calendar`);
         if (allEventsRes.ok) {
           const allData = await allEventsRes.json();
           console.log(`[Admin Calendar] Total events in database (no date filter): ${allData.events?.length || 0}`);
           if (allData.events && allData.events.length > 0) {
-            console.log("[Admin Calendar] Sample events from all:", allData.events.slice(0, 3).map((e: any) => ({
+            const sampleEvents = allData.events.slice(0, 3).map((e: any) => ({
               id: e.id,
               title: e.title,
               start_time: e.start_time,
               end_time: e.end_time,
               month: e.start_time ? new Date(e.start_time).getMonth() + 1 : "unknown",
               year: e.start_time ? new Date(e.start_time).getFullYear() : "unknown",
-            })));
+              formattedDate: e.start_time ? new Date(e.start_time).toLocaleDateString() : "unknown",
+            }));
+            console.log("[Admin Calendar] Sample events from all:", sampleEvents);
+            
+            // If viewing wrong year, suggest navigation
+            const viewingYear = year;
+            const eventYears = sampleEvents.map(e => e.year).filter((y): y is number => typeof y === "number");
+            const uniqueYears = [...new Set(eventYears)];
+            if (uniqueYears.length > 0 && !uniqueYears.includes(viewingYear)) {
+              const monthNamesLocal = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+              console.warn(`[Admin Calendar] ⚠️ You're viewing ${monthNamesLocal[month]} ${viewingYear}, but events are in: ${uniqueYears.join(", ")}. Navigate to the correct year!`);
+              alert(`⚠️ You're viewing ${monthNamesLocal[month]} ${viewingYear}, but your events are in ${uniqueYears.join(", ")}. Please navigate to the correct year.`);
+            }
           }
         }
       }
