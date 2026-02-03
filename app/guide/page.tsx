@@ -29,6 +29,10 @@ export default function GuideHomePage() {
     try {
       setLoading(true);
       
+      // First, check for ended hunts and mark them as pending closeout
+      // This ensures hunts that have passed their end date are automatically flagged
+      await fetch("/api/hunts/check-ended", { method: "POST" });
+      
       // Load pending closeouts and guide hunts in parallel
       const [closeoutRes, huntsRes] = await Promise.all([
         fetch("/api/hunts/pending-closeout"),
