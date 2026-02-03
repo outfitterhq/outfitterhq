@@ -190,23 +190,74 @@ Deno.serve(async (req) => {
       console.log("[admin-invite-guide] ✅ Invite email sent successfully to:", email);
       console.log("[admin-invite-guide] Created user ID:", targetUserId);
     } else {
-      // User already exists - send password reset email (this will actually send an email)
+      // User already exists - try to send invite anyway (Supabase may still send email)
       targetUserId = existingUser;
-      console.log("[admin-invite-guide] User already exists, sending password reset email to:", email);
+      console.log("[admin-invite-guide] User already exists, attempting to send invite email anyway:", email);
       
-      // Use resetPasswordForEmail to actually send an email (not just generate a link)
-      const resetRes = await admin.auth.resetPasswordForEmail(email, {
+      // Try inviteUserByEmail even for existing users - Supabase may still send an email
+      const inviteRes = await admin.auth.admin.inviteUserByEmail(email, {
         redirectTo: emailRedirectTo,
+        data: {
+          name: name || null,
+          invited_by: caller.id,
+          invited_outfitter_id: outfitter_id,
+          role: "guide",
+        },
       });
 
-      if (resetRes.error) {
-        console.error("[admin-invite-guide] ERROR sending password reset email:", resetRes.error);
-        return json(500, { error: "Failed to send password reset email", details: resetRes.error.message });
-      }
+      if (inviteRes.error) {
+        // If invite fails for existing user, generate recovery link and send password reset email
+        console.log("[admin-invite-guide] Invite failed for existing user, sending password reset email instead");
+        
+        // Generate recovery link
+        const recRes = await admin.auth.admin.generateLink({
+          type: "recovery",
+          email,
+          options: {
+            redirectTo: emailRedirectTo,
+            data: {
+              name: name || null,
+              invited_by: caller.id,
+              invited_outfitter_id: outfitter_id,
+              role: "guide",
+            },
+          },
+        });
 
-      inviteSent = true;
-      invite_link = "Email sent successfully";
-      console.log("[admin-invite-guide] ✅ Password reset email sent to existing user:", email);
+        if (recRes.error) {
+          console.error("[admin-invite-guide] ERROR generating recovery link:", recRes.error);
+          return json(500, { error: "Failed to generate recovery link", details: recRes.error.message });
+        }
+
+        // Use the client method to actually send the password reset email
+        // Note: This requires the user to exist and SMTP to be configured
+        const resetRes = await admin.auth.resetPasswordForEmail(email, {
+          redirectTo: emailRedirectTo,
+        });
+
+        if (resetRes.error) {
+          console.error("[admin-invite-guide] ERROR sending password reset email:", resetRes.error);
+          // Still return success with the recovery link - user can use it manually
+          invite_link = recRes.data?.properties?.action_link ?? null;
+          return json(200, { 
+            ok: true, 
+            invite_link,
+            email_sent: false,
+            message: "User already exists. Recovery link generated but email may not have been sent. Check SMTP configuration.",
+            outfitter_id, 
+            invited_user_id: targetUserId
+          });
+        }
+
+        inviteSent = true;
+        invite_link = "Password reset email sent successfully";
+        console.log("[admin-invite-guide] ✅ Password reset email sent to existing user:", email);
+      } else {
+        // Invite succeeded even for existing user
+        inviteSent = true;
+        invite_link = inviteRes.data?.user?.email ? "Email sent successfully" : null;
+        console.log("[admin-invite-guide] ✅ Invite email sent to existing user:", email);
+      }
     }
 
     if (!targetUserId) {
@@ -242,8 +293,8 @@ Deno.serve(async (req) => {
       outfitter_id, 
       invited_user_id: targetUserId,
       message: inviteSent 
-        ? "Invite email sent successfully" 
-        : "Recovery link generated for existing user"
+        ? "Email sent successfully" 
+        : (existingUser ? "Recovery link generated. Email may not have been sent - check RESEND_API_KEY in Edge Function secrets." : "Invite email sent successfully")
     });
   } catch (err) {
     return json(500, { error: "Unhandled error", details: String(err) });
