@@ -590,6 +590,7 @@ function AcceptInviteContent() {
   );
 }
 
+// Wrapper component with Suspense to handle useSearchParams
 export default function AcceptInvitePage() {
   return (
     <Suspense fallback={<main style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}><p>Loading...</p></main>}>
