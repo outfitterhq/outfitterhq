@@ -9,22 +9,22 @@ export default async function GuideLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Try to detect if this is the accept-invite page using middleware header
+  // CRITICAL FIX: Check for accept-invite page using middleware header
+  // This MUST happen before any Supabase calls to prevent redirect loops
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
-  const url = headersList.get("x-url") || headersList.get("referer") || "";
-  const isAcceptInvitePage = pathname.includes("/guide/accept-invite") || url.includes("/guide/accept-invite");
   
-  const supabase = await supabasePage();
-  const { data: userRes } = await supabase.auth.getUser();
-
-  // CRITICAL: For accept-invite page, ALWAYS allow through
-  // The page is client-side and handles its own auth/token verification
-  // This allows invite links to work even if admin is logged in
-  // The client-side page will sign out admin and switch to guide session
-  if (isAcceptInvitePage) {
+  // If this is accept-invite page, skip ALL auth checks and return immediately
+  // The client-side page handles its own token verification
+  if (pathname.includes("accept-invite")) {
     return <>{children}</>;
   }
+  
+  // For all other pages, do normal auth checks
+  const supabase = await supabasePage();
+
+  // For all other pages, check auth
+  const { data: userRes } = await supabase.auth.getUser();
 
   // If no user, allow through - needed for other public guide pages
   if (!userRes.user) {

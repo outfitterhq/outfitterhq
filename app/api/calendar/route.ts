@@ -31,18 +31,48 @@ export async function GET(req: Request) {
       .eq("outfitter_id", outfitterId)
       .order("start_time", { ascending: true });
 
-    if (start) {
-      query = query.gte("start_time", start);
+    // Date range filtering: include events that overlap with the requested range
+    // An event overlaps if: (start_time <= end) AND (end_time >= start)
+    // For Supabase PostgREST, we chain filters with AND logic
+    if (start && end) {
+      // Get events that overlap the date range
+      // Event overlaps if: start_time <= end AND end_time >= start
+      // Use .or() with AND logic: events where (start_time <= end) OR (end_time >= start) 
+      // But we actually need AND, so we chain both conditions
+      query = query
+        .lte("start_time", end)  // Event starts before or during range
+        .gte("end_time", start);  // Event ends after or during range
+    } else if (start) {
+      query = query.gte("end_time", start); // Events that haven't ended yet
+    } else if (end) {
+      query = query.lte("start_time", end); // Events that have started
     }
-    if (end) {
-      query = query.lte("end_time", end);
-    }
+    
+    console.log(`[API Calendar] Query filters:`, {
+      outfitterId,
+      dateRange: start && end ? `${start} to ${end}` : "none",
+      hasStart: !!start,
+      hasEnd: !!end
+    });
 
     const { data, error } = await query;
 
     if (error) {
+      console.error("[API Calendar] Query error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    console.log(`[API Calendar] Returning ${data?.length || 0} events for outfitter ${outfitterId}`, {
+      dateRange: start && end ? { start, end } : "no filter",
+      sampleEvents: data?.slice(0, 2).map((e: any) => ({
+        id: e.id,
+        title: e.title,
+        start_time: e.start_time,
+        end_time: e.end_time,
+        guide_username: e.guide_username,
+        client_email: e.client_email,
+      })) || []
+    });
 
     return NextResponse.json({ events: data ?? [] }, { status: 200 });
   } catch (e: any) {

@@ -49,6 +49,7 @@ export default function CalendarPage() {
 
   // Load events and time off for current month
   useEffect(() => {
+    console.log("[Admin Calendar] useEffect triggered, selectedDate:", selectedDate);
     loadEvents();
     loadTimeOff();
     loadPendingActions();
@@ -173,20 +174,29 @@ export default function CalendarPage() {
   }
 
   async function loadEvents() {
+    console.log("[Admin Calendar] loadEvents() called");
     setLoading(true);
     setError(null);
     try {
       const year = selectedDate.getFullYear();
       const month = selectedDate.getMonth();
-      const start = new Date(year, month, 1).toISOString();
-      const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString();
+      // Use start of month (00:00:00) and end of month (23:59:59) in UTC
+      const start = new Date(Date.UTC(year, month, 1, 0, 0, 0)).toISOString();
+      const end = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59)).toISOString();
 
+      console.log(`[Admin Calendar] Loading events for ${month + 1}/${year}:`, { start, end });
       const res = await fetch(`/api/calendar?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Failed to load events");
       }
       const data = await res.json();
+      console.log(`[Admin Calendar] API Response for ${month + 1}/${year}:`, {
+        totalEvents: data.events?.length || 0,
+        dateRange: { start, end },
+        sampleEvents: data.events?.slice(0, 3) || []
+      });
+      
       // Map database fields (start_time/end_time) to frontend model (start_date/end_date)
       const mappedEvents = (data.events || []).map((e: any) => ({
         ...e,
@@ -194,6 +204,39 @@ export default function CalendarPage() {
         end_date: e.end_time || e.end_date,
         notes: e.notes || e.description,
       }));
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      console.log(`[Admin Calendar] Loaded ${mappedEvents.length} events for ${monthNames[month]} ${year}`);
+      if (mappedEvents.length > 0) {
+        console.log("[Admin Calendar] Sample events:", mappedEvents.slice(0, 3).map((e: any) => ({
+          id: e.id,
+          title: e.title,
+          start_time: e.start_time,
+          end_time: e.end_time,
+          guide_username: e.guide_username,
+          client_email: e.client_email,
+          audience: e.audience,
+          status: e.status,
+          outfitter_id: e.outfitter_id,
+        })));
+      } else {
+        console.warn(`[Admin Calendar] No events found for ${monthNames[month]} ${year}. Check if events exist in database for this month.`);
+        // Try loading ALL events (no date filter) to see if any exist
+        const allEventsRes = await fetch(`/api/calendar`);
+        if (allEventsRes.ok) {
+          const allData = await allEventsRes.json();
+          console.log(`[Admin Calendar] Total events in database (no date filter): ${allData.events?.length || 0}`);
+          if (allData.events && allData.events.length > 0) {
+            console.log("[Admin Calendar] Sample events from all:", allData.events.slice(0, 3).map((e: any) => ({
+              id: e.id,
+              title: e.title,
+              start_time: e.start_time,
+              end_time: e.end_time,
+              month: e.start_time ? new Date(e.start_time).getMonth() + 1 : "unknown",
+              year: e.start_time ? new Date(e.start_time).getFullYear() : "unknown",
+            })));
+          }
+        }
+      }
       setEvents(mappedEvents);
     } catch (e: any) {
       setError(String(e));
@@ -300,13 +343,40 @@ export default function CalendarPage() {
   const daysInMonth = lastDay.getDate();
 
   // Group events by date (including time off)
+  // Show events on ALL days they span, not just the start date
   const eventsByDate = new Map<string, CalendarEvent[]>();
   allEventsForDisplay.forEach((e) => {
-    const dateKey = new Date((e as any).start_date || (e as any).start_time || (e as any).startDate).toISOString().split("T")[0];
-    if (!eventsByDate.has(dateKey)) {
-      eventsByDate.set(dateKey, []);
+    const startDateStr = (e as any).start_date || (e as any).start_time || (e as any).startDate;
+    const endDateStr = (e as any).end_date || (e as any).end_time || (e as any).endDate;
+    
+    if (!startDateStr) return;
+    
+    const startDate = new Date(startDateStr);
+    const endDate = endDateStr ? new Date(endDateStr) : startDate;
+    
+    // Add event to all dates it spans
+    const currentDate = new Date(startDate);
+    currentDate.setHours(0, 0, 0, 0);
+    
+    const endDateLocal = new Date(endDate);
+    endDateLocal.setHours(23, 59, 59, 999);
+    
+    while (currentDate <= endDateLocal) {
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+      const day = String(currentDate.getDate()).padStart(2, "0");
+      const dateKey = `${year}-${month}-${day}`;
+      
+      if (!eventsByDate.has(dateKey)) {
+        eventsByDate.set(dateKey, []);
+      }
+      // Only add if not already in the array (avoid duplicates)
+      if (!eventsByDate.get(dateKey)!.some(existing => existing.id === e.id)) {
+        eventsByDate.get(dateKey)!.push(e);
+      }
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
     }
-    eventsByDate.get(dateKey)!.push(e);
   });
 
   const monthNames = [
@@ -463,6 +533,11 @@ export default function CalendarPage() {
                                     const endDate = item.start_time
                                       ? new Date(new Date(item.start_time).getTime() + 7 * 24 * 60 * 60 * 1000)
                                       : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                    
+                                    // Navigate calendar to the event's date so it will be visible after saving
+                                    // Use the start date to set the calendar view
+                                    const eventStartDate = new Date(startDate);
+                                    setSelectedDate(new Date(eventStartDate.getFullYear(), eventStartDate.getMonth(), 1));
                                     
                                     // Get outfitter_id from first event (all events should have same outfitter_id)
                                     const outfitterId = events.length > 0 ? events[0].outfitter_id : "";
@@ -822,10 +897,13 @@ export default function CalendarPage() {
             loadPendingActions();
           }}
           onSave={async () => {
+            // Reload events first to ensure new event appears in calendar
             await loadEvents();
+            // Reload pending actions to update queue (remove completed items)
+            await loadPendingActions();
+            // Close editor after everything is loaded
             setShowEditor(false);
             setEditingEvent(null);
-            await loadPendingActions();
           }}
         />
       )}
@@ -909,7 +987,8 @@ export default function CalendarPage() {
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const date = new Date(year, month, day);
-              const dateKey = date.toISOString().split("T")[0];
+              // Create dateKey using local date (YYYY-MM-DD format) to match eventsByDate
+              const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
               const dayEvents = eventsByDate.get(dateKey) || [];
               const isToday =
                 date.toDateString() === new Date().toDateString();
@@ -1384,6 +1463,13 @@ function EventEditor({
       // Get the saved event ID from response (for new events)
       const savedEvent = await res.json().catch(() => null);
       const savedEventId = savedEvent?.event?.id || event?.id;
+      const savedEventData = savedEvent?.event || savedEvent;
+      
+      // Navigate to the event's month so it's visible
+      if (savedEventData?.start_time || savedEventData?.start_date) {
+        const eventDate = new Date(savedEventData.start_time || savedEventData.start_date);
+        setSelectedDate(new Date(eventDate.getFullYear(), eventDate.getMonth(), 1));
+      }
       
       // If this was a new event created from a contract, link it now
       const contractId = (event as any)?.contractIdForLinking;

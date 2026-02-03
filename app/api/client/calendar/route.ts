@@ -64,12 +64,14 @@ export async function GET(req: Request) {
     .eq("status", "Booked") // Only show booked hunts to clients
     .in("audience", ["all", "client"]); // Only show events visible to clients
 
-  // Apply date range filter if provided
-  if (start) {
-    query = query.gte("start_time", start);
-  }
-  if (end) {
-    query = query.lte("end_time", end);
+  // Apply date range filter: include events that overlap with the requested range
+  // An event overlaps if: (start_time <= end) AND (end_time >= start)
+  if (start && end) {
+    query = query.lte("start_time", end).gte("end_time", start);
+  } else if (start) {
+    query = query.gte("end_time", start);
+  } else if (end) {
+    query = query.lte("start_time", end);
   }
 
   // Get all calendar events for this client across all linked outfitters

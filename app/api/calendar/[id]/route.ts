@@ -129,7 +129,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
 
       // All fields are filled, allow status change to "Booked"
-      if (body.status === "Booked" || (body.guide_username && currentEvent?.status === "Pending")) {
+      // Also update if status is already "Booked" but audience is still "internalOnly"
+      const willBeBooked = body.status === "Booked" || 
+                          (body.guide_username && currentEvent?.status === "Pending") ||
+                          (currentEvent?.status === "Booked" && currentEvent?.audience === "internalOnly");
+      
+      if (willBeBooked) {
         updateData.status = "Booked";
         updateData.audience = "all"; // Make visible to client once all fields are filled
         console.log(`📅 Event ${id}: All required fields filled, changing status to "Booked" and audience to "all"`);

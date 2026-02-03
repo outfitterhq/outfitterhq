@@ -7,10 +7,12 @@ export function middleware(req: NextRequest) {
   // Set a header so layouts can detect the pathname
   const response = NextResponse.next();
   
-  // For accept-invite pages, set a header so the layout knows to allow through
+  // For accept-invite pages, set multiple headers so the layout can detect it
   if (pathname.includes("/guide/accept-invite") || pathname.includes("/cook/accept-invite")) {
     response.headers.set("x-pathname", pathname);
     response.headers.set("x-url", req.url);
+    response.headers.set("x-invoke-path", pathname);
+    response.headers.set("x-forwarded-uri", req.url);
   }
   
   return response;
