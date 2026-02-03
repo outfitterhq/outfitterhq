@@ -9,24 +9,25 @@ export default async function GuideLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Check if this is the accept-invite page - it needs to handle auth itself
+  // Try to detect if this is the accept-invite page using middleware header
   const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || headersList.get("referer") || "";
-  const isAcceptInvitePage = pathname.includes("/guide/accept-invite") || 
-                             (typeof window !== "undefined" && window.location.pathname.includes("/guide/accept-invite"));
+  const pathname = headersList.get("x-pathname") || "";
+  const url = headersList.get("x-url") || headersList.get("referer") || "";
+  const isAcceptInvitePage = pathname.includes("/guide/accept-invite") || url.includes("/guide/accept-invite");
   
-  // For accept-invite page, skip auth checks - let the page handle it
-  // We can't reliably detect pathname in server component, so we'll check if user exists
-  // and if not, allow the page to render (it will handle the invite flow)
   const supabase = await supabasePage();
   const { data: userRes } = await supabase.auth.getUser();
 
-  // If no user and this might be accept-invite, allow it through (client will handle)
-  // We'll do a simple check: if no user, render children without GuideShell for accept-invite
+  // CRITICAL: For accept-invite page, ALWAYS allow through
+  // The page is client-side and handles its own auth/token verification
+  // This allows invite links to work even if admin is logged in
+  // The client-side page will sign out admin and switch to guide session
+  if (isAcceptInvitePage) {
+    return <>{children}</>;
+  }
+
+  // If no user, allow through - needed for other public guide pages
   if (!userRes.user) {
-    // Check if we can determine this is accept-invite from headers
-    // Since we can't reliably get pathname in server component, we'll use a different approach:
-    // Return children without GuideShell wrapper - the accept-invite page is client-side and handles its own UI
     return <>{children}</>;
   }
 
