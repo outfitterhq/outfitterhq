@@ -1446,6 +1446,18 @@ function EventEditor({
     }
   }
 
+  async function loadCooks() {
+    try {
+      const res = await fetch("/api/cooks");
+      if (res.ok) {
+        const data = await res.json();
+        setCooks(data.cooks || []);
+      }
+    } catch (e) {
+      console.error("Failed to load cooks", e);
+    }
+  }
+
   async function handleSave() {
     if (!title.trim() || !startDate || !endDate) {
       alert("Title, start date, and end date are required");
