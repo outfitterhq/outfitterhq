@@ -149,17 +149,23 @@ export async function GET(req: Request) {
     const primaryPhotoByCloseout: Record<string, string> = {};
 
     if (closeoutIds.length > 0) {
+      // Get photos, excluding private ones (private photos should not appear in past successes)
       const { data: photos } = await supabase
         .from("hunt_photos")
-        .select("id, closeout_id, storage_path, approved_for_marketing")
+        .select("id, closeout_id, storage_path, approved_for_marketing, is_private")
         .in("closeout_id", closeoutIds)
+        .eq("is_private", false) // Exclude private photos from past successes
         .order("display_order", { ascending: true });
 
       // For clients: prefer first marketing-approved photo per closeout; for admin: first by display_order
+      // Note: Private photos are already filtered out in the query above
       type PhotoChoice = { id: string; storage_path: string; approved_for_marketing?: boolean };
       const firstPerCloseout = new Map<string, PhotoChoice>();
       const preferMarketing = isClient && !isAdmin && !isGuide;
       for (const p of photos || []) {
+        // Double-check: skip private photos (shouldn't happen due to query filter, but safety check)
+        if (p.is_private) continue;
+        
         const cid = p.closeout_id;
         const existing = firstPerCloseout.get(cid);
         if (!existing) {
