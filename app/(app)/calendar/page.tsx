@@ -378,6 +378,19 @@ export default function CalendarPage() {
       currentDate.setDate(currentDate.getDate() + 1);
     }
   });
+  
+  // Debug: Log events by date for current month
+  const currentMonthKeys = Array.from(eventsByDate.keys()).filter(k => {
+    const [y, m] = k.split("-").map(Number);
+    return y === year && m === month + 1;
+  });
+  console.log(`[Admin Calendar] Events mapped for ${monthNames[month]} ${year}:`, {
+    totalEvents: allEventsForDisplay.length,
+    eventsByDateSize: eventsByDate.size,
+    currentMonthKeys: currentMonthKeys.length,
+    sampleKeys: currentMonthKeys.slice(0, 5),
+    sampleEvents: Array.from(eventsByDate.entries()).slice(0, 3),
+  });
 
   const monthNames = [
     "January",

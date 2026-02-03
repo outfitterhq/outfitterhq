@@ -97,7 +97,16 @@ export default function GuideCalendarPage() {
     end_time: h.end_time,
     startDate: h.start_time ? new Date(h.start_time).toLocaleDateString() : null,
     endDate: h.end_time ? new Date(h.end_time).toLocaleDateString() : null,
+    startDateLocal: h.start_time ? {
+      year: new Date(h.start_time).getFullYear(),
+      month: new Date(h.start_time).getMonth() + 1,
+      day: new Date(h.start_time).getDate(),
+    } : null,
   })));
+  
+  // Debug: Show what date keys were created for September 2025
+  const septKeys = Array.from(eventsByDate.keys()).filter(k => k.startsWith("2025-09"));
+  console.log("[Guide Calendar] Date keys for September 2025:", septKeys.slice(0, 10));
 
   function changeMonth(delta: number) {
     setSelectedDate(new Date(year, month + delta, 1));
@@ -230,12 +239,21 @@ export default function GuideCalendarPage() {
               const dayHunts = eventsByDate.get(dateKey) || [];
               const isToday = date.toDateString() === new Date().toDateString();
               
-              // Debug first day of month
-              if (i === 0 && hunts.length > 0) {
-                console.log(`[Guide Calendar] First day (${dateKey}):`, {
+              // Debug first day of month and check if we're viewing the right month
+              if (i === 0) {
+                const viewingMonth = `${MONTH_NAMES[month]} ${year}`;
+                const huntMonths = hunts.map(h => {
+                  if (!h.start_time) return null;
+                  const d = new Date(h.start_time);
+                  return `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+                }).filter(Boolean);
+                console.log(`[Guide Calendar] Rendering day ${day} (${dateKey}):`, {
                   dateKey,
                   dayHunts: dayHunts.length,
-                  availableKeys: Array.from(eventsByDate.keys()).slice(0, 5),
+                  viewingMonth,
+                  huntMonths: [...new Set(huntMonths)],
+                  availableKeys: Array.from(eventsByDate.keys()).slice(0, 10),
+                  matchingKeys: Array.from(eventsByDate.keys()).filter(k => k.startsWith(`${year}-${String(month + 1).padStart(2, "0")}`)).slice(0, 5),
                 });
               }
 
