@@ -190,28 +190,23 @@ Deno.serve(async (req) => {
       console.log("[admin-invite-guide] ✅ Invite email sent successfully to:", email);
       console.log("[admin-invite-guide] Created user ID:", targetUserId);
     } else {
-      // User already exists - generate recovery link instead
+      // User already exists - send password reset email (this will actually send an email)
       targetUserId = existingUser;
-      const recRes = await admin.auth.admin.generateLink({
-        type: "recovery",
-        email,
-        options: {
-          redirectTo: emailRedirectTo,
-          data: {
-            name: name || null,
-            invited_by: caller.id,
-            invited_outfitter_id: outfitter_id,
-            role: "guide",
-          },
-        },
+      console.log("[admin-invite-guide] User already exists, sending password reset email to:", email);
+      
+      // Use resetPasswordForEmail to actually send an email (not just generate a link)
+      const resetRes = await admin.auth.resetPasswordForEmail(email, {
+        redirectTo: emailRedirectTo,
       });
 
-      if (recRes.error) {
-        return json(500, { error: "Failed to generate recovery link", details: recRes.error.message });
+      if (resetRes.error) {
+        console.error("[admin-invite-guide] ERROR sending password reset email:", resetRes.error);
+        return json(500, { error: "Failed to send password reset email", details: resetRes.error.message });
       }
 
-      invite_link = recRes.data?.properties?.action_link ?? null;
-      console.log("[admin-invite-guide] Recovery link generated for existing user:", email);
+      inviteSent = true;
+      invite_link = "Email sent successfully";
+      console.log("[admin-invite-guide] ✅ Password reset email sent to existing user:", email);
     }
 
     if (!targetUserId) {
