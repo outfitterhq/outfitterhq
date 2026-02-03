@@ -239,7 +239,7 @@ export default function CalendarPage() {
             
             // If viewing wrong year, suggest navigation
             const viewingYear = year;
-            const eventYears = sampleEvents.map(e => e.year).filter((y): y is number => typeof y === "number");
+            const eventYears = sampleEvents.map((e: any) => e.year).filter((y): y is number => typeof y === "number");
             const uniqueYears = [...new Set(eventYears)];
             if (uniqueYears.length > 0 && !uniqueYears.includes(viewingYear)) {
               const monthNamesLocal = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
