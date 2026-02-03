@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function AcceptInvitePage() {
+function AcceptInviteContent() {
   const sp = useSearchParams();
   const supabase = useMemo(() => createClient(), []);
 
@@ -587,5 +587,13 @@ export default function AcceptInvitePage() {
         </>
       )}
     </main>
+  );
+}
+
+export default function AcceptInvitePage() {
+  return (
+    <Suspense fallback={<main style={{ maxWidth: 720, margin: "40px auto", padding: 16 }}><p>Loading...</p></main>}>
+      <AcceptInviteContent />
+    </Suspense>
   );
 }
