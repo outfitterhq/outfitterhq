@@ -110,3 +110,4 @@ export async function GET(req: Request) {
   // If no code and no next, still redirect—Supabase might have already set cookies in some flows
   return NextResponse.redirect(new URL("/select-outfitter", url.origin));
 }
+// Force deployment Tue Feb  3 07:59:56 MST 2026
