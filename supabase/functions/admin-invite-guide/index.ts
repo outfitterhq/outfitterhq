@@ -147,20 +147,22 @@ Deno.serve(async (req) => {
       ? app_confirm_url_final 
       : app_confirm_url_final + sep + "outfitter_id=" + encodeURIComponent(outfitter_id);
 
-    // Try to invite user - this will send an email automatically if email is configured
-    // First check if user already exists
+    // Generate invite/recovery link and send email via Resend directly
+    // This gives us full control and doesn't rely on Supabase's email sending
     let targetUserId: string | null = null;
     const existingUser = await findUserIdByEmail(admin, email);
     
     let inviteSent = false;
     let invite_link: string | null = null;
 
-    if (!existingUser) {
-      // User doesn't exist - send invite email
-      console.log("[admin-invite-guide] User doesn't exist, sending invite email to:", email);
-      console.log("[admin-invite-guide] Redirect URL:", emailRedirectTo);
-      
-      const inviteRes = await admin.auth.admin.inviteUserByEmail(email, {
+    // Generate the appropriate link (invite for new users, recovery for existing)
+    const linkType = existingUser ? "recovery" : "invite";
+    console.log(`[admin-invite-guide] User ${existingUser ? "exists" : "doesn't exist"}, generating ${linkType} link for:`, email);
+    
+    const linkRes = await admin.auth.admin.generateLink({
+      type: linkType,
+      email,
+      options: {
         redirectTo: emailRedirectTo,
         data: {
           name: name || null,
@@ -168,27 +170,96 @@ Deno.serve(async (req) => {
           invited_outfitter_id: outfitter_id,
           role: "guide",
         },
-      });
+      },
+    });
 
-      console.log("[admin-invite-guide] inviteUserByEmail response:", {
-        hasError: !!inviteRes.error,
-        error: inviteRes.error?.message,
-        hasUser: !!inviteRes.data?.user,
-        userId: inviteRes.data?.user?.id,
-        userEmail: inviteRes.data?.user?.email,
-      });
+    if (linkRes.error) {
+      console.error("[admin-invite-guide] ERROR generating link:", linkRes.error);
+      return json(500, { error: "Failed to generate invite link", details: linkRes.error.message });
+    }
 
-      if (inviteRes.error) {
-        console.error("[admin-invite-guide] ERROR sending invite email:", inviteRes.error);
-        return json(500, { error: "Failed to send invite email", details: inviteRes.error.message });
+    invite_link = linkRes.data?.properties?.action_link ?? null;
+    targetUserId = linkRes.data?.user?.id ?? existingUser;
+
+    if (!invite_link) {
+      return json(500, { error: "Invite link missing from Supabase response" });
+    }
+
+    if (!targetUserId) {
+      targetUserId = await findUserIdByEmail(admin, email);
+      if (!targetUserId) {
+        return json(500, { error: "User lookup returned null" });
       }
+    }
 
-      inviteSent = true;
-      invite_link = inviteRes.data?.user?.email ? "Email sent successfully" : null;
-      targetUserId = inviteRes.data?.user?.id ?? null;
-      
-      console.log("[admin-invite-guide] ✅ Invite email sent successfully to:", email);
-      console.log("[admin-invite-guide] Created user ID:", targetUserId);
+    // Send email via Resend API directly
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
+    if (resendApiKey) {
+      try {
+        const emailSubject = existingUser 
+          ? `Guide Invitation - ${name || "Join OutfitterHQ"}`
+          : `You've been invited as a Guide - ${name || "Join OutfitterHQ"}`;
+        
+        const emailBody = {
+          from: "OutfitterHQ <onboarding@resend.dev>",
+          to: [email],
+          subject: emailSubject,
+          html: `
+            <h2>You've been invited as a Guide</h2>
+            <p>Hello${name ? ` ${name}` : ""},</p>
+            <p>You've been invited to join OutfitterHQ as a guide. Click the link below to accept your invitation:</p>
+            <p><a href="${invite_link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Accept Invitation</a></p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666;">${invite_link}</p>
+            <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+          `,
+          text: `You've been invited as a Guide. Click this link to accept: ${invite_link}`,
+        };
+
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailBody),
+        });
+
+        const resendData = await resendRes.json();
+
+        if (!resendRes.ok) {
+          console.error("[admin-invite-guide] ERROR sending email via Resend:", resendData);
+          return json(500, { 
+            error: "Failed to send email via Resend", 
+            details: resendData.message || "Unknown error",
+            invite_link: invite_link // Still return the link so user can use it manually
+          });
+        }
+
+        inviteSent = true;
+        console.log("[admin-invite-guide] ✅ Email sent via Resend to:", email);
+        console.log("[admin-invite-guide] Resend email ID:", resendData.id);
+      } catch (emailErr) {
+        console.error("[admin-invite-guide] ERROR calling Resend API:", emailErr);
+        return json(500, { 
+          error: "Failed to send email", 
+          details: String(emailErr),
+          invite_link: invite_link // Still return the link
+        });
+      }
+    } else {
+      console.warn("[admin-invite-guide] RESEND_API_KEY not set, cannot send email");
+      // Still return success with the link - user can send it manually
+      return json(200, {
+        ok: true,
+        invite_link,
+        email_sent: false,
+        message: "Invite link generated but email not sent. Set RESEND_API_KEY in Edge Function secrets.",
+        outfitter_id,
+        invited_user_id: targetUserId
+      });
+    }
     } else {
       // User already exists - try to send invite anyway (Supabase may still send email)
       targetUserId = existingUser;
