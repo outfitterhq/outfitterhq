@@ -157,6 +157,9 @@ Deno.serve(async (req) => {
 
     if (!existingUser) {
       // User doesn't exist - send invite email
+      console.log("[admin-invite-guide] User doesn't exist, sending invite email to:", email);
+      console.log("[admin-invite-guide] Redirect URL:", emailRedirectTo);
+      
       const inviteRes = await admin.auth.admin.inviteUserByEmail(email, {
         redirectTo: emailRedirectTo,
         data: {
@@ -167,7 +170,16 @@ Deno.serve(async (req) => {
         },
       });
 
+      console.log("[admin-invite-guide] inviteUserByEmail response:", {
+        hasError: !!inviteRes.error,
+        error: inviteRes.error?.message,
+        hasUser: !!inviteRes.data?.user,
+        userId: inviteRes.data?.user?.id,
+        userEmail: inviteRes.data?.user?.email,
+      });
+
       if (inviteRes.error) {
+        console.error("[admin-invite-guide] ERROR sending invite email:", inviteRes.error);
         return json(500, { error: "Failed to send invite email", details: inviteRes.error.message });
       }
 
@@ -175,7 +187,8 @@ Deno.serve(async (req) => {
       invite_link = inviteRes.data?.user?.email ? "Email sent successfully" : null;
       targetUserId = inviteRes.data?.user?.id ?? null;
       
-      console.log("[admin-invite-guide] Invite email sent to:", email);
+      console.log("[admin-invite-guide] ✅ Invite email sent successfully to:", email);
+      console.log("[admin-invite-guide] Created user ID:", targetUserId);
     } else {
       // User already exists - generate recovery link instead
       targetUserId = existingUser;
