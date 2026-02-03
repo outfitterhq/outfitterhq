@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
           : `You've been invited as a Guide - ${name || "Join OutfitterHQ"}`;
         
         const emailBody = {
-          from: "OutfitterHQ <onboarding@resend.dev>",
+          from: "OutfitterHQ <noreply@outfitterhq.app>",
           to: [email],
           subject: emailSubject,
           html: `
