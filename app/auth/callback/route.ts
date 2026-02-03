@@ -43,8 +43,10 @@ export async function GET(req: Request) {
     }
   }
 
-  // If no code, check if we have a next parameter with outfitter_id
-  // This handles invite links that go through Supabase auth but don't use PKCE
+  // Check if user has session (even without code, Supabase might have set cookies)
+  const { data: userRes } = await supabase.auth.getUser();
+  
+  // If we have a next parameter, use it (especially for accept-invite pages)
   if (next) {
     const nextUrl = new URL(next, url.origin);
     // Preserve outfitter_id from current URL if present
@@ -52,7 +54,57 @@ export async function GET(req: Request) {
     if (outfitterId) {
       nextUrl.searchParams.set("outfitter_id", outfitterId);
     }
-    return NextResponse.redirect(nextUrl);
+    
+    // If next is an accept-invite page, redirect directly
+    // The accept-invite page will handle session verification and token processing
+    if (next.includes("accept-invite")) {
+      return NextResponse.redirect(nextUrl);
+    }
+    
+    // For other pages, redirect if user has session
+    if (userRes?.user) {
+      return NextResponse.redirect(nextUrl);
+    }
+  }
+
+  // If no code and no next, check if user has invited status membership
+  // If so, redirect to appropriate accept-invite page (don't send to select-outfitter)
+  if (userRes?.user) {
+    const { data: memberships } = await supabase
+      .from("outfitter_memberships")
+      .select("role, outfitter_id, status")
+      .eq("user_id", userRes.user.id)
+      .in("status", ["active", "invited"]);
+    const list = (memberships ?? []) as { role?: string; outfitter_id?: string; status?: string }[];
+    
+    // Prioritize invited memberships - they need to complete onboarding
+    const invitedCookMem = list.find((m) => m.role === "cook" && m.status === "invited");
+    const invitedGuideMem = list.find((m) => m.role === "guide" && m.status === "invited");
+    
+    if (invitedCookMem) {
+      const to = new URL("/cook/accept-invite", url.origin);
+      if (invitedCookMem.outfitter_id) to.searchParams.set("outfitter_id", invitedCookMem.outfitter_id);
+      return NextResponse.redirect(to);
+    }
+    if (invitedGuideMem) {
+      const to = new URL("/guide/accept-invite", url.origin);
+      if (invitedGuideMem.outfitter_id) to.searchParams.set("outfitter_id", invitedGuideMem.outfitter_id);
+      return NextResponse.redirect(to);
+    }
+    
+    // If no invited memberships, check for active ones (existing users)
+    const cookMem = list.find((m) => m.role === "cook");
+    const guideMem = list.find((m) => m.role === "guide");
+    if (cookMem) {
+      const to = new URL("/cook/accept-invite", url.origin);
+      if (cookMem.outfitter_id) to.searchParams.set("outfitter_id", cookMem.outfitter_id);
+      return NextResponse.redirect(to);
+    }
+    if (guideMem) {
+      const to = new URL("/guide/accept-invite", url.origin);
+      if (guideMem.outfitter_id) to.searchParams.set("outfitter_id", guideMem.outfitter_id);
+      return NextResponse.redirect(to);
+    }
   }
 
   // If no code and no next, still redirect—Supabase might have already set cookies in some flows
