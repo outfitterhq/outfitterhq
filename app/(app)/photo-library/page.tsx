@@ -55,19 +55,13 @@ export default function PhotoLibraryPage() {
   const [weaponFilter, setWeaponFilter] = useState("");
   const [unitFilter, setUnitFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [marketingFilter, setMarketingFilter] = useState("");
+  // Default to showing only unapproved photos (for admin review)
+  // Approved photos should only appear in "Past Successes"
+  const [marketingFilter, setMarketingFilter] = useState("false");
 
   useEffect(() => {
     loadPhotos();
   }, [speciesFilter, weaponFilter, unitFilter, categoryFilter, marketingFilter]);
-
-  // Default to showing only unapproved photos (for admin review)
-  // Approved photos should only appear in "Past Successes"
-  useEffect(() => {
-    if (marketingFilter === "") {
-      setMarketingFilter("false"); // Default to unapproved only
-    }
-  }, []);
 
   async function loadPhotos() {
     try {
