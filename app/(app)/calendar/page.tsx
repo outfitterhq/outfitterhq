@@ -392,18 +392,6 @@ export default function CalendarPage() {
   });
   
   // Debug: Log events by date for current month
-  const currentMonthKeys = Array.from(eventsByDate.keys()).filter(k => {
-    const [y, m] = k.split("-").map(Number);
-    return y === year && m === month + 1;
-  });
-  console.log(`[Admin Calendar] Events mapped for ${monthNames[month]} ${year}:`, {
-    totalEvents: allEventsForDisplay.length,
-    eventsByDateSize: eventsByDate.size,
-    currentMonthKeys: currentMonthKeys.length,
-    sampleKeys: currentMonthKeys.slice(0, 5),
-    sampleEvents: Array.from(eventsByDate.entries()).slice(0, 3),
-  });
-
   const monthNames = [
     "January",
     "February",
@@ -418,6 +406,18 @@ export default function CalendarPage() {
     "November",
     "December",
   ];
+  
+  const currentMonthKeys = Array.from(eventsByDate.keys()).filter(k => {
+    const [y, m] = k.split("-").map(Number);
+    return y === year && m === month + 1;
+  });
+  console.log(`[Admin Calendar] Events mapped for ${monthNames[month]} ${year}:`, {
+    totalEvents: allEventsForDisplay.length,
+    eventsByDateSize: eventsByDate.size,
+    currentMonthKeys: currentMonthKeys.length,
+    sampleKeys: currentMonthKeys.slice(0, 5),
+    sampleEvents: Array.from(eventsByDate.entries()).slice(0, 3),
+  });
 
   function changeMonth(delta: number) {
     setSelectedDate(new Date(year, month + delta, 1));
