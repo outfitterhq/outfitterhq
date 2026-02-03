@@ -59,8 +59,6 @@ export async function POST(
     // Check if guide matches by username OR email (since hunts can be assigned by either)
     const isGuide = guideData && (
       guideData.username === hunt.guide_username || 
-      guideData.email === hunt.guide_username ||
-      guideData.username === hunt.guide_username ||
       guideData.email === hunt.guide_username
     );
 
