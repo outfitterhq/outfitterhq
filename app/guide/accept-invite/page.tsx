@@ -49,37 +49,7 @@ function AcceptInviteContent() {
 
   const canSubmit = fullName.trim().length >= 2 && password.length >= 8 && !!outfitter_id;
 
-  // Parse hash fragment on client side (must be in useEffect)
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const hash = window.location.hash.substring(1); // Remove #
-      if (hash) {
-        const hashParams = new URLSearchParams(hash);
-        // Hash params take precedence (Supabase puts them there)
-        const hashType = hashParams.get("type");
-        const hashToken = hashParams.get("token_hash") ?? hashParams.get("token");
-        if (hashType) setType(hashType);
-        if (hashToken) setTokenHash(hashToken);
-        
-        // Also check for access_token in hash (Supabase sometimes uses this for direct session)
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        if (accessToken && refreshToken) {
-          // If we have tokens in hash, set session directly
-          console.log("Found access_token and refresh_token in hash - setting session directly");
-          supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          }).then(() => {
-            console.log("✅ Session set from hash tokens");
-          }).catch((err) => {
-            console.warn("Failed to set session from hash:", err);
-          });
-        }
-      }
-    }
-  }, []); // Run once on mount
-
+  // Single useEffect to handle all invite verification - prevents glitching from multiple redirects
   useEffect(() => {
     (async () => {
       try {
@@ -110,24 +80,36 @@ function AcceptInviteContent() {
           throw new Error("Missing outfitter_id in invite link. Please use the full link from your email.");
         }
 
-        // Parse hash once at start so we have token/type for verification (avoids race with
-        // separate useEffect that sets state from hash; Supabase puts tokens in #fragment)
+        // Parse hash fragment first (Supabase puts tokens in #fragment)
         let effectiveToken = token_hash;
         let effectiveType = type;
         if (typeof window !== "undefined" && window.location.hash) {
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
           const hashToken = hashParams.get("token_hash") ?? hashParams.get("token");
           const hashType = hashParams.get("type");
-          if (hashToken) effectiveToken = hashToken;
-          if (hashType) effectiveType = hashType;
-          // Sync session from hash if present (Supabase sometimes puts tokens in hash)
+          if (hashToken) {
+            effectiveToken = hashToken;
+            setTokenHash(hashToken); // Update state for display
+          }
+          if (hashType) {
+            effectiveType = hashType;
+            setType(hashType); // Update state for display
+          }
+          // If we have access_token in hash, set session directly (Supabase sometimes does this)
           const accessToken = hashParams.get("access_token");
           const refreshToken = hashParams.get("refresh_token");
           if (accessToken && refreshToken) {
+            console.log("Setting session from hash tokens...");
             await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken,
-            }).catch((err) => console.warn("Failed to set session from hash:", err));
+            }).then(() => {
+              console.log("✅ Session set from hash tokens");
+            }).catch((err) => {
+              console.warn("Failed to set session from hash:", err);
+            });
+            // Wait for session to propagate
+            await new Promise((r) => setTimeout(r, 500));
           }
         }
 
@@ -275,7 +257,7 @@ function AcceptInviteContent() {
         setError(String(e?.message ?? e));
       }
     })();
-  }, [supabase, type, token_hash, outfitter_id]); // type and token_hash are now state, so this will re-run when they change
+  }, [supabase, outfitterIdFromUrl]); // Only run once on mount, or when outfitter_id changes
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
