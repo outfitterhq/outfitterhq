@@ -580,3 +580,4 @@ export default function AcceptInvitePage() {
     </Suspense>
   );
 }
+// Force Vercel deployment Tue Feb  3 10:03:55 MST 2026
