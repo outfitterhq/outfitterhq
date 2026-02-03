@@ -99,7 +99,8 @@ Deno.serve(async (req) => {
 
     // ALWAYS use the production URL from env var, never trust client-provided URL
     const baseUrl = webAppUrl.replace(/\/$/, ""); // Remove trailing slash
-    const app_confirm_url_final = `${baseUrl}/guide/accept-invite`;
+    // Use auth/callback route which handles Supabase auth flows better, then redirects to accept-invite
+    const app_confirm_url_final = `${baseUrl}/auth/callback?next=/guide/accept-invite`;
     
     console.log("[admin-invite-guide] Using production URL:", app_confirm_url_final);
 
@@ -140,12 +141,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Redirect target: use app_confirm_url_final and ensure outfitter_id is included
-    const hasOutfitterInUrl = app_confirm_url_final.includes("outfitter_id=");
-    const sep = app_confirm_url_final.includes("?") ? "&" : "?";
-    const emailRedirectTo = hasOutfitterInUrl 
-      ? app_confirm_url_final 
-      : app_confirm_url_final + sep + "outfitter_id=" + encodeURIComponent(outfitter_id);
+    // Redirect target: use auth/callback which handles Supabase auth flows, then redirects to accept-invite
+    // Include outfitter_id in the redirect URL so it's preserved
+    const callbackUrl = `${baseUrl}/auth/callback?next=/guide/accept-invite&outfitter_id=${encodeURIComponent(outfitter_id)}`;
+    const emailRedirectTo = callbackUrl;
 
     // Generate invite/recovery link and send email via Resend directly
     // This gives us full control and doesn't rely on Supabase's email sending

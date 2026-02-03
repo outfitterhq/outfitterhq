@@ -43,6 +43,18 @@ export async function GET(req: Request) {
     }
   }
 
-  // If no code, still redirect—Supabase might have already set cookies in some flows
+  // If no code, check if we have a next parameter with outfitter_id
+  // This handles invite links that go through Supabase auth but don't use PKCE
+  if (next) {
+    const nextUrl = new URL(next, url.origin);
+    // Preserve outfitter_id from current URL if present
+    const outfitterId = url.searchParams.get("outfitter_id");
+    if (outfitterId) {
+      nextUrl.searchParams.set("outfitter_id", outfitterId);
+    }
+    return NextResponse.redirect(nextUrl);
+  }
+
+  // If no code and no next, still redirect—Supabase might have already set cookies in some flows
   return NextResponse.redirect(new URL("/select-outfitter", url.origin));
 }
