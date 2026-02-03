@@ -1,12 +1,15 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useState, useEffect, useMemo } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 
 function LoginContent() {
   const sp = useSearchParams();
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const errFromUrl = sp.get("e");
   const messageFromUrl = sp.get("message");
 
@@ -14,6 +17,40 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(errFromUrl);
+
+  // Check if user has invited membership and redirect to accept-invite
+  useEffect(() => {
+    async function checkInvitedMembership() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: memberships } = await supabase
+        .from("outfitter_memberships")
+        .select("role, outfitter_id, status")
+        .eq("user_id", user.id)
+        .in("status", ["invited", "active"]);
+
+      if (!memberships?.length) return;
+
+      // Check for invited guide membership
+      const invitedGuide = memberships.find((m) => m.role === "guide" && m.status === "invited");
+      if (invitedGuide) {
+        const url = `/guide/accept-invite${invitedGuide.outfitter_id ? `?outfitter_id=${invitedGuide.outfitter_id}` : ""}`;
+        router.replace(url);
+        return;
+      }
+
+      // Check for invited cook membership
+      const invitedCook = memberships.find((m) => m.role === "cook" && m.status === "invited");
+      if (invitedCook) {
+        const url = `/cook/accept-invite${invitedCook.outfitter_id ? `?outfitter_id=${invitedCook.outfitter_id}` : ""}`;
+        router.replace(url);
+        return;
+      }
+    }
+
+    checkInvitedMembership();
+  }, [supabase, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
