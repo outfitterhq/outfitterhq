@@ -207,8 +207,8 @@ function AcceptCookInviteContent() {
       const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
       
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
+      // Reuse session from above
+      const token = session?.access_token;
       if (!token) throw new Error("No session token available");
 
       const fnUrl = `${baseUrl}/functions/v1/cook-complete-onboarding`;
