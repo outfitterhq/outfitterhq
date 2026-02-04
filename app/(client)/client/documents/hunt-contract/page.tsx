@@ -161,6 +161,24 @@ export default function HuntContractPage() {
   useEffect(() => {
     if (loading || !data) return;
     
+    // Check if we just returned from complete-booking (prevent redirect loop)
+    const urlParams = new URLSearchParams(window.location.search);
+    const justCompleted = urlParams.get("booking_completed") === "1";
+    if (justCompleted) {
+      // Remove the param and reload data to get fresh state
+      urlParams.delete("booking_completed");
+      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
+      window.history.replaceState({}, "", newUrl);
+      // Reload contract data to get updated needs_complete_booking status
+      setTimeout(() => {
+        loadContract();
+      }, 500); // Small delay to ensure backend has processed the booking
+      return;
+    }
+    
+    // Also check if redirectingToBooking is true - if so, don't check again
+    if (redirectingToBooking) return;
+    
     // Check if current contract needs complete booking
     const contract = data?.contracts?.[selectedContractIndex];
     console.log("[hunt-contract] Checking redirect:", {
@@ -178,7 +196,7 @@ export default function HuntContractPage() {
         hunt_id: contract.hunt_id,
       });
       setRedirectingToBooking(true);
-      const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}`;
+      const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}?booking_completed=1`;
       
       // Use hunt_id if available, otherwise use contract_id (complete-booking accepts both)
       if (contract.hunt_id) {
