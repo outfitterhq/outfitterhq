@@ -88,12 +88,25 @@ export default function CompleteBookingPage() {
     const query = huntIdFromUrl
       ? `hunt_id=${encodeURIComponent(huntIdFromUrl)}`
       : `contract_id=${encodeURIComponent(contractId!)}`;
+    console.error("[complete-booking] Loading with:", { huntIdFromUrl, contractId, query });
     fetch(`/api/client/complete-booking?${query}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to load");
-        return r.json();
+      .then(async (r) => {
+        const text = await r.text();
+        console.error("[complete-booking] Response status:", r.status, "Response:", text);
+        if (!r.ok) {
+          let errorMsg = "Failed to load booking details";
+          try {
+            const json = JSON.parse(text);
+            errorMsg = json.error || errorMsg;
+          } catch {
+            errorMsg = text || errorMsg;
+          }
+          throw new Error(`${errorMsg} (Status: ${r.status})`);
+        }
+        return JSON.parse(text);
       })
       .then((data) => {
+        console.error("[complete-booking] Success, data:", data);
         setHunt(data.hunt);
         setPlans(data.pricing_plans || []);
         setAddonItems(data.addon_items || []);
@@ -108,7 +121,11 @@ export default function CompleteBookingPage() {
           if (typeof addon.extra_spotters === "number" && addon.extra_spotters > 0) setExtraSpotters(addon.extra_spotters);
         }
       })
-      .catch((e) => setError(e.message || "Something went wrong"))
+      .catch((e) => {
+        const errorMsg = e.message || "Something went wrong";
+        console.error("[complete-booking] ERROR:", errorMsg, e);
+        setError(errorMsg);
+      })
       .finally(() => setLoading(false));
   }, [huntIdFromUrl, contractId]);
 

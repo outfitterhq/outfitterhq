@@ -330,20 +330,29 @@ export default function HuntContractPage() {
         const contractToCheck = contracts[selectedIdx >= 0 ? selectedIdx : 0];
         
         if (contractToCheck?.needs_complete_booking) {
-          console.log("[hunt-contract] Contract needs booking - redirecting immediately", {
+          const redirectInfo = {
             contract_id: contractToCheck.id,
             hunt_id: contractToCheck.hunt_id,
-          });
+            needs_booking: contractToCheck.needs_complete_booking,
+          };
+          console.log("[hunt-contract] Contract needs booking - redirecting immediately", redirectInfo);
+          console.error("[hunt-contract] REDIRECT DEBUG:", redirectInfo); // Persistent error log
+          
           setLoading(false);
           setRedirectingToBooking(true);
           const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}`;
           
           // Use hunt_id if available, otherwise use contract_id (complete-booking accepts both)
-          if (contractToCheck.hunt_id) {
-            window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contractToCheck.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`);
-          } else {
-            window.location.replace(`/client/complete-booking?contract_id=${encodeURIComponent(contractToCheck.id)}&return_to=${encodeURIComponent(returnUrl)}`);
-          }
+          const redirectUrl = contractToCheck.hunt_id
+            ? `/client/complete-booking?hunt_id=${encodeURIComponent(contractToCheck.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`
+            : `/client/complete-booking?contract_id=${encodeURIComponent(contractToCheck.id)}&return_to=${encodeURIComponent(returnUrl)}`;
+          
+          console.error("[hunt-contract] REDIRECT URL:", redirectUrl); // Persistent error log
+          
+          // Small delay to ensure logs are visible
+          setTimeout(() => {
+            window.location.replace(redirectUrl);
+          }, 100);
           return;
         }
         
