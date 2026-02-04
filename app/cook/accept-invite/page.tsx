@@ -94,6 +94,20 @@ function AcceptCookInviteContent() {
                 router.push("/cook");
                 return;
               }
+              
+              // Set outfitter cookie immediately so it's available throughout the flow
+              // This ensures the outfitter is "selected" even before form submission
+              if (mem?.role === "cook" && (mem?.status === "invited" || mem?.status === "active")) {
+                try {
+                  const form = new FormData();
+                  form.set("outfitter_id", effectiveOutfitterId);
+                  await fetch("/api/tenant/select", { method: "POST", body: form });
+                  console.log("✅ Outfitter cookie set for cook invite:", effectiveOutfitterId);
+                } catch (cookieErr) {
+                  console.warn("Failed to set outfitter cookie (non-fatal):", cookieErr);
+                }
+              }
+              
               setResolvedOutfitterId(effectiveOutfitterId);
               // We have an outfitter (from URL or membership); show form
               setStage("form");
@@ -111,6 +125,20 @@ function AcceptCookInviteContent() {
           setError("Missing outfitter in invite link. Please use the full link from your email.");
           setStage("error");
           return;
+        }
+
+        // Set outfitter cookie immediately if we have outfitter_id from URL
+        // This ensures the outfitter is "selected" even before form submission
+        if (effectiveId) {
+          try {
+            const form = new FormData();
+            form.set("outfitter_id", effectiveId);
+            await fetch("/api/tenant/select", { method: "POST", body: form });
+            console.log("✅ Outfitter cookie set from URL:", effectiveId);
+            setResolvedOutfitterId(effectiveId);
+          } catch (cookieErr) {
+            console.warn("Failed to set outfitter cookie (non-fatal):", cookieErr);
+          }
         }
 
         // Verify the invite token

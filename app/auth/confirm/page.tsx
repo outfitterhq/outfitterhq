@@ -48,30 +48,35 @@ function ConfirmContent() {
         return;
       }
 
-      // Check if this is an invite flow - if user has "invited" status, send to accept-invite
-      // First, check if we have outfitter_id in URL (from invite link)
-      if (outfitter_id && isInviteFlow) {
-        // This is an invite - redirect to guide accept-invite with hash preserved
-        const hash = window.location.hash;
-        window.history.replaceState({}, document.title, `/guide/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}${hash}`);
-        router.replace(`/guide/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}${hash}`);
-        return;
-      }
-
       // Check user's membership status to see if they're invited (after session is set)
+      // This will tell us if it's a cook or guide invite
       if (isInviteFlow) {
         const checkMembership = await fetch("/api/auth/check-invite-status");
         if (checkMembership.ok) {
           const membershipData = await checkMembership.json();
           if (membershipData.isInvited) {
             const hash = window.location.hash;
+            // Use outfitter_id from membership data (more reliable) or from URL
+            const effectiveOutfitterId = membershipData.outfitter_id || outfitter_id;
             const redirectPath = membershipData.role === "cook" 
-              ? `/cook/accept-invite?outfitter_id=${encodeURIComponent(membershipData.outfitter_id)}${hash}`
-              : `/guide/accept-invite?outfitter_id=${encodeURIComponent(membershipData.outfitter_id)}${hash}`;
+              ? `/cook/accept-invite?outfitter_id=${encodeURIComponent(effectiveOutfitterId)}${hash}`
+              : `/guide/accept-invite?outfitter_id=${encodeURIComponent(effectiveOutfitterId)}${hash}`;
             window.history.replaceState({}, document.title, redirectPath);
             router.replace(redirectPath);
             return;
           }
+        }
+        
+        // If we have outfitter_id in URL but no membership check worked, 
+        // try to determine role from URL or default to guide
+        if (outfitter_id) {
+          // Check if URL path suggests cook (though invite links should go through membership check above)
+          const hash = window.location.hash;
+          // Default to guide if we can't determine (backward compatibility)
+          const redirectPath = `/guide/accept-invite?outfitter_id=${encodeURIComponent(outfitter_id)}${hash}`;
+          window.history.replaceState({}, document.title, redirectPath);
+          router.replace(redirectPath);
+          return;
         }
       }
 
