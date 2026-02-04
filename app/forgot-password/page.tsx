@@ -25,30 +25,17 @@ export default function ForgotPasswordPage() {
     try {
       const normalizedEmail = email.toLowerCase().trim();
       
-      // Get the production URL
-      // Priority: NEXT_PUBLIC_SITE_URL env var > current origin (if not localhost) > fallback
-      let siteUrl = "https://outfitterhq.com"; // Default fallback
-      
-      if (typeof window !== "undefined") {
-        const envUrl = process.env.NEXT_PUBLIC_SITE_URL;
-        const currentOrigin = window.location.origin;
-        
-        // Use env var if set, otherwise use current origin if it's not localhost
-        if (envUrl) {
-          siteUrl = envUrl;
-        } else if (!currentOrigin.includes("localhost") && !currentOrigin.includes("127.0.0.1")) {
-          siteUrl = currentOrigin;
-        }
-      }
-      
-      // Supabase will send a password reset email
-      // Even if the email doesn't exist, it returns success (prevents account enumeration)
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
-        redirectTo: `${siteUrl}/reset-password`,
+      // Call API route which uses server-side environment variables for production URL
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail }),
       });
 
-      if (resetError) {
-        setError(resetError.message);
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Failed to send reset email");
         setBusy(false);
         return;
       }
