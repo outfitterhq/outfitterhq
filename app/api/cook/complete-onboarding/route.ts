@@ -31,20 +31,27 @@ export async function POST(req: Request) {
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Verify user has an "invited" membership for this outfitter
-    const { data: existingMembership, error: checkErr } = await admin
-      .from("outfitter_memberships")
-      .select("id, status, role")
-      .eq("user_id", userRes.user.id)
-      .eq("outfitter_id", outfitter_id)
-      .eq("role", "cook")
-      .maybeSingle();
+    // Try to check if membership exists, but don't fail if check fails
+    let existingMembership: any = null;
+    try {
+      const { data, error: checkErr } = await admin
+        .from("outfitter_memberships")
+        .select("id, status, role")
+        .eq("user_id", userRes.user.id)
+        .eq("outfitter_id", outfitter_id)
+        .eq("role", "cook")
+        .maybeSingle();
 
-    if (checkErr) {
-      return NextResponse.json({ error: "Failed to check membership", details: checkErr.message }, { status: 500 });
+      if (checkErr) {
+        console.warn("Failed to check membership (will try to create/update anyway):", checkErr);
+      } else {
+        existingMembership = data;
+      }
+    } catch (checkError) {
+      console.warn("Exception checking membership (will try to create/update anyway):", checkError);
     }
 
-    // If membership doesn't exist, create it (this can happen if invite didn't create it properly)
+    // If membership doesn't exist or check failed, try to create it
     if (!existingMembership) {
       console.log("Creating missing cook membership for user:", userRes.user.id);
       const { data: newMembership, error: createErr } = await admin
