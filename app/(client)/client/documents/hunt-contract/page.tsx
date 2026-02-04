@@ -156,18 +156,28 @@ export default function HuntContractPage() {
     return () => { cancelled = true; };
   }, [isComplete, currentContract?.id]);
 
-  // Only redirect when user has zero contracts and a hunt needs complete-booking first (so they must complete booking to get a contract).
-  // When they already have contracts, always show the contract page and the "Complete your booking" banner/link instead of redirecting.
+  // Redirect to complete-booking if contract needs booking first (like purchase tags flow)
+  // This applies whether user has contracts or not - if needs_complete_booking is true, go to booking first
   useEffect(() => {
     if (loading || !data) return;
-    if (data.contracts && data.contracts.length > 0) return; // Keep user on contract page so they can view the contract
+    
+    // Check if current contract needs complete booking
+    const contract = data?.contracts?.[selectedContractIndex];
+    if (contract?.needs_complete_booking && contract?.hunt_id) {
+      setRedirectingToBooking(true);
+      window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent("/client/documents/hunt-contract" + (contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""))}`);
+      return;
+    }
+    
+    // Also check if user has zero contracts and a hunt needs complete-booking first
+    if (data.contracts && data.contracts.length > 0) return; // Keep user on contract page if they have contracts that don't need booking
     if (!data.eligible || !data.hunts_without_contracts?.length) return;
     const firstHunt = data.hunts_without_contracts[0];
     if (firstHunt?.needs_complete_booking) {
       setRedirectingToBooking(true);
       window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
     }
-  }, [loading, data]);
+  }, [loading, data, selectedContractIndex, contractIdFromUrl]);
 
   // When contract needs completion and has hunt_code but no hunt_window, fetch window from API
   useEffect(() => {
@@ -237,20 +247,7 @@ export default function HuntContractPage() {
         ? contractsRaw.findIndex((c: { id: string }) => c.id === contractIdFromUrl)
         : 0;
 
-      // Only redirect when user has zero contracts and there is a hunt that needs complete-booking first
-      if (json.eligible && (!contractsRaw || contractsRaw.length === 0) && json.hunts_without_contracts?.length) {
-        const firstHunt = json.hunts_without_contracts[0];
-        const needsBooking = firstHunt?.needs_complete_booking === true;
-        if (needsBooking) {
-          setLoading(false);
-          setRedirectingToBooking(true);
-          const firstHuntId = firstHunt.id;
-          window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHuntId))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
-          return;
-        }
-      }
-
-      // API returns { contracts: [...], eligible: boolean } – show all contracts (with optional complete-booking banner)
+      // API returns { contracts: [...], eligible: boolean } – show all contracts
       if (contractsRaw.length > 0) {
         const contracts: ContractItem[] = json.contracts.map((contract: any) => {
           const rawHunt = contract.hunt || contract.calendar_events;
@@ -550,28 +547,6 @@ export default function HuntContractPage() {
         </div>
       )}
 
-      {data?.contracts?.length && currentContract?.needs_complete_booking && (
-        <div
-          style={{
-            background: "#fff3e0",
-            color: "#e65100",
-            padding: 16,
-            borderRadius: 8,
-            marginBottom: 24,
-            border: "1px solid #ffb74d",
-          }}
-        >
-          <strong>Complete your booking first.</strong> Choose your guide fee, add-ons, and hunt dates so your contract can be filled in.{" "}
-          <Link
-            href={currentContract?.hunt_id
-              ? `/client/complete-booking?hunt_id=${encodeURIComponent(currentContract.hunt_id)}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`
-              : `/client/complete-booking?contract_id=${encodeURIComponent(currentContract?.id ?? "")}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`}
-            style={{ color: "#e65100", fontWeight: 600, textDecoration: "underline" }}
-          >
-            Go to Complete Booking →
-          </Link>
-        </div>
-      )}
 
       {!data?.eligible || !(data.contracts?.length) ? (
         <div
