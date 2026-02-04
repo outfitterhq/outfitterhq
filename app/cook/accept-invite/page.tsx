@@ -202,11 +202,22 @@ function AcceptCookInviteContent() {
         }
       }
 
-      // Use API route with service role to update/create membership (bypasses RLS)
-      const onboardingRes = await fetch("/api/cook/complete-onboarding", {
+      // Use Edge Function with service role to update/create membership (bypasses RLS)
+      // This is more reliable than API route because Edge Functions have direct access to service role
+      const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      if (!baseUrl) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) throw new Error("No session token available");
+
+      const fnUrl = `${baseUrl}/functions/v1/cook-complete-onboarding`;
+      
+      const onboardingRes = await fetch(fnUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           outfitter_id: outfitter_id,
@@ -215,10 +226,11 @@ function AcceptCookInviteContent() {
         }),
       });
 
+      const onboardingData = await onboardingRes.json().catch(() => ({}));
+
       if (!onboardingRes.ok) {
-        const errorData = await onboardingRes.json().catch(() => ({}));
         throw new Error(
-          errorData.error || "Failed to complete onboarding. Please contact support."
+          onboardingData.error || onboardingData.details || "Failed to complete onboarding. Please contact support."
         );
       }
 
