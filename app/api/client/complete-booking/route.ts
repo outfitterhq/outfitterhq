@@ -365,6 +365,7 @@ export async function POST(req: Request) {
   const extraDaysNum = Math.max(0, Number(extra_days) || 0);
   const extraNonHuntersNum = Math.max(0, Number(extra_non_hunters) || 0);
   const extraSpottersNum = Math.max(0, Number(extra_spotters) || 0);
+  const rifleRentalNum = Math.max(0, Number(rifle_rental) || 0);
 
   if (pricing_item_id) {
     const { data: pricingItem, error: priceErr } = await admin
