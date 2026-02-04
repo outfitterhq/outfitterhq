@@ -56,6 +56,13 @@ function isSpotterItem(item: AddonItem): boolean {
   return cat === "add-ons" && t.includes("spotter");
 }
 
+function isRifleRentalItem(item: AddonItem): boolean {
+  if (item.addon_type === "rifle_rental") return true;
+  const t = (item.title ?? "").toLowerCase();
+  const cat = (item.category ?? "").toLowerCase();
+  return cat === "add-ons" && (t.includes("rifle") && (t.includes("rental") || t.includes("rent")));
+}
+
 export default function CompleteBookingPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -73,6 +80,7 @@ export default function CompleteBookingPage() {
   const [extraDays, setExtraDays] = useState(0);
   const [extraNonHunters, setExtraNonHunters] = useState(0);
   const [extraSpotters, setExtraSpotters] = useState(0);
+  const [rifleRental, setRifleRental] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -119,6 +127,7 @@ export default function CompleteBookingPage() {
           if (typeof addon.extra_days === "number" && addon.extra_days > 0) setExtraDays(addon.extra_days);
           if (typeof addon.extra_non_hunters === "number" && addon.extra_non_hunters > 0) setExtraNonHunters(addon.extra_non_hunters);
           if (typeof addon.extra_spotters === "number" && addon.extra_spotters > 0) setExtraSpotters(addon.extra_spotters);
+          if (typeof addon.rifle_rental === "number" && addon.rifle_rental > 0) setRifleRental(addon.rifle_rental);
         }
       })
       .catch((e) => {
@@ -163,6 +172,7 @@ export default function CompleteBookingPage() {
         extra_days: extraDays > 0 ? extraDays : undefined,
         extra_non_hunters: extraNonHunters > 0 ? extraNonHunters : undefined,
         extra_spotters: extraSpotters > 0 ? extraSpotters : undefined,
+        rifle_rental: rifleRental > 0 ? rifleRental : undefined,
       }),
     })
       .then(async (r) => {
@@ -360,8 +370,9 @@ export default function CompleteBookingPage() {
             const isExtra = isExtraDayItem(item);
             const isNon = isNonHunterItem(item);
             const isSpotter = isSpotterItem(item);
-            const value = isExtra ? extraDays : isNon ? extraNonHunters : isSpotter ? extraSpotters : 0;
-            const hasControl = isExtra || isNon || isSpotter;
+            const isRifle = isRifleRentalItem(item);
+            const value = isExtra ? extraDays : isNon ? extraNonHunters : isSpotter ? extraSpotters : isRifle ? rifleRental : 0;
+            const hasControl = isExtra || isNon || isSpotter || isRifle;
             return (
               <div key={item.id} style={{ marginBottom: 16, padding: 16, border: "1px solid #eee", borderRadius: 8, background: "#fafafa" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
@@ -391,7 +402,7 @@ export default function CompleteBookingPage() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button
                       type="button"
-                      onClick={() => isExtra ? setExtraDays((p) => Math.max(0, p - 1)) : isNon ? setExtraNonHunters((p) => Math.max(0, p - 1)) : isSpotter ? setExtraSpotters((p) => Math.max(0, p - 1)) : undefined}
+                      onClick={() => isExtra ? setExtraDays((p) => Math.max(0, p - 1)) : isNon ? setExtraNonHunters((p) => Math.max(0, p - 1)) : isSpotter ? setExtraSpotters((p) => Math.max(0, p - 1)) : isRifle ? setRifleRental((p) => Math.max(0, p - 1)) : undefined}
                       style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: hasControl ? "pointer" : "default", fontSize: 18 }}
                       aria-label="Decrease"
                     >
@@ -400,7 +411,7 @@ export default function CompleteBookingPage() {
                     <span style={{ minWidth: 28, textAlign: "center", fontWeight: 600 }}>{value}</span>
                     <button
                       type="button"
-                      onClick={() => isExtra ? setExtraDays((p) => p + 1) : isNon ? setExtraNonHunters((p) => p + 1) : isSpotter ? setExtraSpotters((p) => p + 1) : undefined}
+                      onClick={() => isExtra ? setExtraDays((p) => p + 1) : isNon ? setExtraNonHunters((p) => p + 1) : isSpotter ? setExtraSpotters((p) => p + 1) : isRifle ? setRifleRental((p) => p + 1) : undefined}
                       style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: hasControl ? "pointer" : "default", fontSize: 18 }}
                       aria-label="Increase"
                     >

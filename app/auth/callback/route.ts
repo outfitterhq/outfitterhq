@@ -33,7 +33,7 @@ export async function GET(req: Request) {
         return NextResponse.redirect(to);
       }
       if (guideMem) {
-        const to = new URL("/guide/accept-invite", url.origin);
+        const to = new URL("/guide-accept-invite", url.origin);
         if (guideMem.outfitter_id) to.searchParams.set("outfitter_id", guideMem.outfitter_id);
         return NextResponse.redirect(to);
       }

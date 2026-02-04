@@ -303,7 +303,7 @@ export async function GET(req: Request) {
 
 /**
  * POST: Save client's chosen price plan, add-ons, and hunt dates.
- * Body: { hunt_id, pricing_item_id, client_start_date, client_end_date, extra_days?, extra_non_hunters?, extra_spotters? }
+ * Body: { hunt_id, pricing_item_id, client_start_date, client_end_date, extra_days?, extra_non_hunters?, extra_spotters?, rifle_rental? }
  * Auth: session cookie (web) or Authorization: Bearer <jwt> (e.g. iOS).
  */
 export async function POST(req: Request) {
@@ -313,7 +313,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const body = await req.json();
-  const { hunt_id, pricing_item_id, client_start_date, client_end_date, extra_days, extra_non_hunters, extra_spotters } = body;
+  const { hunt_id, pricing_item_id, client_start_date, client_end_date, extra_days, extra_non_hunters, extra_spotters, rifle_rental } = body;
 
   if (!hunt_id || !client_start_date || !client_end_date) {
     return NextResponse.json(
@@ -399,6 +399,7 @@ export async function POST(req: Request) {
   if (extraDaysNum > 0) clientAddonData.extra_days = extraDaysNum;
   if (extraNonHuntersNum > 0) clientAddonData.extra_non_hunters = extraNonHuntersNum;
   if (extraSpottersNum > 0) clientAddonData.extra_spotters = extraSpottersNum;
+  if (rifleRentalNum > 0) clientAddonData.rifle_rental = rifleRentalNum;
   if (Object.keys(clientAddonData).length > 0) {
     updatePayload.client_addon_data = clientAddonData;
   }

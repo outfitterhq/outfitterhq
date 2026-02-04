@@ -167,10 +167,11 @@ export async function createHuntContractIfNeeded(
     billLines.push(`${p.title}: $${Number(p.amount_usd).toFixed(2)}`);
     total += Number(p.amount_usd);
   }
-  const addonData = hunt.client_addon_data && typeof hunt.client_addon_data === "object" ? hunt.client_addon_data as { extra_days?: number; extra_non_hunters?: number; extra_spotters?: number } : {};
+  const addonData = hunt.client_addon_data && typeof hunt.client_addon_data === "object" ? hunt.client_addon_data as { extra_days?: number; extra_non_hunters?: number; extra_spotters?: number; rifle_rental?: number } : {};
   const extraDays = Math.max(0, Number(addonData.extra_days) || 0);
   const extraNonHunters = Math.max(0, Number(addonData.extra_non_hunters) || 0);
   const extraSpotters = Math.max(0, Number(addonData.extra_spotters) || 0);
+  const rifleRental = Math.max(0, Number(addonData.rifle_rental) || 0);
   const titleLower = (t: string) => (t ?? "").toLowerCase();
   const isExtraDay = (i: { title?: string; category?: string; addon_type?: string | null }) => {
     if ((i as { addon_type?: string }).addon_type === "extra_days") return true;
@@ -192,13 +193,22 @@ export async function createHuntContractIfNeeded(
     const t = titleLower(i.title ?? "");
     return cat === "add-ons" && t.includes("spotter");
   };
+  const isRifleRental = (i: { title?: string; category?: string; addon_type?: string | null }) => {
+    if ((i as { addon_type?: string }).addon_type === "rifle_rental") return true;
+    const cat = (i.category ?? "").trim().toLowerCase();
+    const t = titleLower(i.title ?? "");
+    return cat === "add-ons" && (t.includes("rifle") && (t.includes("rental") || t.includes("rent")));
+  };
   const extraDayItem = pricingItems.find((i) => isExtraDay(i));
   const nonHunterItem = pricingItems.find((i) => isNonHunter(i));
   const spotterItem = pricingItems.find((i) => isSpotter(i));
+  const rifleRentalItem = pricingItems.find((i) => isRifleRental(i));
   const DEFAULT_SPOTTER_USD = 50;
+  const DEFAULT_RIFLE_RENTAL_USD = 500;
   const dayRate = extraDayItem != null ? Number(extraDayItem.amount_usd) || DEFAULT_EXTRA_DAY_USD : DEFAULT_EXTRA_DAY_USD;
   const nonHunterRate = nonHunterItem != null ? Number(nonHunterItem.amount_usd) || DEFAULT_NON_HUNTER_USD : DEFAULT_NON_HUNTER_USD;
   const spotterRate = spotterItem != null ? Number(spotterItem.amount_usd) || DEFAULT_SPOTTER_USD : DEFAULT_SPOTTER_USD;
+  const rifleRentalRate = rifleRentalItem != null ? Number(rifleRentalItem.amount_usd) || DEFAULT_RIFLE_RENTAL_USD : DEFAULT_RIFLE_RENTAL_USD;
   if (extraDays > 0) {
     const lineTotal = extraDays * dayRate;
     billLines.push(`Extra days (${extraDays} × $${dayRate.toFixed(2)}/day): $${lineTotal.toFixed(2)}`);
@@ -214,7 +224,12 @@ export async function createHuntContractIfNeeded(
     billLines.push(`Spotter(s) (${extraSpotters} × $${spotterRate.toFixed(2)}/person): $${lineTotal.toFixed(2)}`);
     total += lineTotal;
   }
-  if (billPricing.length > 0 || extraDays > 0 || extraNonHunters > 0 || extraSpotters > 0) {
+  if (rifleRental > 0) {
+    const lineTotal = rifleRental * rifleRentalRate;
+    billLines.push(`Rifle Rental (${rifleRental} × $${rifleRentalRate.toFixed(2)}/rental): $${lineTotal.toFixed(2)}`);
+    total += lineTotal;
+  }
+  if (billPricing.length > 0 || extraDays > 0 || extraNonHunters > 0 || extraSpotters > 0 || rifleRental > 0) {
     billLines.push("");
     billLines.push(`Total: $${total.toFixed(2)}`);
     contractContent = contractContent + billLines.join("\n");

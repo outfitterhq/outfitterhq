@@ -334,19 +334,20 @@ export async function GET(req: Request) {
   // Patch BILL in content for contracts already submitted with add-ons (so you see add-ons when viewing)
   // Use ?fix_bill=1 to force re-patch and persist for any contract with client_completion_data
   const DEFAULT_SPOTTER_USD = 50;
-  function parseAddonCounts(raw: unknown): { extraDays: number; extraNonHunters: number; extraSpotters: number } {
+  function parseAddonCounts(raw: unknown): { extraDays: number; extraNonHunters: number; extraSpotters: number; rifleRental: number } {
     const o = raw != null && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
     const num = (v: unknown) => Math.max(0, parseInt(String(v ?? ""), 10) || Number(v) || 0);
     const extraDays = num(o.extra_days ?? o.additional_days ?? 0);
     const extraNonHunters = num(o.extra_non_hunters ?? o.non_hunters ?? 0);
     const extraSpotters = num(o.extra_spotters ?? 0);
-    return { extraDays, extraNonHunters, extraSpotters };
+    const rifleRental = num(o.rifle_rental ?? 0);
+    return { extraDays, extraNonHunters, extraSpotters, rifleRental };
   }
   for (let i = 0; i < contracts.length; i++) {
     const c = contracts[i];
     const rawCompletion = c.client_completion_data;
-    const { extraDays, extraNonHunters, extraSpotters } = parseAddonCounts(rawCompletion);
-    const hasAddonsInCompletion = extraDays > 0 || extraNonHunters > 0 || extraSpotters > 0;
+    const { extraDays, extraNonHunters, extraSpotters, rifleRental } = parseAddonCounts(rawCompletion);
+    const hasAddonsInCompletion = extraDays > 0 || extraNonHunters > 0 || extraSpotters > 0 || rifleRental > 0;
     const hasCompletionData = rawCompletion != null && typeof rawCompletion === "object" && Object.keys(rawCompletion as object).length > 0;
     if (!hasAddonsInCompletion && !(fixBill && hasCompletionData)) continue;
     const outId = c.outfitter_id as string | undefined;
@@ -372,18 +373,23 @@ export async function GET(req: Request) {
     const isED = (i: { title?: string; category?: string; addon_type?: string | null }) => { if ((i as { addon_type?: string }).addon_type === "extra_days") return true; const cat = ((i as { category?: string }).category ?? "").trim().toLowerCase(); if (cat !== "add-ons") return false; const t = tl((i as { title?: string }).title ?? ""); if (t.includes("non")) return false; return t.includes("additional day") || t.includes("extra day") || t.includes("day"); };
     const isNH = (i: { title?: string; category?: string; addon_type?: string | null }) => { if ((i as { addon_type?: string }).addon_type === "non_hunter") return true; const cat = ((i as { category?: string }).category ?? "").trim().toLowerCase(); const t = tl((i as { title?: string }).title ?? ""); return cat === "add-ons" && (t.includes("non-hunter") || t.includes("non hunter") || (t.includes("non") && t.includes("hunter"))); };
     const isSpotter = (i: { title?: string; category?: string; addon_type?: string | null }) => { if ((i as { addon_type?: string }).addon_type === "spotter") return true; const cat = ((i as { category?: string }).category ?? "").trim().toLowerCase(); const t = tl((i as { title?: string }).title ?? ""); return cat === "add-ons" && t.includes("spotter"); };
+    const isRifleRental = (i: { title?: string; category?: string; addon_type?: string | null }) => { if ((i as { addon_type?: string }).addon_type === "rifle_rental") return true; const cat = ((i as { category?: string }).category ?? "").trim().toLowerCase(); const t = tl((i as { title?: string }).title ?? ""); return cat === "add-ons" && (t.includes("rifle") && (t.includes("rental") || t.includes("rent"))); };
     const edItem = (addonItemsForPatch ?? []).find((x) => isED(x));
     const nhItem = (addonItemsForPatch ?? []).find((x) => isNH(x));
     const spotterItem = (addonItemsForPatch ?? []).find((x) => isSpotter(x));
+    const rifleRentalItem = (addonItemsForPatch ?? []).find((x) => isRifleRental(x));
+    const DEFAULT_RIFLE_RENTAL_USD = 500;
     const dayRate = edItem != null ? Number((edItem as { amount_usd?: number }).amount_usd) || DEFAULT_EXTRA_DAY_USD : DEFAULT_EXTRA_DAY_USD;
     const nhRate = nhItem != null ? Number((nhItem as { amount_usd?: number }).amount_usd) || DEFAULT_NON_HUNTER_USD : DEFAULT_NON_HUNTER_USD;
     const spotterRate = spotterItem != null ? Number((spotterItem as { amount_usd?: number }).amount_usd) || DEFAULT_SPOTTER_USD : DEFAULT_SPOTTER_USD;
-    const addonUsd = extraDays * dayRate + extraNonHunters * nhRate + extraSpotters * spotterRate;
+    const rifleRentalRate = rifleRentalItem != null ? Number((rifleRentalItem as { amount_usd?: number }).amount_usd) || DEFAULT_RIFLE_RENTAL_USD : DEFAULT_RIFLE_RENTAL_USD;
+    const addonUsd = extraDays * dayRate + extraNonHunters * nhRate + extraSpotters * spotterRate + rifleRental * rifleRentalRate;
     const totalUsd = baseGuideFeeUsd + addonUsd;
     const lines = ["\n---\n\nBILL", "", `${guideFeeTitle}: $${baseGuideFeeUsd.toFixed(2)}`];
     if (extraDays > 0) lines.push(`Extra days (${extraDays} × $${dayRate.toFixed(2)}/day): $${(extraDays * dayRate).toFixed(2)}`);
     if (extraNonHunters > 0) lines.push(`Non-hunters (${extraNonHunters} × $${nhRate.toFixed(2)}/person): $${(extraNonHunters * nhRate).toFixed(2)}`);
     if (extraSpotters > 0) lines.push(`Spotter(s) (${extraSpotters} × $${spotterRate.toFixed(2)}/person): $${(extraSpotters * spotterRate).toFixed(2)}`);
+    if (rifleRental > 0) lines.push(`Rifle Rental (${rifleRental} × $${rifleRentalRate.toFixed(2)}/rental): $${(rifleRental * rifleRentalRate).toFixed(2)}`);
     lines.push("", `Total: $${totalUsd.toFixed(2)}`);
     const newBill = lines.join("\n");
     // Match BILL section (permissive: --- BILL, BILL at start of line, etc.)
@@ -594,18 +600,28 @@ export async function POST(req: Request) {
     const t = titleLower((i as { title?: string }).title ?? "");
     return cat === "add-ons" && t.includes("spotter");
   };
+  const isRifleRental = (i: { title?: string; category?: string; addon_type?: string | null }) => {
+    if ((i as { addon_type?: string }).addon_type === "rifle_rental") return true;
+    const cat = ((i as { category?: string }).category ?? "").trim().toLowerCase();
+    const t = titleLower((i as { title?: string }).title ?? "");
+    return cat === "add-ons" && (t.includes("rifle") && (t.includes("rental") || t.includes("rent")));
+  };
   const extraDayItem = (addonItems ?? []).find((i: { title?: string }) => isExtraDay(i));
   const nonHunterItem = (addonItems ?? []).find((i: { title?: string; category?: string }) => isNonHunter(i));
   const spotterItem = (addonItems ?? []).find((i) => isSpotter(i));
+  const rifleRentalItem = (addonItems ?? []).find((i) => isRifleRental(i));
   const dayRate = extraDayItem != null ? Number((extraDayItem as { amount_usd?: number }).amount_usd) || DEFAULT_EXTRA_DAY_USD : DEFAULT_EXTRA_DAY_USD;
   const nonHunterRate = nonHunterItem != null ? Number((nonHunterItem as { amount_usd?: number }).amount_usd) || DEFAULT_NON_HUNTER_USD : DEFAULT_NON_HUNTER_USD;
   const DEFAULT_SPOTTER_USD_POST = 50;
+  const DEFAULT_RIFLE_RENTAL_USD_POST = 500;
   const spotterRate = spotterItem != null ? Number((spotterItem as { amount_usd?: number }).amount_usd) || DEFAULT_SPOTTER_USD_POST : DEFAULT_SPOTTER_USD_POST;
+  const rifleRentalRate = rifleRentalItem != null ? Number((rifleRentalItem as { amount_usd?: number }).amount_usd) || DEFAULT_RIFLE_RENTAL_USD_POST : DEFAULT_RIFLE_RENTAL_USD_POST;
   const co = completion as Record<string, unknown>;
   const extraDays = Math.max(0, parseInt(String(co.extra_days ?? co.additional_days ?? 0), 10) || Number(co.extra_days ?? co.additional_days) || 0);
   const extraNonHunters = Math.max(0, parseInt(String(co.extra_non_hunters ?? co.non_hunters ?? 0), 10) || Number(co.extra_non_hunters ?? co.non_hunters) || 0);
   const extraSpotters = Math.max(0, parseInt(String(co.extra_spotters ?? 0), 10) || Number(co.extra_spotters) || 0);
-  const addonUsd = extraDays * dayRate + extraNonHunters * nonHunterRate + extraSpotters * spotterRate;
+  const rifleRental = Math.max(0, parseInt(String(co.rifle_rental ?? 0), 10) || Number(co.rifle_rental) || 0);
+  const addonUsd = extraDays * dayRate + extraNonHunters * nonHunterRate + extraSpotters * spotterRate + rifleRental * rifleRentalRate;
   const totalUsd = baseGuideFeeUsd + addonUsd;
 
   const newBillLines = [
@@ -621,6 +637,9 @@ export async function POST(req: Request) {
   }
   if (extraSpotters > 0) {
     newBillLines.push(`Spotter(s) (${extraSpotters} × $${spotterRate.toFixed(2)}/person): $${(extraSpotters * spotterRate).toFixed(2)}`);
+  }
+  if (rifleRental > 0) {
+    newBillLines.push(`Rifle Rental (${rifleRental} × $${rifleRentalRate.toFixed(2)}/rental): $${(rifleRental * rifleRentalRate).toFixed(2)}`);
   }
   newBillLines.push("");
   newBillLines.push(`Total: $${totalUsd.toFixed(2)}`);
