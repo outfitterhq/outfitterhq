@@ -202,85 +202,27 @@ function AcceptCookInviteContent() {
         }
       }
 
-      // Update membership status to active
-      const { data: membershipUpdateData, error: membershipError } = await supabase
-        .from("outfitter_memberships")
-        .update({
-          status: "active",
-          accepted_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id)
-        .eq("outfitter_id", outfitter_id)
-        .eq("role", "cook")
-        .select();
+      // Use API route with service role to update/create membership (bypasses RLS)
+      const onboardingRes = await fetch("/api/cook/complete-onboarding", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          outfitter_id: outfitter_id,
+          full_name: fullName.trim(),
+          phone: phone.trim() || null,
+        }),
+      });
 
-      if (membershipError) {
-        console.error("Membership update error:", membershipError);
-        throw new Error(`Failed to activate membership: ${membershipError.message}`);
+      if (!onboardingRes.ok) {
+        const errorData = await onboardingRes.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || "Failed to complete onboarding. Please contact support."
+        );
       }
 
-      // Verify membership was actually updated
-      if (!membershipUpdateData || membershipUpdateData.length === 0) {
-        console.error("Membership update returned no rows. Checking if membership exists...");
-        const { data: checkMembership } = await supabase
-          .from("outfitter_memberships")
-          .select("id, status, role, outfitter_id")
-          .eq("user_id", user.id)
-          .eq("outfitter_id", outfitter_id)
-          .eq("role", "cook")
-          .maybeSingle();
-        
-        if (!checkMembership) {
-          // Membership doesn't exist - create it now
-          console.warn("Membership not found, creating it now...");
-          const { data: newMembership, error: createErr } = await supabase
-            .from("outfitter_memberships")
-            .insert({
-              user_id: user.id,
-              outfitter_id: outfitter_id,
-              role: "cook",
-              status: "active",
-              accepted_at: new Date().toISOString(),
-            })
-            .select()
-            .single();
-          
-          if (createErr || !newMembership) {
-            console.error("Failed to create membership:", createErr);
-            throw new Error(
-              `Membership not found and could not be created. ` +
-              `This usually means the invite link is for a different user or the membership was deleted. ` +
-              `Please ask the admin to send a new invite link. ` +
-              `Error: ${createErr?.message || "Unknown error"}`
-            );
-          }
-          
-          console.log("✅ Membership created successfully:", newMembership);
-        } else if (checkMembership.status !== "active") {
-          // Membership exists but status is wrong - try to update it
-          console.warn("Membership exists but status is not active:", checkMembership.status);
-          const { error: retryUpdateErr } = await supabase
-            .from("outfitter_memberships")
-            .update({
-              status: "active",
-              accepted_at: new Date().toISOString(),
-            })
-            .eq("id", checkMembership.id);
-          
-          if (retryUpdateErr) {
-            throw new Error(
-              `Membership status is "${checkMembership.status}" and could not be updated. ` +
-              `Please contact support. Error: ${retryUpdateErr.message}`
-            );
-          }
-          
-          console.log("✅ Membership status updated to active");
-        } else {
-          console.log("✅ Membership verified:", checkMembership);
-        }
-      } else {
-        console.log("✅ Membership updated successfully:", membershipUpdateData);
-      }
+      console.log("✅ Cook onboarding completed successfully");
 
       // Update cook profile if it exists (normalize email for case-insensitive match)
       const emailLower = (user.email ?? "").toLowerCase();
