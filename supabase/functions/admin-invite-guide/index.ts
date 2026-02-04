@@ -191,6 +191,8 @@ Deno.serve(async (req) => {
     // Send email via Resend API directly
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     
+    console.log("[admin-invite-guide] RESEND_API_KEY:", resendApiKey ? "SET" : "NOT SET");
+    
     if (resendApiKey) {
       try {
         const emailSubject = existingUser 
@@ -225,7 +227,13 @@ Deno.serve(async (req) => {
         const resendData = await resendRes.json();
 
         if (!resendRes.ok) {
-          console.error("[admin-invite-guide] ERROR sending email via Resend:", resendData);
+          console.error("[admin-invite-guide] ERROR sending email via Resend:", {
+            status: resendRes.status,
+            statusText: resendRes.statusText,
+            response: resendData,
+            email: email,
+            from: emailBody.from
+          });
           
           // If it's a domain verification error, return the link anyway with helpful message
           const isDomainError = resendData.message?.includes("verify a domain") || 
@@ -260,6 +268,7 @@ Deno.serve(async (req) => {
         inviteSent = true;
         console.log("[admin-invite-guide] ✅ Email sent via Resend to:", email);
         console.log("[admin-invite-guide] Resend email ID:", resendData.id);
+        console.log("[admin-invite-guide] Resend response:", JSON.stringify(resendData, null, 2));
       } catch (emailErr) {
         console.error("[admin-invite-guide] ERROR calling Resend API:", emailErr);
         return json(500, { 
