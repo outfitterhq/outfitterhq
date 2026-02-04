@@ -102,10 +102,12 @@ Deno.serve(async (req) => {
     }
 
     // Check if user already exists
+    console.log("[admin-create-guide] Checking if user exists:", email);
     const { data: existingUsers } = await admin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find((u: any) => (u.email || "").toLowerCase() === email);
 
     if (existingUser) {
+      console.log("[admin-create-guide] User already exists:", email);
       return json(400, { 
         error: "User with this email already exists",
         hint: "Use admin-invite-guide to send an invite to existing users"
@@ -113,6 +115,7 @@ Deno.serve(async (req) => {
     }
 
     // 1) Create Auth user (source of truth)
+    console.log("[admin-create-guide] Creating auth user for:", email);
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
       password,
@@ -124,6 +127,7 @@ Deno.serve(async (req) => {
     });
 
     if (createErr || !created?.user) {
+      console.error("[admin-create-guide] ERROR creating auth user:", createErr?.message ?? "unknown");
       return json(500, { 
         error: "Auth createUser failed", 
         details: createErr?.message ?? "unknown" 
@@ -131,8 +135,10 @@ Deno.serve(async (req) => {
     }
 
     const userId = created.user.id;
+    console.log("[admin-create-guide] ✅ Auth user created:", userId);
 
     // 2) Insert guide row (must reference auth.users.id)
+    console.log("[admin-create-guide] Inserting guide row for user:", userId);
     const { data: inserted, error: insErr } = await admin
       .from("guides")
       .insert({
@@ -149,7 +155,9 @@ Deno.serve(async (req) => {
       .single();
 
     if (insErr) {
+      console.error("[admin-create-guide] ERROR inserting guide row:", insErr.message);
       // Rollback: delete auth user if guide insert fails
+      console.log("[admin-create-guide] Rolling back: deleting auth user:", userId);
       await admin.auth.admin.deleteUser(userId, { shouldSoftDelete: false });
       
       return json(500, { 
@@ -158,7 +166,10 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log("[admin-create-guide] ✅ Guide row inserted:", inserted.id);
+
     // 3) Create membership row
+    console.log("[admin-create-guide] Creating membership row");
     const nowIso = new Date().toISOString();
     const { error: memInsErr } = await admin
       .from("outfitter_memberships")

@@ -33,6 +33,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { href: "/dashboard", label: "Dashboard", icon: "🏠" },
       { href: "/clients", label: "Clients", icon: "👥" },
       { href: "/calendar", label: "Hunt Calendar", icon: "📅" },
+      { href: "/booked-hunts", label: "Booked Hunts", icon: "✅" },
       { href: "/guides", label: "Guides", icon: "🎯" },
       { href: "/cooks", label: "Cooks", icon: "👨‍🍳" },
     ],
