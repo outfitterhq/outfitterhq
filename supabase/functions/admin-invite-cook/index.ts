@@ -232,7 +232,123 @@ Deno.serve(async (req) => {
       console.error("Failed to upsert cook profile:", profileErr);
     }
 
-    return json(200, { ok: true, invite_link, outfitter_id, invited_user_id: targetUserId });
+    // Send email via Resend API directly
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
+    console.log("[admin-invite-cook] RESEND_API_KEY:", resendApiKey ? "SET" : "NOT SET");
+    
+    let inviteSent = false;
+    
+    if (resendApiKey) {
+      try {
+        const emailSubject = `You've been invited as a Cook - ${name || "Join OutfitterHQ"}`;
+        
+        const emailBody = {
+          from: "OutfitterHQ <noreply@outfitterhq.app>",
+          to: [email],
+          subject: emailSubject,
+          html: `
+            <h2>You've been invited as a Cook</h2>
+            <p>Hello${name ? ` ${name}` : ""},</p>
+            <p>You've been invited to join OutfitterHQ as a cook. Click the link below to accept your invitation:</p>
+            <p><a href="${invite_link}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">Accept Invitation</a></p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666;">${invite_link}</p>
+            <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+          `,
+          text: `You've been invited as a Cook. Click this link to accept: ${invite_link}`,
+        };
+
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailBody),
+        });
+
+        const resendData = await resendRes.json();
+
+        if (!resendRes.ok) {
+          console.error("[admin-invite-cook] ERROR sending email via Resend:", {
+            status: resendRes.status,
+            statusText: resendRes.statusText,
+            response: resendData,
+            email: email,
+            from: emailBody.from
+          });
+          
+          // If it's a domain verification error, return the link anyway with helpful message
+          const isDomainError = resendData.message?.includes("verify a domain") || 
+                                resendData.message?.includes("testing emails");
+          
+          if (isDomainError) {
+            console.warn("[admin-invite-cook] Resend domain not verified - returning link for manual sending");
+            return json(200, {
+              ok: true,
+              invite_link,
+              email_sent: false,
+              message: "Email not sent: Resend domain not verified. The invite link has been generated - you can send it manually or verify your domain at resend.com/domains",
+              warning: "To send emails automatically, verify a domain in Resend and update the 'from' address in the Edge Function code",
+              outfitter_id,
+              invited_user_id: targetUserId
+            });
+          }
+          
+          // Other Resend errors - still return the link
+          return json(200, { 
+            ok: true,
+            invite_link,
+            email_sent: false,
+            error: "Failed to send email via Resend", 
+            details: resendData.message || "Unknown error",
+            message: "Invite link generated but email not sent. You can send the link manually.",
+            outfitter_id,
+            invited_user_id: targetUserId
+          });
+        }
+
+        inviteSent = true;
+        console.log("[admin-invite-cook] ✅ Email sent via Resend to:", email);
+        console.log("[admin-invite-cook] Resend email ID:", resendData.id);
+        console.log("[admin-invite-cook] Resend response:", JSON.stringify(resendData, null, 2));
+      } catch (emailErr) {
+        console.error("[admin-invite-cook] ERROR calling Resend API:", emailErr);
+        return json(200, { 
+          ok: true,
+          invite_link,
+          email_sent: false,
+          error: "Failed to send email", 
+          details: String(emailErr),
+          message: "Invite link generated but email not sent. You can send the link manually.",
+          outfitter_id,
+          invited_user_id: targetUserId
+        });
+      }
+    } else {
+      console.warn("[admin-invite-cook] RESEND_API_KEY not set, cannot send email");
+      // Still return success with the link - user can send it manually
+      return json(200, {
+        ok: true,
+        invite_link,
+        email_sent: false,
+        message: "Invite link generated but email not sent. Set RESEND_API_KEY in Edge Function secrets.",
+        outfitter_id,
+        invited_user_id: targetUserId
+      });
+    }
+
+    return json(200, { 
+      ok: true, 
+      invite_link,
+      email_sent: inviteSent,
+      outfitter_id, 
+      invited_user_id: targetUserId,
+      message: inviteSent 
+        ? "Email sent successfully" 
+        : "Invite link generated but email not sent"
+    });
   } catch (err) {
     return json(500, { error: "Unhandled error", details: String(err) });
   }

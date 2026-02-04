@@ -152,10 +152,29 @@ export default function InviteCookCard() {
         return;
       }
 
-      setInviteLink(result.invite_link || null);
+      const link = result?.invite_link ?? null;
+      const emailSent = result?.email_sent ?? false;
+      const emailError = result?.error || result?.message || null;
+      
+      if (!link) {
+        setMsg(JSON.stringify({ error: "No invite_link returned", result }, null, 2));
+        return;
+      }
+
+      setInviteLink(link);
+      
+      // Show appropriate message based on email status
+      if (emailSent) {
+        setMsg("✅ Cook invite email sent successfully! The cook should receive it shortly.");
+      } else {
+        const warningMsg = emailError 
+          ? `⚠️ Invite link created, but email was NOT sent.\n\nError: ${emailError}\n\nYou can copy the invite link below and send it manually.`
+          : `⚠️ Invite link created, but email was NOT sent.\n\nPossible reasons:\n- RESEND_API_KEY not set in Edge Function secrets\n- Resend domain not verified\n- Email service error\n\nYou can copy the invite link below and send it manually.`;
+        setMsg(warningMsg);
+      }
+      
       setEmail("");
       setName("");
-      setMsg("✅ Cook invite sent! Check the email for the invite link.");
     } catch (err: any) {
       setMsg(`Error: ${err.message || String(err)}`);
     } finally {
