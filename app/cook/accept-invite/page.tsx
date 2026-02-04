@@ -203,7 +203,7 @@ function AcceptCookInviteContent() {
       }
 
       // Update membership status to active
-      const { error: membershipError } = await supabase
+      const { data: membershipUpdateData, error: membershipError } = await supabase
         .from("outfitter_memberships")
         .update({
           status: "active",
@@ -211,10 +211,37 @@ function AcceptCookInviteContent() {
         })
         .eq("user_id", user.id)
         .eq("outfitter_id", outfitter_id)
-        .eq("role", "cook");
+        .eq("role", "cook")
+        .select();
 
       if (membershipError) {
+        console.error("Membership update error:", membershipError);
         throw new Error(`Failed to activate membership: ${membershipError.message}`);
+      }
+
+      // Verify membership was actually updated
+      if (!membershipUpdateData || membershipUpdateData.length === 0) {
+        console.error("Membership update returned no rows. Checking if membership exists...");
+        const { data: checkMembership } = await supabase
+          .from("outfitter_memberships")
+          .select("id, status, role, outfitter_id")
+          .eq("user_id", user.id)
+          .eq("outfitter_id", outfitter_id)
+          .eq("role", "cook")
+          .maybeSingle();
+        
+        if (!checkMembership) {
+          throw new Error(`Membership not found for cook. Please contact support. User: ${user.email}, Outfitter: ${outfitter_id}`);
+        }
+        
+        if (checkMembership.status !== "active") {
+          console.warn("Membership exists but status is not active:", checkMembership.status);
+          throw new Error(`Membership status is "${checkMembership.status}" but should be "active". Please contact support.`);
+        }
+        
+        console.log("✅ Membership verified:", checkMembership);
+      } else {
+        console.log("✅ Membership updated successfully:", membershipUpdateData);
       }
 
       // Update cook profile if it exists (normalize email for case-insensitive match)
@@ -237,13 +264,32 @@ function AcceptCookInviteContent() {
       setStage("done");
 
       // Set outfitter cookie so /cook dashboard works, then redirect
+      // Use a small delay to ensure membership update is committed
+      await new Promise((r) => setTimeout(r, 500));
+      
       const form = new FormData();
       form.set("outfitter_id", outfitter_id);
-      await fetch("/api/tenant/select", { method: "POST", body: form });
+      const cookieRes = await fetch("/api/tenant/select", { method: "POST", body: form });
+      
+      if (!cookieRes.ok) {
+        console.error("Failed to set outfitter cookie:", await cookieRes.text());
+        // Non-fatal - user can still proceed
+      } else {
+        console.log("✅ Outfitter cookie set successfully");
+      }
+
+      // Verify the cookie was set by checking /api/tenant/current
+      const verifyRes = await fetch("/api/tenant/current");
+      const verifyData = await verifyRes.json();
+      if (verifyData.outfitter_id === outfitter_id) {
+        console.log("✅ Outfitter cookie verified");
+      } else {
+        console.warn("⚠️ Outfitter cookie verification failed. Expected:", outfitter_id, "Got:", verifyData.outfitter_id);
+      }
 
       setTimeout(() => {
         router.push("/cook");
-      }, 2000);
+      }, 1500);
     } catch (e: any) {
       setError(e.message || "Failed to complete setup");
       setStage("form");
