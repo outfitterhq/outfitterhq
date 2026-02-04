@@ -1,19 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { supabaseRoute } from "@/lib/supabase/server";
+import { OUTFITTER_COOKIE } from "@/lib/tenant";
 
 export async function GET(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    });
-
+    const supabase = await supabaseRoute();
+    
     // Get current user
     const {
       data: { user },
@@ -21,13 +14,14 @@ export async function GET(req: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get outfitter from cookie
-    const outfitterId = cookieStore.get("hc_outfitter")?.value;
+    const cookieStore = await cookies();
+    const outfitterId = cookieStore.get(OUTFITTER_COOKIE)?.value;
     if (!outfitterId) {
-      return Response.json({ error: "Outfitter not selected" }, { status: 400 });
+      return NextResponse.json({ error: "Outfitter not selected" }, { status: 400 });
     }
 
     // Parse query parameters for filtering
@@ -71,12 +65,12 @@ export async function GET(req: Request) {
 
     if (error) {
       console.error("Error fetching booked hunts:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return Response.json({ booked_hunts: data || [] });
+    return NextResponse.json({ booked_hunts: data || [] });
   } catch (error: any) {
     console.error("Error in booked-hunts API:", error);
-    return Response.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
