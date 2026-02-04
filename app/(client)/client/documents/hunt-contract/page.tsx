@@ -167,8 +167,8 @@ export default function HuntContractPage() {
       contract: contract?.id,
       needs_complete_booking: contract?.needs_complete_booking,
       hunt_id: contract?.hunt_id,
-      hasDates: contract?.hunt?.start_date || contract?.hunt?.start_time,
-      hasPrice: contract?.base_guide_fee_usd || contract?.hunt?.selected_pricing_item_id,
+      hasDates: !!contract?.hunt?.start_date,
+      hasPrice: !!(contract?.base_guide_fee_usd || contract?.hunt?.selected_pricing_item_id),
     });
     
     if (contract?.needs_complete_booking && contract?.hunt_id) {
