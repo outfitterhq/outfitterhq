@@ -142,26 +142,48 @@ export async function GET(req: Request) {
           }
         } else {
           // No draw_result found - create a minimal hunt anyway so user can complete booking
-          console.log("[complete-booking] No draw_result found, creating minimal hunt for contract:", contractId);
-          const { data: newHunt, error: createErr } = await admin
-            .from("calendar_events")
-            .insert({
-              outfitter_id: contract.outfitter_id,
-              client_email: contract.client_email,
-              title: "Hunt - Complete Booking",
-              tag_status: "drawn",
-              status: "Pending",
-            })
-            .select("id")
-            .single();
-          
-          if (!createErr && newHunt) {
-            huntId = newHunt.id;
-            // Link the contract to the new hunt
-            await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
-            console.log("[complete-booking] Created minimal hunt:", huntId);
-          } else {
-            console.error("[complete-booking] Failed to create minimal hunt:", createErr);
+          console.error("[complete-booking] No draw_result found, creating minimal hunt for contract:", contractId, "outfitter_id:", contract.outfitter_id, "client_email:", contract.client_email);
+          try {
+            // Create minimal hunt with placeholder dates (will be updated when user completes booking)
+            const now = new Date();
+            const defaultStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30); // 30 days from now
+            const defaultEnd = new Date(defaultStart);
+            defaultEnd.setDate(defaultEnd.getDate() + 5); // 5 day default hunt
+            
+            const { data: newHunt, error: createErr } = await admin
+              .from("calendar_events")
+              .insert({
+                outfitter_id: contract.outfitter_id,
+                client_email: contract.client_email,
+                title: "Hunt - Complete Booking",
+                tag_status: "drawn",
+                status: "Pending",
+                start_time: defaultStart.toISOString(),
+                end_time: defaultEnd.toISOString(),
+              })
+              .select("id")
+              .single();
+            
+            if (createErr) {
+              console.error("[complete-booking] Error creating minimal hunt:", createErr);
+              throw createErr;
+            }
+            
+            if (newHunt) {
+              huntId = newHunt.id;
+              console.error("[complete-booking] Created minimal hunt:", huntId);
+              // Link the contract to the new hunt
+              const { error: linkErr } = await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
+              if (linkErr) {
+                console.error("[complete-booking] Error linking contract to hunt:", linkErr);
+              } else {
+                console.error("[complete-booking] Successfully linked contract to hunt");
+              }
+            } else {
+              console.error("[complete-booking] No hunt returned from insert");
+            }
+          } catch (err: any) {
+            console.error("[complete-booking] Exception creating minimal hunt:", err);
           }
         }
       }
