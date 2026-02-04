@@ -52,6 +52,7 @@ export async function GET(req: Request) {
 
     huntId = contract.hunt_id ?? null;
     if (!huntId) {
+      // Try to find an existing unlinked hunt for this client
       const { data: huntsWithTags } = await admin
         .from("calendar_events")
         .select("id, client_email")
@@ -70,12 +71,45 @@ export async function GET(req: Request) {
       if (firstUnlinked) {
         huntId = firstUnlinked.id;
         await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
+      } else {
+        // No existing hunt found - create one from draw_results if available
+        const { data: drawResult } = await admin
+          .from("draw_results")
+          .select("species, unit, weapon, hunt_code")
+          .eq("contract_id", contractId)
+          .limit(1)
+          .maybeSingle();
+        
+        if (drawResult) {
+          // Create a calendar_events record for this draw contract
+          const { data: newHunt, error: createErr } = await admin
+            .from("calendar_events")
+            .insert({
+              outfitter_id: contract.outfitter_id,
+              client_email: contract.client_email,
+              title: `${drawResult.species || "Hunt"}${drawResult.unit ? ` - Unit ${drawResult.unit}` : ""}`,
+              species: drawResult.species || null,
+              unit: drawResult.unit || null,
+              weapon: drawResult.weapon || null,
+              hunt_code: drawResult.hunt_code || null,
+              tag_status: "drawn",
+              status: "Pending",
+            })
+            .select("id")
+            .single();
+          
+          if (!createErr && newHunt) {
+            huntId = newHunt.id;
+            // Link the contract to the new hunt
+            await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
+          }
+        }
       }
     }
   }
 
   if (!huntId) {
-    return NextResponse.json({ error: "hunt_id or contract_id with a linked hunt is required" }, { status: 400 });
+    return NextResponse.json({ error: "Could not find or create a hunt for this contract. Please contact your outfitter." }, { status: 400 });
   }
 
   // When we have contract_id (e.g. draw flow), get hunt_code from draw_results so we can show it and look up window dates even if the calendar event doesn't have it yet
