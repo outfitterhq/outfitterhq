@@ -73,12 +73,36 @@ export async function GET(req: Request) {
         await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
       } else {
         // No existing hunt found - create one from draw_results if available
-        const { data: drawResult } = await admin
+        // Try to find draw_result by contract_id first, then by client_email + outfitter_id
+        let drawResult: { species?: string | null; unit?: string | null; weapon?: string | null; hunt_code?: string | null } | null = null;
+        let foundByContract = false;
+        
+        const { data: drawByContract } = await admin
           .from("draw_results")
           .select("species, unit, weapon, hunt_code")
           .eq("contract_id", contractId)
           .limit(1)
           .maybeSingle();
+        
+        if (drawByContract) {
+          drawResult = drawByContract;
+          foundByContract = true;
+        } else {
+          // Fallback: find by client_email and outfitter_id (for draw contracts created before linking)
+          const { data: drawByClient } = await admin
+            .from("draw_results")
+            .select("species, unit, weapon, hunt_code")
+            .eq("outfitter_id", contract.outfitter_id)
+            .eq("client_email", contract.client_email)
+            .eq("result_status", "drawn")
+            .is("hunt_id", null) // Only use unlinked draw results
+            .limit(1)
+            .maybeSingle();
+          
+          if (drawByClient) {
+            drawResult = drawByClient;
+          }
+        }
         
         if (drawResult) {
           // Create a calendar_events record for this draw contract
@@ -102,7 +126,22 @@ export async function GET(req: Request) {
             huntId = newHunt.id;
             // Link the contract to the new hunt
             await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
+            // Also link the draw_result to the new hunt
+            if (foundByContract) {
+              await admin.from("draw_results").update({ hunt_id: huntId }).eq("contract_id", contractId);
+            } else {
+              await admin.from("draw_results").update({ hunt_id: huntId, contract_id: contractId })
+                .eq("outfitter_id", contract.outfitter_id)
+                .eq("client_email", contract.client_email)
+                .eq("result_status", "drawn")
+                .is("hunt_id", null)
+                .limit(1);
+            }
+          } else {
+            console.error("[complete-booking] Failed to create hunt from draw_result:", createErr);
           }
+        } else {
+          console.log("[complete-booking] No draw_result found for contract:", contractId);
         }
       }
     }
