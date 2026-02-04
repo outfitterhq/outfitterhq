@@ -194,6 +194,19 @@ function LoginContent() {
         </button>
 
         {err && <p style={{ color: "crimson", whiteSpace: "pre-wrap" }}>Error: {err}</p>}
+        
+        <div style={{ textAlign: "right", marginTop: 8 }}>
+          <Link
+            href="/forgot-password"
+            style={{
+              color: "#1a472a",
+              textDecoration: "none",
+              fontSize: 14,
+            }}
+          >
+            Forgot password?
+          </Link>
+        </div>
       </form>
 
       <div style={{ marginTop: 24, textAlign: "center", paddingTop: 24, borderTop: "1px solid #e0e0e0" }}>
