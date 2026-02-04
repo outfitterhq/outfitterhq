@@ -78,7 +78,7 @@ export async function POST(req: Request) {
       redirectTo = "/client";
     } else {
 
-      // Check if user has active memberships (admin/guide)
+      // Check if user has active memberships (admin/guide/cook)
       const { data: memberships } = await supabase
         .from("outfitter_memberships")
         .select("outfitter_id, role, status")
@@ -87,12 +87,13 @@ export async function POST(req: Request) {
 
       const active = (memberships ?? []) as any[];
       
-      // CRITICAL: Prioritize admin/owner memberships over guide memberships
-      // If user has both admin and guide memberships, select admin one
+      // CRITICAL: Prioritize admin/owner memberships over guide/cook memberships
+      // If user has both admin and guide/cook memberships, select admin one
       const adminMemberships = active.filter((m) => m.role === "owner" || m.role === "admin");
       const guideMemberships = active.filter((m) => m.role === "guide");
+      const cookMemberships = active.filter((m) => m.role === "cook");
       
-      // Prefer admin memberships, but fall back to guide if that's all they have
+      // Prefer admin memberships, but fall back to guide/cook if that's all they have
       const membershipsToUse = adminMemberships.length > 0 ? adminMemberships : active;
       
       redirectTo = "/select-outfitter";
@@ -100,18 +101,38 @@ export async function POST(req: Request) {
       // If only one membership (or one admin membership), auto-select it
       if (membershipsToUse.length === 1) {
         selectedMembership = membershipsToUse[0];
-        redirectTo = adminMemberships.length > 0 ? "/dashboard" : "/guide";
+        if (adminMemberships.length > 0) {
+          redirectTo = "/dashboard";
+        } else if (guideMemberships.length > 0) {
+          redirectTo = "/guide";
+        } else if (cookMemberships.length > 0) {
+          redirectTo = "/cook";
+        }
       } else if (membershipsToUse.length > 1) {
         // Multiple memberships - prefer admin, or check if one is already selected
         const existing = cookieStore.get(OUTFITTER_COOKIE)?.value;
         const existingMembership = membershipsToUse.find((m) => m.outfitter_id === existing);
         if (existingMembership) {
           selectedMembership = existingMembership;
-          redirectTo = (existingMembership.role === "owner" || existingMembership.role === "admin") ? "/dashboard" : "/guide";
+          if (existingMembership.role === "owner" || existingMembership.role === "admin") {
+            redirectTo = "/dashboard";
+          } else if (existingMembership.role === "guide") {
+            redirectTo = "/guide";
+          } else if (existingMembership.role === "cook") {
+            redirectTo = "/cook";
+          }
         } else if (adminMemberships.length > 0) {
           // Pick first admin membership
           selectedMembership = adminMemberships[0];
           redirectTo = "/dashboard";
+        } else if (guideMemberships.length > 0) {
+          // Pick first guide membership
+          selectedMembership = guideMemberships[0];
+          redirectTo = "/guide";
+        } else if (cookMemberships.length > 0) {
+          // Pick first cook membership
+          selectedMembership = cookMemberships[0];
+          redirectTo = "/cook";
         }
       }
     }
