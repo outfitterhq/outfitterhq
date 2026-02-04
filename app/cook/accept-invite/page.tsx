@@ -231,15 +231,53 @@ function AcceptCookInviteContent() {
           .maybeSingle();
         
         if (!checkMembership) {
-          throw new Error(`Membership not found for cook. Please contact support. User: ${user.email}, Outfitter: ${outfitter_id}`);
-        }
-        
-        if (checkMembership.status !== "active") {
+          // Membership doesn't exist - create it now
+          console.warn("Membership not found, creating it now...");
+          const { data: newMembership, error: createErr } = await supabase
+            .from("outfitter_memberships")
+            .insert({
+              user_id: user.id,
+              outfitter_id: outfitter_id,
+              role: "cook",
+              status: "active",
+              accepted_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+          
+          if (createErr || !newMembership) {
+            console.error("Failed to create membership:", createErr);
+            throw new Error(
+              `Membership not found and could not be created. ` +
+              `This usually means the invite link is for a different user or the membership was deleted. ` +
+              `Please ask the admin to send a new invite link. ` +
+              `Error: ${createErr?.message || "Unknown error"}`
+            );
+          }
+          
+          console.log("✅ Membership created successfully:", newMembership);
+        } else if (checkMembership.status !== "active") {
+          // Membership exists but status is wrong - try to update it
           console.warn("Membership exists but status is not active:", checkMembership.status);
-          throw new Error(`Membership status is "${checkMembership.status}" but should be "active". Please contact support.`);
+          const { error: retryUpdateErr } = await supabase
+            .from("outfitter_memberships")
+            .update({
+              status: "active",
+              accepted_at: new Date().toISOString(),
+            })
+            .eq("id", checkMembership.id);
+          
+          if (retryUpdateErr) {
+            throw new Error(
+              `Membership status is "${checkMembership.status}" and could not be updated. ` +
+              `Please contact support. Error: ${retryUpdateErr.message}`
+            );
+          }
+          
+          console.log("✅ Membership status updated to active");
+        } else {
+          console.log("✅ Membership verified:", checkMembership);
         }
-        
-        console.log("✅ Membership verified:", checkMembership);
       } else {
         console.log("✅ Membership updated successfully:", membershipUpdateData);
       }
