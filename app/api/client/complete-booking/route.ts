@@ -141,7 +141,28 @@ export async function GET(req: Request) {
             console.error("[complete-booking] Failed to create hunt from draw_result:", createErr);
           }
         } else {
-          console.log("[complete-booking] No draw_result found for contract:", contractId);
+          // No draw_result found - create a minimal hunt anyway so user can complete booking
+          console.log("[complete-booking] No draw_result found, creating minimal hunt for contract:", contractId);
+          const { data: newHunt, error: createErr } = await admin
+            .from("calendar_events")
+            .insert({
+              outfitter_id: contract.outfitter_id,
+              client_email: contract.client_email,
+              title: "Hunt - Complete Booking",
+              tag_status: "drawn",
+              status: "Pending",
+            })
+            .select("id")
+            .single();
+          
+          if (!createErr && newHunt) {
+            huntId = newHunt.id;
+            // Link the contract to the new hunt
+            await admin.from("hunt_contracts").update({ hunt_id: huntId }).eq("id", contractId);
+            console.log("[complete-booking] Created minimal hunt:", huntId);
+          } else {
+            console.error("[complete-booking] Failed to create minimal hunt:", createErr);
+          }
         }
       }
     }
