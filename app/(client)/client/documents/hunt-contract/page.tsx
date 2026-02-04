@@ -163,8 +163,17 @@ export default function HuntContractPage() {
     
     // Check if current contract needs complete booking
     const contract = data?.contracts?.[selectedContractIndex];
+    console.log("[hunt-contract] Checking redirect:", {
+      contract: contract?.id,
+      needs_complete_booking: contract?.needs_complete_booking,
+      hunt_id: contract?.hunt_id,
+      hasDates: contract?.hunt?.start_date || contract?.hunt?.start_time,
+      hasPrice: contract?.base_guide_fee_usd || contract?.hunt?.selected_pricing_item_id,
+    });
+    
     if (contract?.needs_complete_booking && contract?.hunt_id) {
       // Redirect to booking (like purchase tags flow)
+      console.log("[hunt-contract] Redirecting to complete-booking for hunt:", contract.hunt_id);
       setRedirectingToBooking(true);
       const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}`;
       window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`);
@@ -176,6 +185,7 @@ export default function HuntContractPage() {
       if (data.hunts_without_contracts?.length) {
         const firstHunt = data.hunts_without_contracts[0];
         if (firstHunt?.needs_complete_booking) {
+          console.log("[hunt-contract] Redirecting to complete-booking for hunt without contract:", firstHunt.id);
           setRedirectingToBooking(true);
           window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
           return;
@@ -260,6 +270,18 @@ export default function HuntContractPage() {
           const huntCode = contract.hunt_code ?? hunt?.hunt_code;
           const windowStart = contract.hunt_window_start ?? hunt?.hunt_window_start;
           const windowEnd = contract.hunt_window_end ?? hunt?.hunt_window_end;
+          const needsBooking = contract.needs_complete_booking ?? false;
+          const huntId = contract.hunt_id ?? hunt?.id ?? null;
+          
+          console.log("[hunt-contract] Processing contract:", {
+            id: contract.id,
+            needs_complete_booking: needsBooking,
+            hunt_id: huntId,
+            hasHunt: !!hunt,
+            hasDates: !!(hunt?.start_time || hunt?.start_date),
+            hasPrice: !!(contract.base_guide_fee_usd || hunt?.selected_pricing_item_id),
+          });
+          
           return {
             id: contract.id,
             status: contract.status,
@@ -271,11 +293,11 @@ export default function HuntContractPage() {
             hunt_window_start: windowStart ?? null,
             hunt_window_end: windowEnd ?? null,
             tag_type: contract.tag_type ?? null,
-            needs_complete_booking: contract.needs_complete_booking ?? false,
+            needs_complete_booking: needsBooking,
             addon_pricing: contract.addon_pricing ?? undefined,
             base_guide_fee_usd: contract.base_guide_fee_usd ?? undefined,
             client_completion_data: contract.client_completion_data ?? undefined,
-            hunt_id: contract.hunt_id ?? hunt?.id ?? null,
+            hunt_id: huntId,
             hunt: hunt ? {
               title: hunt.title || "Hunt",
               // API returns start_time/end_time, convert to start_date/end_date for consistency
@@ -291,15 +313,28 @@ export default function HuntContractPage() {
             } : undefined,
           };
         });
+        
+        // Check if we need to redirect BEFORE setting state
+        const selectedIdx = contractIdFromUrl
+          ? contracts.findIndex((c) => c.id === contractIdFromUrl)
+          : 0;
+        const contractToCheck = contracts[selectedIdx >= 0 ? selectedIdx : 0];
+        
+        if (contractToCheck?.needs_complete_booking && contractToCheck?.hunt_id) {
+          console.log("[hunt-contract] Contract needs booking - redirecting immediately");
+          setLoading(false);
+          setRedirectingToBooking(true);
+          const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}`;
+          window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contractToCheck.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`);
+          return;
+        }
+        
         setData({
           eligible: true,
           contracts,
           hunts_without_contracts: json.hunts_without_contracts ?? [],
         });
-        const idx = contractIdFromUrl
-          ? contracts.findIndex((c) => c.id === contractIdFromUrl)
-          : 0;
-        setSelectedContractIndex(idx >= 0 ? idx : 0);
+        setSelectedContractIndex(selectedIdx >= 0 ? selectedIdx : 0);
       } else {
         setData({
           eligible: json.eligible ?? true,
