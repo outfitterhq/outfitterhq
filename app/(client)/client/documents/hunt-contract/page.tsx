@@ -156,26 +156,31 @@ export default function HuntContractPage() {
     return () => { cancelled = true; };
   }, [isComplete, currentContract?.id]);
 
-  // Redirect to complete-booking if contract needs booking first (like purchase tags flow)
-  // This applies whether user has contracts or not - if needs_complete_booking is true, go to booking first
+  // Redirect to complete-booking ONLY when contract is loaded and needs booking
+  // This happens after data loads, so user sees the contract page briefly, then redirects
   useEffect(() => {
     if (loading || !data) return;
     
     // Check if current contract needs complete booking
     const contract = data?.contracts?.[selectedContractIndex];
     if (contract?.needs_complete_booking && contract?.hunt_id) {
+      // Redirect to booking (like purchase tags flow)
       setRedirectingToBooking(true);
-      window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent("/client/documents/hunt-contract" + (contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""))}`);
+      const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}`;
+      window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`);
       return;
     }
     
-    // Also check if user has zero contracts and a hunt needs complete-booking first
-    if (data.contracts && data.contracts.length > 0) return; // Keep user on contract page if they have contracts that don't need booking
-    if (!data.eligible || !data.hunts_without_contracts?.length) return;
-    const firstHunt = data.hunts_without_contracts[0];
-    if (firstHunt?.needs_complete_booking) {
-      setRedirectingToBooking(true);
-      window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
+    // If no contracts but there's a hunt that needs booking, redirect to that
+    if (!data.contracts || data.contracts.length === 0) {
+      if (data.hunts_without_contracts?.length) {
+        const firstHunt = data.hunts_without_contracts[0];
+        if (firstHunt?.needs_complete_booking) {
+          setRedirectingToBooking(true);
+          window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
+          return;
+        }
+      }
     }
   }, [loading, data, selectedContractIndex, contractIdFromUrl]);
 
@@ -438,6 +443,7 @@ export default function HuntContractPage() {
     }
   }
 
+  // Show loading/redirecting state immediately if redirecting
   if (redirectingToBooking) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
@@ -449,7 +455,7 @@ export default function HuntContractPage() {
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
-        <p>Loading...</p>
+        <p>Loading contract...</p>
       </div>
     );
   }
