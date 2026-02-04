@@ -53,27 +53,57 @@ export async function POST(req: Request) {
 
     // If membership doesn't exist or check failed, try to create it
     if (!existingMembership) {
-      console.log("Creating missing cook membership for user:", userRes.user.id);
+      console.log("Creating missing cook membership for user:", userRes.user.id, "outfitter:", outfitter_id);
+      
+      // Try upsert instead of insert to handle case where it exists but wasn't found
       const { data: newMembership, error: createErr } = await admin
         .from("outfitter_memberships")
-        .insert({
-          user_id: userRes.user.id,
-          outfitter_id: outfitter_id,
-          role: "cook",
-          status: "active",
-          accepted_at: new Date().toISOString(),
-        })
+        .upsert(
+          {
+            user_id: userRes.user.id,
+            outfitter_id: outfitter_id,
+            role: "cook",
+            status: "active",
+            accepted_at: new Date().toISOString(),
+          },
+          { 
+            onConflict: "user_id,outfitter_id",
+            ignoreDuplicates: false 
+          }
+        )
         .select()
         .single();
 
-      if (createErr || !newMembership) {
+      if (createErr) {
+        console.error("Failed to create/upsert membership:", {
+          error: createErr,
+          message: createErr.message,
+          details: createErr.details,
+          hint: createErr.hint,
+          code: createErr.code,
+          user_id: userRes.user.id,
+          outfitter_id: outfitter_id,
+        });
         return NextResponse.json(
-          { error: "Failed to create membership", details: createErr?.message || "Unknown error" },
+          { 
+            error: "Failed to create membership", 
+            details: createErr.message || "Unknown error",
+            code: createErr.code,
+            hint: createErr.hint,
+          },
           { status: 500 }
         );
       }
 
-      console.log("✅ Cook membership created:", newMembership);
+      if (!newMembership) {
+        console.error("Membership upsert returned no data");
+        return NextResponse.json(
+          { error: "Failed to create membership", details: "Upsert returned no data" },
+          { status: 500 }
+        );
+      }
+
+      console.log("✅ Cook membership created/updated:", newMembership);
     } else {
       // Update existing membership to active
       const { error: updateErr } = await admin
