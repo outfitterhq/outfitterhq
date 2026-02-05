@@ -554,7 +554,7 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const { data: contract, error: contractErr } = await admin
     .from("hunt_contracts")
-    .select("id, status, client_email, hunt_id, content, outfitter_id")
+    .select("id, status, client_email, hunt_id, content, outfitter_id, calculated_guide_fee_cents, selected_pricing_item_id, calculated_addons_cents")
     .eq("id", contract_id)
     .single();
 
