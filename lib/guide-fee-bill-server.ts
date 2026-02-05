@@ -192,52 +192,65 @@ export async function getContractGuideFeeCents(
     stored_contract_total_cents: contractAny.contract_total_cents,
   });
 
-  // Use calculated_guide_fee_cents from contract if available (accounts for selected days)
-  // This is the correct amount based on the client's selected dates
-  let guideFeeCents = 0;
-  if (contractAny.calculated_guide_fee_cents) {
-    guideFeeCents = contractAny.calculated_guide_fee_cents;
-    console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents from contract: ${guideFeeCents} cents ($${(guideFeeCents / 100).toFixed(2)})`);
-  } else {
-    console.log(`[DEBUG getContractGuideFeeCents] No calculated_guide_fee_cents, falling back to pricing item`);
-    // Fallback: calculate from pricing item (for contracts created before the per-day calculation was implemented)
-    let selectedPricingId: string | null = null;
-    if (contract.client_completion_data && typeof contract.client_completion_data === "object") {
-      const comp = contract.client_completion_data as { selected_pricing_item_id?: string };
-      selectedPricingId = comp.selected_pricing_item_id ?? null;
-    }
-    if (!selectedPricingId && contract.hunt_id) {
-      const { data: hunt } = await admin
-        .from("calendar_events")
-        .select("selected_pricing_item_id")
-        .eq("id", contract.hunt_id)
-        .single();
-      selectedPricingId = (hunt as { selected_pricing_item_id?: string | null } | null)?.selected_pricing_item_id ?? null;
-    }
-    if (selectedPricingId) {
-      const { data: pricing } = await admin
-        .from("pricing_items")
-        .select("id, title, amount_usd")
-        .eq("id", selectedPricingId)
-        .single();
-      if (pricing) {
-        guideFeeCents = Math.round(Number(pricing.amount_usd) * 100);
-        console.log(`[DEBUG getContractGuideFeeCents] Using pricing item ${selectedPricingId}: ${guideFeeCents} cents ($${(guideFeeCents / 100).toFixed(2)})`);
-      }
+  // Get pricing item amount first (source of truth)
+  let selectedPricingId: string | null = null;
+  let pricingItemAmountUsd = 0;
+  if (contract.client_completion_data && typeof contract.client_completion_data === "object") {
+    const comp = contract.client_completion_data as { selected_pricing_item_id?: string };
+    selectedPricingId = comp.selected_pricing_item_id ?? null;
+  }
+  if (!selectedPricingId && contract.hunt_id) {
+    const { data: hunt } = await admin
+      .from("calendar_events")
+      .select("selected_pricing_item_id")
+      .eq("id", contract.hunt_id)
+      .single();
+    selectedPricingId = (hunt as { selected_pricing_item_id?: string | null } | null)?.selected_pricing_item_id ?? null;
+  }
+  if (selectedPricingId) {
+    const { data: pricing } = await admin
+      .from("pricing_items")
+      .select("id, title, amount_usd")
+      .eq("id", selectedPricingId)
+      .single();
+    if (pricing) {
+      pricingItemAmountUsd = Number(pricing.amount_usd) || 0;
     }
   }
 
-  // Use calculated_addons_cents from contract if available
-  let addonsCents = contractAny.calculated_addons_cents || 0;
-  if (addonsCents === 0) {
-    console.log(`[DEBUG getContractGuideFeeCents] No calculated_addons_cents, calculating from client_completion_data`);
-    // Fallback: calculate from client_completion_data
-    const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
-    addonsCents = Math.round(addonUsd * 100);
-    console.log(`[DEBUG getContractGuideFeeCents] Calculated addons from completion_data: ${addonsCents} cents ($${(addonsCents / 100).toFixed(2)})`);
-  } else {
-    console.log(`[DEBUG getContractGuideFeeCents] Using calculated_addons_cents from contract: ${addonsCents} cents ($${(addonsCents / 100).toFixed(2)})`);
+  // Use pricing item amount (this matches the BILL calculation)
+  // Only use calculated_guide_fee_cents if it matches the pricing item (within 1% tolerance)
+  // This handles cases where database values are wrong
+  let guideFeeCents = 0;
+  const pricingItemCents = Math.round(pricingItemAmountUsd * 100);
+  const storedGuideFeeCents = contractAny.calculated_guide_fee_cents ?? 0;
+  
+  if (storedGuideFeeCents > 0 && pricingItemCents > 0) {
+    // Check if stored value is close to pricing item (within 1% - accounts for rounding)
+    const diff = Math.abs(storedGuideFeeCents - pricingItemCents);
+    const tolerance = pricingItemCents * 0.01; // 1% tolerance
+    if (diff <= tolerance) {
+      guideFeeCents = storedGuideFeeCents;
+      console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents (matches pricing item): ${guideFeeCents} cents`);
+    } else {
+      // Stored value doesn't match - use pricing item (correct value)
+      guideFeeCents = pricingItemCents;
+      console.log(`[DEBUG getContractGuideFeeCents] Stored value (${storedGuideFeeCents}) doesn't match pricing item (${pricingItemCents}), using pricing item`);
+    }
+  } else if (pricingItemCents > 0) {
+    guideFeeCents = pricingItemCents;
+    console.log(`[DEBUG getContractGuideFeeCents] Using pricing item: ${guideFeeCents} cents ($${(guideFeeCents / 100).toFixed(2)})`);
+  } else if (storedGuideFeeCents > 0) {
+    guideFeeCents = storedGuideFeeCents;
+    console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents (no pricing item): ${guideFeeCents} cents`);
   }
+
+  // Always calculate addons from client_completion_data (matches BILL calculation)
+  // Don't trust calculated_addons_cents from database - it might be wrong
+  console.log(`[DEBUG getContractGuideFeeCents] Calculating addons from client_completion_data`);
+  const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
+  const addonsCents = Math.round(addonUsd * 100);
+  console.log(`[DEBUG getContractGuideFeeCents] Calculated addons from completion_data: ${addonsCents} cents ($${(addonsCents / 100).toFixed(2)})`);
 
   const subtotalCents = guideFeeCents + addonsCents;
   console.log(`[DEBUG getContractGuideFeeCents] Subtotal: ${subtotalCents} cents ($${(subtotalCents / 100).toFixed(2)}) = ${guideFeeCents} (guide) + ${addonsCents} (addons)`);
