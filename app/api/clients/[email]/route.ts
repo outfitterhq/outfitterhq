@@ -63,6 +63,27 @@ export async function GET(
       .eq("client_email", decodedEmail)
       .order("created_at", { ascending: false });
 
+    // Recalculate correct totals for each contract (pricing item + addons + platform fee)
+    const { supabaseAdmin } = await import("@/lib/supabase/server");
+    const admin = supabaseAdmin();
+    const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
+    
+    const contractsWithCorrectTotals = await Promise.all(
+      (huntContracts || []).map(async (contract: any) => {
+        const correctTotal = await getContractGuideFeeCents(admin, contract.id);
+        if (correctTotal) {
+          const amountPaid = contract.amount_paid_cents || 0;
+          const remaining = correctTotal.totalCents - amountPaid;
+          return {
+            ...contract,
+            contract_total_cents: correctTotal.totalCents,
+            remaining_balance_cents: remaining,
+          };
+        }
+        return contract;
+      })
+    );
+
     // Get documents linked to this client (document_type, status, signing timestamps)
     // First get client ID to query by client_id column
     let clientIdForDocs: string | null = clientData?.id || null;
@@ -272,7 +293,7 @@ export async function GET(
           source: "calendar",
         },
         calendarEvents: calendarEvents || [],
-        huntContracts: huntContracts || [],
+        huntContracts: contractsWithCorrectTotals || [],
         documents,
       },
       { status: 200 }

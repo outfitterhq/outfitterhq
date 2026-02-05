@@ -383,10 +383,34 @@ export default function ClientDetailPage() {
       {/* Hunt Contracts Section */}
       {huntContracts.length > 0 && (
         <section style={{ marginBottom: 32 }}>
-          <h2 style={{ marginBottom: 16, fontSize: 20, fontWeight: 600 }}>Hunt Contracts</h2>
-          <p style={{ marginBottom: 16, opacity: 0.8, fontSize: 14 }}>
-            All hunt contracts for this client. Assign to calendar to create calendar events.
-          </p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 16 }}>
+            <div>
+              <h2 style={{ margin: "0 0 4px 0", fontSize: 20, fontWeight: 600 }}>Hunt Contracts</h2>
+              <p style={{ margin: 0, opacity: 0.8, fontSize: 14 }}>
+                All hunt contracts for this client. Assign to calendar to create calendar events.
+              </p>
+            </div>
+            {(() => {
+              const totalOwedCents = huntContracts.reduce((sum, c) => sum + (c.remaining_balance_cents || 0), 0);
+              if (totalOwedCents > 0) {
+                return (
+                  <div
+                    style={{
+                      padding: "16px 24px",
+                      background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+                      borderRadius: 8,
+                      color: "white",
+                      textAlign: "right",
+                    }}
+                  >
+                    <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>Total Amount Owed Across All Contracts</div>
+                    <div style={{ fontSize: 24, fontWeight: 700 }}>${(totalOwedCents / 100).toLocaleString()}</div>
+                  </div>
+                );
+              }
+              return null;
+            })()}
+          </div>
           <div
             style={{
               border: "1px solid #ddd",
