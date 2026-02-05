@@ -64,7 +64,21 @@ export default function HuntContractPage() {
   const [fetchedHuntWindow, setFetchedHuntWindow] = useState<{ start: string; end: string } | null>(null);
   const [huntWindowLoading, setHuntWindowLoading] = useState(false);
   const [huntWindowError, setHuntWindowError] = useState(false);
-  const [redirectingToBooking, setRedirectingToBooking] = useState(false);
+  // Booking form state (integrated into contract page)
+  const [bookingStep, setBookingStep] = useState<1 | 2 | 3>(1);
+  const [bookingPlans, setBookingPlans] = useState<any[]>([]);
+  const [bookingAddons, setBookingAddons] = useState<any[]>([]);
+  const [bookingHunt, setBookingHunt] = useState<any>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [extraDays, setExtraDays] = useState(0);
+  const [extraNonHunters, setExtraNonHunters] = useState(0);
+  const [extraSpotters, setExtraSpotters] = useState(0);
+  const [rifleRental, setRifleRental] = useState(0);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
 
   // Guide fee bill (when contract is fully signed)
   const [guideFeeBill, setGuideFeeBill] = useState<{
@@ -169,98 +183,77 @@ export default function HuntContractPage() {
     return () => { cancelled = true; };
   }, [isComplete, currentContract?.id]);
 
-  // Redirect to complete-booking ONLY when contract is loaded and needs booking
-  // Wrap in setTimeout to ensure page renders first
+  // Load booking data when contract needs booking
   useEffect(() => {
-    // Don't run redirect logic if still loading or no data
-    if (loading || !data || redirectingToBooking) return;
+    const contract = data?.contracts?.[selectedContractIndex];
+    if (!contract?.needs_complete_booking || bookingLoading || bookingHunt) return;
     
-    // Delay redirect check to ensure page has rendered
-    const timer = setTimeout(() => {
-      // Check if we just returned from complete-booking (prevent redirect loop)
-      const urlParams = new URLSearchParams(window.location.search);
-      const justCompleted = urlParams.get("booking_completed") === "1";
-      if (justCompleted) {
-        // Remove the param immediately to prevent redirect loop
-        urlParams.delete("booking_completed");
-        const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
-        window.history.replaceState({}, "", newUrl);
-        
-        // Set a flag to prevent further redirects for this session
-        sessionStorage.setItem("booking_just_completed", "true");
-        
-        // Reload contract data to get updated needs_complete_booking status
-        setTimeout(() => {
-          loadContract();
-          // Clear the flag after a delay
-          setTimeout(() => {
-            sessionStorage.removeItem("booking_just_completed");
-          }, 5000);
-        }, 500);
-        return;
-      }
-      
-      // Also check sessionStorage to prevent immediate redirect after returning
-      if (sessionStorage.getItem("booking_just_completed") === "true") {
-        return;
-      }
-      
-      // Check if we've already attempted redirect for this contract
-      const contract = data?.contracts?.[selectedContractIndex];
-      const hasTriedRedirect = contract?.id && sessionStorage.getItem(`redirect_attempted_${contract.id}`);
-      
-      // If we've tried redirecting and we're back, don't try again
-      if (hasTriedRedirect) {
-        sessionStorage.removeItem(`redirect_attempted_${contract.id}`);
-        return;
-      }
-      
-      console.log("[hunt-contract] Checking redirect:", {
-        contract: contract?.id,
-        needs_complete_booking: contract?.needs_complete_booking,
-        hunt_id: contract?.hunt_id,
-      });
-      
-      if (contract?.needs_complete_booking) {
-        // Mark attempt
-        if (contract.id) {
-          sessionStorage.setItem(`redirect_attempted_${contract.id}`, "true");
-        }
-        
-        console.log("[hunt-contract] Redirecting to complete-booking");
-        setRedirectingToBooking(true);
-        const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}?booking_completed=1`;
-        
-        // Delay redirect to ensure page rendered
-        setTimeout(() => {
-          const redirectUrl = contract.hunt_id
-            ? `/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`
-            : `/client/complete-booking?contract_id=${encodeURIComponent(contract.id)}&return_to=${encodeURIComponent(returnUrl)}`;
-          window.location.replace(redirectUrl);
-        }, 500);
-        return;
-      }
-      
-      // If no contracts but there's a hunt that needs booking
-      if (!data.contracts || data.contracts.length === 0) {
-        if (data.hunts_without_contracts?.length) {
-          const firstHunt = data.hunts_without_contracts[0];
-          if (firstHunt?.needs_complete_booking) {
-            console.log("[hunt-contract] Redirecting to complete-booking for hunt without contract");
-            setRedirectingToBooking(true);
-            setTimeout(() => {
-              window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
-            }, 500);
-            return;
+    const huntId = contract.hunt_id;
+    const contractId = contract.id;
+    if (!huntId && !contractId) return;
+    
+    setBookingLoading(true);
+    setBookingError(null);
+    const query = huntId ? `hunt_id=${encodeURIComponent(huntId)}` : `contract_id=${encodeURIComponent(contractId)}`;
+    fetch(`/api/client/complete-booking?${query}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          const text = await r.text();
+          let errorMsg = "Failed to load booking details";
+          try {
+            const json = JSON.parse(text);
+            errorMsg = json.error || errorMsg;
+          } catch {
+            errorMsg = text || errorMsg;
           }
+          throw new Error(errorMsg);
         }
-      }
-    }, 1000); // 1 second delay to ensure page has rendered
+        return r.json();
+      })
+      .then((data) => {
+        if (data.booking_complete) {
+          // Booking already complete, reload contract
+          loadContract();
+          return;
+        }
+        setBookingHunt(data.hunt);
+        setBookingPlans(data.pricing_plans || []);
+        setBookingAddons(data.addon_items || []);
+        const addon = data.client_addon_data;
+        if (addon && typeof addon === "object") {
+          if (typeof addon.extra_days === "number") setExtraDays(addon.extra_days);
+          if (typeof addon.extra_non_hunters === "number") setExtraNonHunters(addon.extra_non_hunters);
+          if (typeof addon.extra_spotters === "number") setExtraSpotters(addon.extra_spotters);
+          if (typeof addon.rifle_rental === "number") setRifleRental(addon.rifle_rental);
+        }
+      })
+      .catch((e) => {
+        setBookingError(e.message || "Failed to load booking details");
+      })
+      .finally(() => {
+        setBookingLoading(false);
+      });
+  }, [data, selectedContractIndex, bookingLoading, bookingHunt]);
+
+  // Auto-calculate end date when start date changes (for booking form)
+  useEffect(() => {
+    if (!needsBooking || !bookingHunt) return;
+    const guideFeePlans = bookingPlans.filter((p) => (p.category || "").trim().toLowerCase() !== "add-ons");
+    const selectedPlan = guideFeePlans.find((p) => p.id === selectedPlanId);
+    const baseDays = selectedPlan?.included_days ?? null;
+    const requiredDays = baseDays != null ? baseDays + extraDays : null;
+    const windowStart = bookingHunt?.window_start ?? null;
+    const windowEnd = bookingHunt?.window_end ?? null;
     
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [loading, data, selectedContractIndex, contractIdFromUrl, redirectingToBooking]);
+    if (requiredDays != null && requiredDays > 0 && startDate && windowStart && windowEnd) {
+      const start = new Date(startDate + "T00:00:00Z");
+      const end = new Date(start);
+      end.setDate(end.getDate() + requiredDays - 1);
+      const endStr = end.toISOString().slice(0, 10);
+      const clamped = windowEnd && endStr > windowEnd ? windowEnd : endStr;
+      setEndDate(clamped);
+    }
+  }, [startDate, selectedPlanId, extraDays, bookingPlans, bookingHunt, needsBooking]);
 
   // When contract needs completion and has hunt_code but no hunt_window, fetch window from API
   useEffect(() => {
@@ -577,14 +570,6 @@ export default function HuntContractPage() {
     }
   }
 
-  // Show loading/redirecting state immediately if redirecting
-  if (redirectingToBooking) {
-    return (
-      <div style={{ textAlign: "center", padding: 48 }}>
-        <p>Redirecting to complete your booking…</p>
-      </div>
-    );
-  }
 
   // Show loading only if we have no data and no error
   if (loading && !data && !error) {
@@ -1332,42 +1317,371 @@ export default function HuntContractPage() {
             </div>
           )}
 
-          {/* Show message if needs booking (should have redirected, but just in case) */}
+          {/* Inline Booking Form (when contract needs booking) */}
           {needsBooking && (
             <div
               style={{
-                background: "#e3f2fd",
-                border: "1px solid #2196f3",
+                background: "#f9f9f9",
+                border: "2px solid #1a472a",
                 borderRadius: 8,
                 padding: 24,
                 marginBottom: 24,
               }}
             >
-              <h3 style={{ fontWeight: 600, marginBottom: 16, color: "#1565c0" }}>Complete Your Booking First</h3>
-              <p style={{ marginBottom: 16, color: "#666" }}>
-                Before you can view and sign your contract, you need to complete your booking by selecting your guide fee and hunt dates.
+              <h3 style={{ fontWeight: 600, marginBottom: 16, color: "#1a472a", fontSize: 20 }}>
+                Complete Your Booking
+              </h3>
+              <p style={{ marginBottom: 20, color: "#666", fontSize: 14 }}>
+                Select your guide fee, add-ons, and hunt dates to complete your booking.
               </p>
-              <button
-                onClick={() => {
-                  const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract_id=${contractIdFromUrl}` : ""}`;
-                  const redirectUrl = currentContract?.hunt_id
-                    ? `/client/complete-booking?hunt_id=${encodeURIComponent(currentContract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`
-                    : `/client/complete-booking?contract_id=${encodeURIComponent(currentContract?.id || "")}&return_to=${encodeURIComponent(returnUrl)}`;
-                  window.location.replace(redirectUrl);
-                }}
-                style={{
-                  padding: "12px 24px",
-                  background: "#1a472a",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  fontSize: 15,
-                }}
-              >
-                Go to Complete Booking →
-              </button>
+
+              {bookingLoading && (
+                <div style={{ textAlign: "center", padding: 24 }}>
+                  <p>Loading booking options...</p>
+                </div>
+              )}
+
+              {bookingError && (
+                <div style={{ background: "#ffebee", border: "1px solid #d32f2f", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                  <p style={{ margin: 0, color: "#c62828", fontSize: 14 }}>⚠️ {bookingError}</p>
+                </div>
+              )}
+
+              {!bookingLoading && bookingHunt && (
+                <div>
+                  {/* Step 1: Guide Fee Selection */}
+                  {bookingStep === 1 && (
+                    <div>
+                      <h4 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Step 1: Choose your guide fee (Required)</h4>
+                      <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
+                        Select a guide fee option that matches your hunt's species and weapon.
+                      </p>
+                      {(() => {
+                        const guideFeePlans = bookingPlans.filter((p) => (p.category || "").trim().toLowerCase() !== "add-ons");
+                        const selectedPlan = guideFeePlans.find((p) => p.id === selectedPlanId);
+                        return (
+                          <>
+                            {selectedPlan && selectedPlan.included_days != null && (
+                              <div style={{ background: "#e3f2fd", border: "1px solid #2196f3", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1565c0" }}>
+                                  ✓ Selected: {selectedPlan.title} — {selectedPlan.included_days}-day hunt
+                                </p>
+                              </div>
+                            )}
+                            {guideFeePlans.length === 0 ? (
+                              <p style={{ color: "#666", marginBottom: 16 }}>No guide fee options match this hunt yet.</p>
+                            ) : (
+                              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+                                {guideFeePlans.map((plan: any) => (
+                                  <button
+                                    key={plan.id}
+                                    type="button"
+                                    onClick={() => setSelectedPlanId(plan.id)}
+                                    style={{
+                                      padding: 16,
+                                      textAlign: "left",
+                                      border: selectedPlanId === plan.id ? "2px solid #1a472a" : "1px solid #ddd",
+                                      borderRadius: 8,
+                                      background: selectedPlanId === plan.id ? "#f0f7f4" : "#fff",
+                                      cursor: "pointer",
+                                      fontSize: 15,
+                                      width: "100%",
+                                    }}
+                                  >
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                                      <span style={{ fontWeight: 600, fontSize: 16 }}>{plan.title}</span>
+                                      <span style={{ color: "#1a472a", fontWeight: 700, fontSize: 18 }}>
+                                        ${Number(plan.amount_usd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                      </span>
+                                    </div>
+                                    {plan.included_days != null && (
+                                      <div style={{ fontSize: 13, color: "#555" }}>
+                                        <strong>Days:</strong> {plan.included_days}-day hunt
+                                      </div>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setBookingStep(2)}
+                              disabled={!selectedPlanId}
+                              style={{
+                                padding: "12px 24px",
+                                background: !selectedPlanId ? "#ccc" : "#1a472a",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 8,
+                                cursor: !selectedPlanId ? "not-allowed" : "pointer",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {!selectedPlanId ? "Please select a guide fee" : "Next: Add-ons"}
+                            </button>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+
+                  {/* Step 2: Add-ons */}
+                  {bookingStep === 2 && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setBookingStep(1)}
+                        style={{
+                          marginBottom: 16,
+                          padding: "8px 16px",
+                          background: "#f0f0f0",
+                          border: "none",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                          fontSize: 14,
+                        }}
+                      >
+                        ← Back to guide fee
+                      </button>
+                      <h4 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Step 2: Add-ons (optional)</h4>
+                      <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
+                        Add extra days, non-hunters, or spotters to your hunt.
+                      </p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+                        <div style={{ padding: 16, border: "1px solid #eee", borderRadius: 8, background: "#fafafa" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>Extra Days</div>
+                              <div style={{ fontSize: 13, color: "#666" }}>Extend your hunt beyond base days</div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <button
+                                type="button"
+                                onClick={() => setExtraDays((p) => Math.max(0, p - 1))}
+                                style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", fontSize: 18 }}
+                              >
+                                −
+                              </button>
+                              <span style={{ minWidth: 28, textAlign: "center", fontWeight: 600 }}>{extraDays}</span>
+                              <button
+                                type="button"
+                                onClick={() => setExtraDays((p) => p + 1)}
+                                style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", fontSize: 18 }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ padding: 16, border: "1px solid #eee", borderRadius: 8, background: "#fafafa" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>Non-Hunters</div>
+                              <div style={{ fontSize: 13, color: "#666" }}>Per person</div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <button
+                                type="button"
+                                onClick={() => setExtraNonHunters((p) => Math.max(0, p - 1))}
+                                style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", fontSize: 18 }}
+                              >
+                                −
+                              </button>
+                              <span style={{ minWidth: 28, textAlign: "center", fontWeight: 600 }}>{extraNonHunters}</span>
+                              <button
+                                type="button"
+                                onClick={() => setExtraNonHunters((p) => p + 1)}
+                                style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", fontSize: 18 }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ padding: 16, border: "1px solid #eee", borderRadius: 8, background: "#fafafa" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 4 }}>Spotters</div>
+                              <div style={{ fontSize: 13, color: "#666" }}>Per person</div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <button
+                                type="button"
+                                onClick={() => setExtraSpotters((p) => Math.max(0, p - 1))}
+                                style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", fontSize: 18 }}
+                              >
+                                −
+                              </button>
+                              <span style={{ minWidth: 28, textAlign: "center", fontWeight: 600 }}>{extraSpotters}</span>
+                              <button
+                                type="button"
+                                onClick={() => setExtraSpotters((p) => p + 1)}
+                                style={{ width: 36, height: 36, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer", fontSize: 18 }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setBookingStep(3)}
+                        style={{
+                          padding: "12px 24px",
+                          background: "#1a472a",
+                          color: "white",
+                          border: "none",
+                          borderRadius: 8,
+                          cursor: "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Next: Pick your dates
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Step 3: Dates */}
+                  {bookingStep === 3 && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setBookingStep(2)}
+                        style={{
+                          marginBottom: 16,
+                          padding: "8px 16px",
+                          background: "#f0f0f0",
+                          border: "none",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                          fontSize: 14,
+                        }}
+                      >
+                        ← Back to add-ons
+                      </button>
+                      <h4 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Step 3: Pick your hunt dates</h4>
+                      {(() => {
+                        const guideFeePlans = bookingPlans.filter((p) => (p.category || "").trim().toLowerCase() !== "add-ons");
+                        const selectedPlan = guideFeePlans.find((p) => p.id === selectedPlanId);
+                        const baseDays = selectedPlan?.included_days ?? null;
+                        const requiredDays = baseDays != null ? baseDays + extraDays : null;
+                        const windowStart = bookingHunt?.window_start ?? null;
+                        const windowEnd = bookingHunt?.window_end ?? null;
+                        const dateSpanDays = startDate && endDate
+                          ? Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / (24 * 60 * 60 * 1000)) + 1
+                          : 0;
+                        const formOk = startDate && endDate && dateSpanDays >= 1 && requiredDays != null && dateSpanDays === requiredDays;
+
+                        async function handleBookingSubmit() {
+                          if (!currentContract?.hunt_id || !startDate || !endDate) return;
+                          setBookingSubmitting(true);
+                          setBookingError(null);
+                          try {
+                            const res = await fetch("/api/client/complete-booking", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                hunt_id: currentContract.hunt_id,
+                                pricing_item_id: selectedPlanId || undefined,
+                                client_start_date: startDate,
+                                client_end_date: endDate,
+                                extra_days: extraDays > 0 ? extraDays : undefined,
+                                extra_non_hunters: extraNonHunters > 0 ? extraNonHunters : undefined,
+                                extra_spotters: extraSpotters > 0 ? extraSpotters : undefined,
+                                rifle_rental: rifleRental > 0 ? rifleRental : undefined,
+                              }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.error || "Failed to save");
+                            // Reload contract data instead of redirecting
+                            await loadContract();
+                            alert(data.message || "Booking saved! Your contract has been updated.");
+                          } catch (e: any) {
+                            setBookingError(e.message || "Failed to save");
+                          } finally {
+                            setBookingSubmitting(false);
+                          }
+                        }
+
+                        return (
+                          <>
+                            {requiredDays != null && (
+                              <div style={{ background: "#e3f2fd", border: "1px solid #2196f3", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1565c0" }}>
+                                  You need to select exactly {requiredDays} day{requiredDays !== 1 ? "s" : ""}
+                                </p>
+                                <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#555" }}>
+                                  {baseDays} day{baseDays !== 1 ? "s" : ""} from your guide fee plan{extraDays > 0 ? ` + ${extraDays} extra day${extraDays !== 1 ? "s" : ""}` : ""}
+                                </p>
+                              </div>
+                            )}
+                            {windowStart && windowEnd && (
+                              <div style={{ background: "#f5f5f5", border: "1px solid #ddd", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#333" }}>
+                                  Hunt Season Window: {windowStart} – {windowEnd}
+                                </p>
+                              </div>
+                            )}
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
+                              <div>
+                                <label style={{ display: "block", marginBottom: 4, fontWeight: 500, fontSize: 14 }}>Arrival (first day)</label>
+                                <input
+                                  type="date"
+                                  value={startDate}
+                                  min={windowStart ?? undefined}
+                                  max={windowEnd ?? undefined}
+                                  onChange={(e) => setStartDate(e.target.value)}
+                                  style={{ width: "100%", padding: 10, border: "1px solid #ddd", borderRadius: 6 }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: "block", marginBottom: 4, fontWeight: 500, fontSize: 14 }}>Departure (last day)</label>
+                                <input
+                                  type="date"
+                                  value={endDate}
+                                  min={(startDate || windowStart) ?? undefined}
+                                  max={windowEnd ?? undefined}
+                                  onChange={(e) => setEndDate(e.target.value)}
+                                  style={{ width: "100%", padding: 10, border: "1px solid #ddd", borderRadius: 6 }}
+                                />
+                              </div>
+                            </div>
+                            {dateSpanDays > 0 && requiredDays != null && dateSpanDays !== requiredDays && (
+                              <div style={{ background: "#ffebee", border: "1px solid #d32f2f", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#c62828" }}>
+                                  ⚠️ Date mismatch: You selected {dateSpanDays} day{dateSpanDays !== 1 ? "s" : ""}, but you need {requiredDays} day{requiredDays !== 1 ? "s" : ""}.
+                                </p>
+                              </div>
+                            )}
+                            {bookingError && (
+                              <div style={{ background: "#ffebee", border: "1px solid #d32f2f", borderRadius: 8, padding: 12, marginBottom: 16 }}>
+                                <p style={{ margin: 0, fontSize: 13, color: "#c62828" }}>⚠️ {bookingError}</p>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={handleBookingSubmit}
+                              disabled={!formOk || bookingSubmitting}
+                              style={{
+                                padding: "12px 24px",
+                                background: !formOk || bookingSubmitting ? "#ccc" : "#1a472a",
+                                color: "white",
+                                border: "none",
+                                borderRadius: 8,
+                                cursor: !formOk || bookingSubmitting ? "not-allowed" : "pointer",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {bookingSubmitting ? "Saving…" : "Save and continue"}
+                            </button>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
