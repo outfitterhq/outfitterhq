@@ -205,17 +205,29 @@ export async function GET() {
         }
       : null;
 
-  // Get total owed from contracts
-  const { data: contracts } = await supabase
-    .from("hunt_contracts")
-    .select("remaining_balance_cents")
-    .eq("client_email", userEmail)
-    .eq("outfitter_id", outfitterId);
+  // Get total owed from contracts - use same calculation as payment dashboard
+  // Sum up all payment items with recalculated totals (not contract.remaining_balance_cents which might be wrong)
+  const { data: allPaymentItems } = await supabase
+    .from("payment_items")
+    .select("id, contract_id, subtotal_cents, platform_fee_cents, total_cents, amount_paid_cents, status, item_type")
+    .eq("client_id", client.id)
+    .in("item_type", ["guide_fee", "guide_fee_installment"]);
 
-  const totalOwedFromContractsCents = (contracts || []).reduce(
-    (sum: number, contract: any) => sum + (contract.remaining_balance_cents || 0),
-    0
-  );
+  let totalOwedFromContractsCents = 0;
+  for (const item of allPaymentItems || []) {
+    let totalCents = item.total_cents;
+    if (item.contract_id && (item.item_type === "guide_fee")) {
+      const correct = await recalculateGuideFeePaymentItem(admin, item.id);
+      if (correct) {
+        totalCents = correct.totalCents;
+      }
+    }
+    const amountPaid = item.amount_paid_cents || 0;
+    const balance = totalCents - amountPaid;
+    if (balance > 0) {
+      totalOwedFromContractsCents += balance;
+    }
+  }
   const totalOwedFromContracts = totalOwedFromContractsCents / 100;
 
   // Get dashboard customization from outfitter

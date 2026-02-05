@@ -127,18 +127,26 @@ export async function GET(
       transactions = trans || [];
     }
 
-    // Use contract total from database (should be calculated by recalculate_contract_total)
-    const finalContractTotal = contract.contract_total_cents || 0;
+    // Recalculate contract total using correct calculation (pricing item + addons + platform fee)
+    // Don't trust contract_total_cents from database - it might be wrong
+    const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
+    const correctTotal = await getContractGuideFeeCents(admin, id);
+    const finalContractTotal = correctTotal ? correctTotal.totalCents : (contract.contract_total_cents || 0);
+    
+    // Update remaining balance based on correct total
+    const amountPaid = contract.amount_paid_cents || 0;
+    const remainingBalance = finalContractTotal - amountPaid;
     
     return NextResponse.json({
       contract: {
         ...contract,
         contract_total_cents: finalContractTotal,
         contract_total_usd: finalContractTotal / 100,
-        amount_paid_usd: contract.amount_paid_cents / 100,
-        remaining_balance_usd: contract.remaining_balance_cents / 100,
+        amount_paid_usd: amountPaid / 100,
+        remaining_balance_cents: remainingBalance,
+        remaining_balance_usd: remainingBalance / 100,
         payment_percentage: finalContractTotal > 0
-          ? Math.round((contract.amount_paid_cents / finalContractTotal) * 100 * 10) / 10
+          ? Math.round((amountPaid / finalContractTotal) * 100 * 10) / 10
           : 0,
       },
       paymentItems: paymentItems || [],
