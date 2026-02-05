@@ -175,39 +175,52 @@ export async function getContractGuideFeeCents(
 ): Promise<{ subtotalCents: number; platformFeeCents: number; totalCents: number } | null> {
   const { data: contract, error: contractErr } = await admin
     .from("hunt_contracts")
-    .select("id, hunt_id, outfitter_id, client_completion_data")
+    .select("id, hunt_id, outfitter_id, client_completion_data, calculated_guide_fee_cents, calculated_addons_cents")
     .eq("id", contractId)
     .single();
   if (contractErr || !contract) return null;
 
-  // Prefer client_completion_data so amounts match the signed BILL (which was built from completion data).
-  let amountUsd = 0;
-  let selectedPricingId: string | null = null;
-  if (contract.client_completion_data && typeof contract.client_completion_data === "object") {
-    const comp = contract.client_completion_data as { selected_pricing_item_id?: string };
-    selectedPricingId = comp.selected_pricing_item_id ?? null;
+  // Use calculated_guide_fee_cents from contract if available (accounts for selected days)
+  // This is the correct amount based on the client's selected dates
+  let guideFeeCents = 0;
+  if ((contract as { calculated_guide_fee_cents?: number | null }).calculated_guide_fee_cents) {
+    guideFeeCents = (contract as { calculated_guide_fee_cents: number }).calculated_guide_fee_cents;
+  } else {
+    // Fallback: calculate from pricing item (for contracts created before the per-day calculation was implemented)
+    let selectedPricingId: string | null = null;
+    if (contract.client_completion_data && typeof contract.client_completion_data === "object") {
+      const comp = contract.client_completion_data as { selected_pricing_item_id?: string };
+      selectedPricingId = comp.selected_pricing_item_id ?? null;
+    }
+    if (!selectedPricingId && contract.hunt_id) {
+      const { data: hunt } = await admin
+        .from("calendar_events")
+        .select("selected_pricing_item_id")
+        .eq("id", contract.hunt_id)
+        .single();
+      selectedPricingId = (hunt as { selected_pricing_item_id?: string | null } | null)?.selected_pricing_item_id ?? null;
+    }
+    if (selectedPricingId) {
+      const { data: pricing } = await admin
+        .from("pricing_items")
+        .select("id, title, amount_usd")
+        .eq("id", selectedPricingId)
+        .single();
+      if (pricing) guideFeeCents = Math.round(Number(pricing.amount_usd) * 100);
+    }
   }
-  if (!selectedPricingId && contract.hunt_id) {
-    const { data: hunt } = await admin
-      .from("calendar_events")
-      .select("selected_pricing_item_id")
-      .eq("id", contract.hunt_id)
-      .single();
-    selectedPricingId = (hunt as { selected_pricing_item_id?: string | null } | null)?.selected_pricing_item_id ?? null;
-  }
-  if (selectedPricingId) {
-    const { data: pricing } = await admin
-      .from("pricing_items")
-      .select("id, title, amount_usd")
-      .eq("id", selectedPricingId)
-      .single();
-    if (pricing) amountUsd = Number(pricing.amount_usd) || 0;
-  }
-  const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
-  amountUsd += addonUsd;
-  if (amountUsd <= 0) return null;
 
-  const subtotalCents = Math.round(amountUsd * 100);
+  // Use calculated_addons_cents from contract if available
+  let addonsCents = (contract as { calculated_addons_cents?: number | null }).calculated_addons_cents || 0;
+  if (addonsCents === 0) {
+    // Fallback: calculate from client_completion_data
+    const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
+    addonsCents = Math.round(addonUsd * 100);
+  }
+
+  const subtotalCents = guideFeeCents + addonsCents;
+  if (subtotalCents <= 0) return null;
+
   const { data: feeConfig } = await admin
     .from("platform_config")
     .select("value")
