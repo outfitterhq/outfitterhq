@@ -24,6 +24,8 @@ interface ContractItem {
   addon_pricing?: { extra_day_usd: number; non_hunter_usd: number; spotter_usd: number };
   /** Base guide fee from selected pricing item (for price summary) */
   base_guide_fee_usd?: number;
+  /** Contract total in cents (for displaying total) */
+  contract_total_cents?: number;
   /** Stored completion data (for prefilling form when contract already has add-ons) */
   client_completion_data?: Record<string, unknown> | null;
   hunt?: {

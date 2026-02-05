@@ -97,7 +97,7 @@ export async function GET(req: Request) {
   // 1b) Full contract rows for all linked outfitters (include client_completion_data, outfitter_id for BILL patch)
   const { data: contractRows, error: contractsErr } = await admin
     .from("hunt_contracts")
-    .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date")
+    .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date, contract_total_cents")
     .in("outfitter_id", outfitterIds)
     .order("created_at", { ascending: false });
 
@@ -169,6 +169,7 @@ export async function GET(req: Request) {
       hunt_window_end: hunt?.hunt_window_end ?? null,
       tag_type: null as string | null,
       needs_complete_booking: needsCompleteBooking,
+      contract_total_cents: c.contract_total_cents as number | undefined,
     };
   });
 
@@ -284,7 +285,7 @@ export async function GET(req: Request) {
     );
     const { data: contractRows2 } = await admin
       .from("hunt_contracts")
-      .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date")
+      .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date, contract_total_cents")
       .in("outfitter_id", outfitterIds)
       .order("created_at", { ascending: false });
     const filteredContractRows2 = (contractRows2 || []).filter(
@@ -347,6 +348,7 @@ export async function GET(req: Request) {
           // Need booking if missing pricing OR dates
           return !hasPricing || !hasDates;
         })(),
+        contract_total_cents: c.contract_total_cents as number | undefined,
       };
     });
     const tagIds2 = [...new Set(contracts.map((c) => c.hunt?.private_land_tag_id).filter(Boolean) as string[])];
