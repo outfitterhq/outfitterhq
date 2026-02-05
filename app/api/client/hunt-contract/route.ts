@@ -356,11 +356,12 @@ export async function GET(req: Request) {
     }
     contracts = contracts.map((c) => {
       // Use calculated guide fee from contract if available, otherwise calculate from pricing item
+      const cAny = c as Record<string, unknown>;
       let baseGuideFeeUsd = 0;
-      if (c.calculated_guide_fee_cents) {
-        baseGuideFeeUsd = (c.calculated_guide_fee_cents as number) / 100;
-      } else if (c.selected_pricing_item_id) {
-        baseGuideFeeUsd = pricingAmountById.get(c.selected_pricing_item_id as string) ?? 0;
+      if (cAny.calculated_guide_fee_cents) {
+        baseGuideFeeUsd = (cAny.calculated_guide_fee_cents as number) / 100;
+      } else if (cAny.selected_pricing_item_id) {
+        baseGuideFeeUsd = pricingAmountById.get(cAny.selected_pricing_item_id as string) ?? 0;
       } else {
         // Fallback to hunt's selected_pricing_item_id
         const hunt = c.hunt as { selected_pricing_item_id?: string | null } | undefined;
