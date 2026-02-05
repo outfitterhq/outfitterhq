@@ -65,11 +65,21 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Client record not found" }, { status: 404 });
   }
 
-  let pricingTitle = "Guide fee";
-  let amountUsd = 0;
-  let pricingItemId: string | null = null;
+  // CRITICAL: Use getContractGuideFeeCents which uses calculated_guide_fee_cents (accounts for selected days)
+  // DO NOT calculate from pricing item amount directly - that doesn't account for selected days
+  const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
+  const correctTotal = await getContractGuideFeeCents(admin, contractId);
+  
+  if (!correctTotal || correctTotal.subtotalCents <= 0) {
+    return NextResponse.json(
+      { error: "No guide fee is set for this hunt. Contact your outfitter." },
+      { status: 400 }
+    );
+  }
 
-  // Prefer client_completion_data so amounts match the signed BILL.
+  // Get pricing item title for display
+  let pricingTitle = "Guide fee";
+  let pricingItemId: string | null = null;
   let selectedPricingId: string | null = null;
   if (contract.client_completion_data && typeof contract.client_completion_data === "object") {
     const comp = contract.client_completion_data as { selected_pricing_item_id?: string };
@@ -86,30 +96,20 @@ export async function GET(req: NextRequest) {
   if (selectedPricingId) {
     const { data: pricing } = await admin
       .from("pricing_items")
-      .select("id, title, amount_usd")
+      .select("id, title")
       .eq("id", selectedPricingId)
       .single();
     if (pricing) {
       pricingTitle = pricing.title || "Guide fee";
-      amountUsd = Number(pricing.amount_usd) || 0;
       pricingItemId = pricing.id;
     }
   }
 
-  const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
-  amountUsd += addonUsd;
-
-  if (amountUsd <= 0) {
-    return NextResponse.json(
-      { error: "No guide fee is set for this hunt. Contact your outfitter." },
-      { status: 400 }
-    );
-  }
-
-  const subtotalCents = Math.round(amountUsd * 100);
-  const platformFeePercent = 5;
-  const platformFeeCents = Math.max(50, Math.ceil(subtotalCents * (platformFeePercent / 100)));
-  const totalCents = subtotalCents + platformFeeCents;
+  // Use calculated amounts (accounts for selected days)
+  const subtotalCents = correctTotal.subtotalCents;
+  const platformFeeCents = correctTotal.platformFeeCents;
+  const totalCents = correctTotal.totalCents;
+  const amountUsd = subtotalCents / 100; // For backward compatibility in response
 
   const { data: existingItems } = await admin
     .from("payment_items")
