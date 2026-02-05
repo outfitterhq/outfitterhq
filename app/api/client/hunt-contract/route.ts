@@ -387,10 +387,7 @@ export async function GET(req: Request) {
       let finalContractTotal: number | undefined = currentTotal > 0 ? currentTotal : undefined;
       if ((guideFeeCents > 0 || addonsCents > 0) && currentTotal !== expectedTotal && Math.abs(currentTotal - expectedTotal) > 100) {
         // Recalculate asynchronously (don't block the response)
-        admin.rpc("recalculate_contract_total", { p_contract_id: c.id })
-          .then(() => {
-            // Recalculation successful
-          })
+        Promise.resolve(admin.rpc("recalculate_contract_total", { p_contract_id: c.id }))
           .catch((err) => {
             console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
           });
