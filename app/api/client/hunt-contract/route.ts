@@ -384,16 +384,17 @@ export async function GET(req: Request) {
       const expectedTotal = guideFeeCents + addonsCents + Math.round((guideFeeCents + addonsCents) * 0.05);
       
       // If we have guide fee or addons, but total is wrong, recalculate
+      let finalContractTotal: number | undefined = currentTotal > 0 ? currentTotal : undefined;
       if ((guideFeeCents > 0 || addonsCents > 0) && currentTotal !== expectedTotal && Math.abs(currentTotal - expectedTotal) > 100) {
         // Recalculate asynchronously (don't block the response)
         admin.rpc("recalculate_contract_total", { p_contract_id: c.id }).catch((err) => {
           console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
         });
         // Use expected total for this response
-        cAny.contract_total_cents = expectedTotal;
+        finalContractTotal = expectedTotal;
       }
       
-      return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd, contract_total_cents: cAny.contract_total_cents };
+      return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd, contract_total_cents: finalContractTotal };
     });
     contractHuntIds = contracts.map((c) => c.hunt_id).filter(Boolean);
     huntsWithoutContracts = huntsForClient
