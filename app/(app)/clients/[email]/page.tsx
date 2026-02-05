@@ -69,7 +69,14 @@ export default function ClientDetailPage() {
     created_at: string;
     client_signed_at: string | null;
     admin_signed_at: string | null;
+    contract_total_cents?: number | null;
+    amount_paid_cents?: number | null;
+    remaining_balance_cents?: number | null;
+    payment_status?: string | null;
   }>>([]);
+  const [contractPayments, setContractPayments] = useState<Record<string, any>>({});
+  const [editingContractTotal, setEditingContractTotal] = useState<string | null>(null);
+  const [newContractTotal, setNewContractTotal] = useState<string>("");
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +100,21 @@ export default function ClientDetailPage() {
       setCalendarEvents(data.calendarEvents || []);
       setHuntContracts(data.huntContracts || []);
       setDocuments(data.documents || []);
+      
+      // Load payment info for each contract
+      const paymentData: Record<string, any> = {};
+      for (const contract of data.huntContracts || []) {
+        try {
+          const paymentRes = await fetch(`/api/hunt-contracts/${contract.id}/payments`);
+          if (paymentRes.ok) {
+            const paymentInfo = await paymentRes.json();
+            paymentData[contract.id] = paymentInfo;
+          }
+        } catch (e) {
+          console.error(`Error loading payment info for contract ${contract.id}:`, e);
+        }
+      }
+      setContractPayments(paymentData);
     } catch (e: any) {
       setError(String(e));
     } finally {
@@ -377,66 +399,141 @@ export default function ClientDetailPage() {
                 <tr style={{ background: "#f5f5f5" }}>
                   <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Contract ID</th>
                   <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Status</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Payment Status</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Amount</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Paid</th>
+                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Remaining</th>
                   <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Created</th>
-                  <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Calendar Event</th>
                   <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {huntContracts.map((contract) => (
-                  <tr key={contract.id} style={{ borderTop: "1px solid #eee" }}>
-                    <td style={{ padding: 12 }}>
-                      <code style={{ fontSize: 12 }}>{contract.id.slice(0, 8)}...</code>
-                    </td>
-                    <td style={{ padding: 12 }}>
-                      <span
-                        style={{
-                          padding: "4px 8px",
-                          background: contract.status === "fully_executed" ? "#e8f5e9" : "#fff3cd",
-                          borderRadius: 4,
-                          fontSize: 12,
-                        }}
-                      >
-                        {contract.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: 12 }}>
-                      {formatDate(contract.created_at)}
-                    </td>
-                    <td style={{ padding: 12 }}>
-                      {contract.hunt_id ? (
-                        <Link
-                          href={`/calendar?event=${contract.hunt_id}`}
-                          style={{ color: "#0070f3", textDecoration: "none" }}
-                        >
-                          View Event
-                        </Link>
-                      ) : (
-                        <span style={{ color: "#d32f2f", fontSize: 12 }}>Not assigned</span>
-                      )}
-                    </td>
-                    <td style={{ padding: 12 }}>
-                      {!contract.hunt_id ? (
-                        <Link
-                          href={`/calendar?assign_contract=${contract.id}`}
+                {huntContracts.map((contract) => {
+                  const paymentInfo = contractPayments[contract.id];
+                  const totalCents = contract.contract_total_cents || 0;
+                  const paidCents = contract.amount_paid_cents || 0;
+                  const remainingCents = contract.remaining_balance_cents || 0;
+                  const paymentStatus = contract.payment_status || "unpaid";
+                  
+                  const getPaymentStatusColor = (status: string) => {
+                    switch (status) {
+                      case "paid_in_full": return "#e8f5e9";
+                      case "deposit_paid": return "#fff3cd";
+                      case "payment_plan_active": return "#e3f2fd";
+                      case "unpaid": return "#ffebee";
+                      default: return "#f5f5f5";
+                    }
+                  };
+                  
+                  const getPaymentStatusLabel = (status: string) => {
+                    switch (status) {
+                      case "paid_in_full": return "Paid in Full";
+                      case "deposit_paid": return "Deposit Paid";
+                      case "payment_plan_active": return "Payment Plan Active";
+                      case "unpaid": return "Unpaid";
+                      default: return status;
+                    }
+                  };
+                  
+                  return (
+                    <tr key={contract.id} style={{ borderTop: "1px solid #eee" }}>
+                      <td style={{ padding: 12 }}>
+                        <code style={{ fontSize: 12 }}>{contract.id.slice(0, 8)}...</code>
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        <span
                           style={{
-                            padding: "6px 12px",
-                            background: "#0070f3",
-                            color: "white",
-                            textDecoration: "none",
-                            borderRadius: 6,
-                            fontSize: 14,
-                            display: "inline-block",
+                            padding: "4px 8px",
+                            background: contract.status === "fully_executed" ? "#e8f5e9" : "#fff3cd",
+                            borderRadius: 4,
+                            fontSize: 12,
                           }}
                         >
-                          Assign to Calendar
-                        </Link>
-                      ) : (
-                        <span style={{ color: "#999", fontSize: 12 }}>Assigned</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                          {contract.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        <span
+                          style={{
+                            padding: "4px 8px",
+                            background: getPaymentStatusColor(paymentStatus),
+                            borderRadius: 4,
+                            fontSize: 12,
+                          }}
+                        >
+                          {getPaymentStatusLabel(paymentStatus)}
+                        </span>
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        {totalCents > 0 ? `$${(totalCents / 100).toFixed(2)}` : "—"}
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        {paidCents > 0 ? `$${(paidCents / 100).toFixed(2)}` : "$0.00"}
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        {remainingCents > 0 ? (
+                          <span style={{ color: "#d32f2f", fontWeight: 600 }}>
+                            ${(remainingCents / 100).toFixed(2)}
+                          </span>
+                        ) : (
+                          <span style={{ color: "#2e7d32" }}>$0.00</span>
+                        )}
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        {formatDate(contract.created_at)}
+                      </td>
+                      <td style={{ padding: 12 }}>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                          {!contract.hunt_id ? (
+                            <Link
+                              href={`/calendar?assign_contract=${contract.id}`}
+                              style={{
+                                padding: "6px 12px",
+                                background: "#0070f3",
+                                color: "white",
+                                textDecoration: "none",
+                                borderRadius: 6,
+                                fontSize: 14,
+                                display: "inline-block",
+                              }}
+                            >
+                              Assign
+                            </Link>
+                          ) : (
+                            <Link
+                              href={`/calendar?event=${contract.hunt_id}`}
+                              style={{
+                                padding: "6px 12px",
+                                background: "#666",
+                                color: "white",
+                                textDecoration: "none",
+                                borderRadius: 6,
+                                fontSize: 14,
+                                display: "inline-block",
+                              }}
+                            >
+                              View Event
+                            </Link>
+                          )}
+                          <Link
+                            href={`/hunt-contracts/${contract.id}`}
+                            style={{
+                              padding: "6px 12px",
+                              background: "#4caf50",
+                              color: "white",
+                              textDecoration: "none",
+                              borderRadius: 6,
+                              fontSize: 14,
+                              display: "inline-block",
+                            }}
+                          >
+                            View Payments
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

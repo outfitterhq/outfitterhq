@@ -44,10 +44,21 @@ export async function GET(
       .eq("client_email", decodedEmail)
       .order("start_time", { ascending: false });
 
-    // Get hunt contracts for this client
+    // Get hunt contracts for this client (including payment fields)
     const { data: huntContracts } = await supabase
       .from("hunt_contracts")
-      .select("id, status, client_email, hunt_id, created_at, client_signed_at, admin_signed_at, content")
+      .select(`
+        id,
+        status,
+        hunt_id,
+        created_at,
+        client_signed_at,
+        admin_signed_at,
+        contract_total_cents,
+        amount_paid_cents,
+        remaining_balance_cents,
+        payment_status
+      `)("id, status, client_email, hunt_id, created_at, client_signed_at, admin_signed_at, content")
       .eq("outfitter_id", outfitterId)
       .eq("client_email", decodedEmail)
       .order("created_at", { ascending: false });

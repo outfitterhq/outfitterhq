@@ -36,6 +36,8 @@ export async function GET(req: Request) {
       `)
       .eq("outfitter_id", outfitterId)
       .order("created_at", { ascending: false });
+    
+    // Note: Payment fields (contract_total_cents, amount_paid_cents, etc.) are included in *
 
     if (status) {
       query = query.eq("status", status);
