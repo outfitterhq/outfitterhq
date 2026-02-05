@@ -162,17 +162,19 @@ export default function CompleteBookingPage() {
   // Step 1 shows only guide fees (exclude Add-ons category)
   const guideFeePlans = plans.filter((p) => (p.category || "").trim().toLowerCase() !== "add-ons");
   const selectedPlan = guideFeePlans.find((p) => p.id === selectedPlanId);
-  const baseDays = selectedPlan?.included_days ?? 0;
-  const requiredDays = baseDays + extraDays; // extra days add-on extends the date range
+  const baseDays = selectedPlan?.included_days ?? null; // Days from selected guide fee
+  const requiredDays = baseDays != null ? baseDays + extraDays : null; // Total days needed (guide fee days + extra days)
   const windowStart = hunt?.window_start ?? null;
   const windowEnd = hunt?.window_end ?? null;
 
+  // Auto-calculate end date when start date changes (if required days is set)
   useEffect(() => {
-    if (requiredDays > 0 && startDate && windowStart && windowEnd) {
+    if (requiredDays != null && requiredDays > 0 && startDate && windowStart && windowEnd) {
       const start = new Date(startDate + "T00:00:00Z");
       const end = new Date(start);
       end.setDate(end.getDate() + requiredDays - 1);
       const endStr = end.toISOString().slice(0, 10);
+      // Clamp to hunt window
       const clamped = windowEnd && endStr > windowEnd ? windowEnd : endStr;
       setEndDate(clamped);
     }
@@ -226,15 +228,21 @@ export default function CompleteBookingPage() {
   const dateSpanDays = startDate && endDate
     ? Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / (24 * 60 * 60 * 1000)) + 1
     : 0;
+  
+  // Validation:
+  // Step 1: Guide fee selection is REQUIRED
+  // Step 2: Add-ons are optional
+  // Step 3: Dates must be selected and match required days (baseDays + extraDays)
   const formOk =
     step === 1
-      ? true // Allow proceeding without selecting pricing - client can select later
+      ? selectedPlanId != null // Guide fee selection is REQUIRED
       : step === 2
-        ? true
+        ? true // Add-ons are optional
         : startDate &&
           endDate &&
           dateSpanDays >= 1 &&
-          (requiredDays === 0 || dateSpanDays === requiredDays);
+          requiredDays != null &&
+          dateSpanDays === requiredDays; // Must match exactly: included_days + extra_days
 
   if (loading) {
     return (
@@ -282,10 +290,28 @@ export default function CompleteBookingPage() {
 
       {step === 1 ? (
         <>
-          <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Step 1: Choose your guide fee</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Step 1: Choose your guide fee (Required)</h2>
           <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
-            Guide fee options that match your hunt’s species and weapon are shown. The number of days in the plan sets how many days you’ll pick in the next step.
+            Select a guide fee option that matches your hunt's species and weapon. The number of days in your selected plan will determine how many days you need to select in Step 3.
           </p>
+          {selectedPlan && selectedPlan.included_days != null && (
+            <div style={{ 
+              background: "#e3f2fd", 
+              border: "1px solid #2196f3", 
+              borderRadius: 8, 
+              padding: 12, 
+              marginBottom: 16 
+            }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1565c0" }}>
+                ✓ Selected: {selectedPlan.title} — {selectedPlan.included_days}-day hunt
+              </p>
+              <p style={{ margin: "4px 0 0 0", fontSize: 12, color: "#555" }}>
+                This plan includes {selectedPlan.included_days} day{selectedPlan.included_days !== 1 ? "s" : ""}. 
+                {extraDays > 0 && ` You've added ${extraDays} extra day${extraDays !== 1 ? "s" : ""}, so you'll need to select ${requiredDays} total days.`}
+                {extraDays === 0 && " You can add extra days in Step 2 if needed."}
+              </p>
+            </div>
+          )}
           {guideFeePlans.length === 0 ? (
             <p style={{ color: "#666", marginBottom: 16 }}>No guide fee options match this hunt yet. You can still pick your dates below.</p>
           ) : (
@@ -333,28 +359,22 @@ export default function CompleteBookingPage() {
               ))}
             </div>
           )}
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            {guideFeePlans.length > 0 && !selectedPlanId && (
-              <p style={{ fontSize: 13, color: "#666", margin: 0 }}>
-                💡 You can select a guide fee now, or choose dates first and come back to select pricing.
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              style={{
-                padding: "12px 24px",
-                background: "#1a472a",
-                color: "white",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
-            >
-              Next: Add-ons
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setStep(2)}
+            disabled={!selectedPlanId}
+            style={{
+              padding: "12px 24px",
+              background: !selectedPlanId ? "#ccc" : "#1a472a",
+              color: "white",
+              border: "none",
+              borderRadius: 8,
+              cursor: !selectedPlanId ? "not-allowed" : "pointer",
+              fontWeight: 600,
+            }}
+          >
+            {!selectedPlanId ? "Please select a guide fee" : "Next: Add-ons"}
+          </button>
         </>
       ) : step === 2 ? (
         <>
@@ -374,6 +394,24 @@ export default function CompleteBookingPage() {
             ← Back to guide fee
           </button>
           <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Step 2: Add-ons (optional)</h2>
+          {selectedPlan && baseDays != null && (
+            <div style={{ 
+              background: "#f0f7f4", 
+              border: "1px solid #c8e6c9", 
+              borderRadius: 8, 
+              padding: 12, 
+              marginBottom: 16 
+            }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1a472a" }}>
+                Your guide fee plan: {selectedPlan.title} ({baseDays} day{baseDays !== 1 ? "s" : ""})
+              </p>
+              {requiredDays != null && (
+                <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#555" }}>
+                  Total days needed: {requiredDays} ({baseDays} from guide fee{extraDays > 0 ? ` + ${extraDays} extra day${extraDays !== 1 ? "s" : ""}` : ""})
+                </p>
+              )}
+            </div>
+          )}
           <div style={{ 
             background: "#fff3cd", 
             border: "1px solid #ffc107", 
@@ -389,7 +427,8 @@ export default function CompleteBookingPage() {
             </p>
           </div>
           <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
-            Add as many add-ons as you like. Extra days will extend your hunt; the date picker in the next step will use your total days.
+            Add as many add-ons as you like. <strong>Extra days</strong> will extend your hunt beyond the base days in your guide fee plan. 
+            In the next step, you'll select dates that match your total days ({requiredDays != null ? requiredDays : "TBD"}).
           </p>
           {(addonItems.length > 0 ? addonItems : [
             { id: "_extra_day", title: "Additional Day(s)", description: "Per day", amount_usd: 0, category: "Add-ons" as string | null },
@@ -485,15 +524,76 @@ export default function CompleteBookingPage() {
             ← Back to add-ons
           </button>
           <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Step 3: Pick your hunt dates</h2>
-          <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
-            {requiredDays > 0
-              ? `Your plan includes ${baseDays} days${extraDays > 0 ? ` plus ${extraDays} extra day(s)` : ""}, for a total of ${requiredDays} days. Choose your arrival date; your departure will be ${requiredDays} days later.`
-              : "Choose your arrival and departure dates within the season."}
-          </p>
-          {windowStart && windowEnd && (
-            <p style={{ fontSize: 13, color: "#555", marginBottom: 16 }}>
-              Season window: {windowStart} – {windowEnd}
+          {!selectedPlanId ? (
+            <div style={{ 
+              background: "#ffebee", 
+              border: "1px solid #d32f2f", 
+              borderRadius: 8, 
+              padding: 16, 
+              marginBottom: 16 
+            }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#c62828" }}>
+                ⚠️ Please go back to Step 1 and select a guide fee first.
+              </p>
+            </div>
+          ) : requiredDays != null ? (
+            <>
+              <div style={{ 
+                background: "#e3f2fd", 
+                border: "1px solid #2196f3", 
+                borderRadius: 8, 
+                padding: 12, 
+                marginBottom: 16 
+              }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1565c0" }}>
+                  You need to select exactly {requiredDays} day{requiredDays !== 1 ? "s" : ""}
+                </p>
+                <p style={{ margin: "4px 0 0 0", fontSize: 13, color: "#555" }}>
+                  {baseDays} day{baseDays !== 1 ? "s" : ""} from your guide fee plan{extraDays > 0 ? ` + ${extraDays} extra day${extraDays !== 1 ? "s" : ""} from add-ons` : ""}
+                </p>
+              </div>
+              <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
+                Choose your arrival and departure dates within the hunt season. The dates you select must span exactly {requiredDays} day{requiredDays !== 1 ? "s" : ""}.
+              </p>
+            </>
+          ) : (
+            <p style={{ color: "#666", marginBottom: 16, fontSize: 14 }}>
+              Choose your arrival and departure dates within the season.
             </p>
+          )}
+          {windowStart && windowEnd && (
+            <div style={{ 
+              background: "#f5f5f5", 
+              border: "1px solid #ddd", 
+              borderRadius: 8, 
+              padding: 12, 
+              marginBottom: 16 
+            }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#333" }}>
+                Hunt Season Window: {windowStart} – {windowEnd}
+              </p>
+              <p style={{ margin: "4px 0 0 0", fontSize: 12, color: "#666" }}>
+                Your selected dates must fall within this window.
+              </p>
+            </div>
+          )}
+          {requiredDays != null && dateSpanDays > 0 && dateSpanDays !== requiredDays && (
+            <div style={{ 
+              background: "#ffebee", 
+              border: "1px solid #d32f2f", 
+              borderRadius: 8, 
+              padding: 12, 
+              marginBottom: 16 
+            }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#c62828" }}>
+                ⚠️ Date mismatch: You selected {dateSpanDays} day{dateSpanDays !== 1 ? "s" : ""}, but you need {requiredDays} day{requiredDays !== 1 ? "s" : ""}.
+              </p>
+              <p style={{ margin: "4px 0 0 0", fontSize: 12, color: "#666" }}>
+                {dateSpanDays < requiredDays 
+                  ? `Add ${requiredDays - dateSpanDays} more day${requiredDays - dateSpanDays !== 1 ? "s" : ""} to your selection.`
+                  : `Remove ${dateSpanDays - requiredDays} day${dateSpanDays - requiredDays !== 1 ? "s" : ""} from your selection.`}
+              </p>
+            </div>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 24 }}>
             <div>

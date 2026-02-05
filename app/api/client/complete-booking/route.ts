@@ -403,23 +403,38 @@ export async function POST(req: Request) {
   const extraSpottersNum = Math.max(0, Number(extra_spotters) || 0);
   const rifleRentalNum = Math.max(0, Number(rifle_rental) || 0);
 
-  if (pricing_item_id) {
-    const { data: pricingItem, error: priceErr } = await admin
-      .from("pricing_items")
-      .select("id, included_days, outfitter_id")
-      .eq("id", pricing_item_id)
-      .single();
+  // Validate that pricing_item_id is provided (required)
+  if (!pricing_item_id) {
+    return NextResponse.json(
+      { error: "Please select a guide fee plan. Guide fee selection is required." },
+      { status: 400 }
+    );
+  }
 
-    if (!priceErr && pricingItem && pricingItem.outfitter_id === hunt.outfitter_id) {
-      const baseDays = pricingItem.included_days ?? null;
-      const requiredTotalDays = baseDays != null ? baseDays + extraDaysNum : null;
-      if (requiredTotalDays != null && days !== requiredTotalDays) {
-        return NextResponse.json(
-          { error: `Your plan includes ${baseDays} days${extraDaysNum > 0 ? ` plus ${extraDaysNum} extra day(s)` : ""}, for a total of ${requiredTotalDays} days. Please choose dates that span ${requiredTotalDays} days.` },
-          { status: 400 }
-        );
-      }
-    }
+  // Validate days match guide fee + add-ons
+  const { data: pricingItem, error: priceErr } = await admin
+    .from("pricing_items")
+    .select("id, included_days, outfitter_id, title")
+    .eq("id", pricing_item_id)
+    .single();
+
+  if (priceErr || !pricingItem || pricingItem.outfitter_id !== hunt.outfitter_id) {
+    return NextResponse.json(
+      { error: "Invalid pricing item selected. Please select a valid guide fee plan." },
+      { status: 400 }
+    );
+  }
+
+  const baseDays = pricingItem.included_days ?? null;
+  const requiredTotalDays = baseDays != null ? baseDays + extraDaysNum : null;
+  
+  if (requiredTotalDays != null && days !== requiredTotalDays) {
+    return NextResponse.json(
+      { 
+        error: `Your ${pricingItem.title || "guide fee plan"} includes ${baseDays} day${baseDays !== 1 ? "s" : ""}${extraDaysNum > 0 ? ` plus ${extraDaysNum} extra day${extraDaysNum !== 1 ? "s" : ""} from add-ons` : ""}, for a total of ${requiredTotalDays} day${requiredTotalDays !== 1 ? "s" : ""}. Please choose dates that span exactly ${requiredTotalDays} day${requiredTotalDays !== 1 ? "s" : ""}.` 
+      },
+      { status: 400 }
+    );
   }
 
   const startTimeIso = new Date(client_start_date + "T00:00:00Z").toISOString();
