@@ -32,7 +32,11 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to send reset email");
+        // Show detailed error message to help debug
+        const errorMsg = data.error || data.details || "Failed to send reset email";
+        const hint = data.hint ? `\n\nHint: ${data.hint}` : "";
+        const instructions = data.instructions ? `\n\n${data.instructions}` : "";
+        setError(errorMsg + hint + instructions);
         setBusy(false);
         return;
       }
