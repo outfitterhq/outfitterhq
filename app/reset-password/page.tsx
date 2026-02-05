@@ -19,29 +19,57 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    // Check if we have a valid reset token in the URL hash
+    // Check if we have a valid reset token in the URL hash or query params
     async function checkResetToken() {
-      if (typeof window !== "undefined" && window.location.hash) {
+      if (typeof window === "undefined") return;
+
+      let accessToken: string | null = null;
+      let refreshToken: string | null = null;
+      let type: string | null = null;
+
+      // Check URL hash first (Supabase default)
+      if (window.location.hash) {
         const hash = window.location.hash.substring(1);
         const hashParams = new URLSearchParams(hash);
-        const accessToken = hashParams.get("access_token");
-        const type = hashParams.get("type");
+        accessToken = hashParams.get("access_token");
+        refreshToken = hashParams.get("refresh_token");
+        type = hashParams.get("type");
+      }
 
-        // If we have a password recovery token, set the session
-        if (type === "recovery" && accessToken) {
-          const refreshToken = hashParams.get("refresh_token");
-          if (refreshToken) {
-            try {
-              await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              });
-            } catch (e) {
-              console.error("Failed to set session from reset token:", e);
-              setError("Invalid or expired reset link. Please request a new one.");
-            }
+      // Also check query params (fallback if Supabase redirects differently)
+      if (!accessToken && window.location.search) {
+        const searchParams = new URLSearchParams(window.location.search);
+        accessToken = searchParams.get("access_token");
+        refreshToken = searchParams.get("refresh_token");
+        type = searchParams.get("type");
+      }
+
+      // If we have a password recovery token, set the session
+      if (type === "recovery" && accessToken && refreshToken) {
+        try {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+
+          if (sessionError) {
+            console.error("Failed to set session from reset token:", sessionError);
+            setError("Invalid or expired reset link. Please request a new one.");
+            return;
           }
+
+          // Clear the URL hash/query params after setting session
+          if (window.history.replaceState) {
+            window.history.replaceState(null, "", window.location.pathname);
+          }
+        } catch (e) {
+          console.error("Failed to set session from reset token:", e);
+          setError("Invalid or expired reset link. Please request a new one.");
         }
+      } else if (window.location.hash || window.location.search) {
+        // We have hash/query params but they're not valid recovery tokens
+        // This might mean the user was redirected here but the token is missing
+        console.warn("Reset password page loaded with URL params but no valid recovery token");
       }
     }
     checkResetToken();

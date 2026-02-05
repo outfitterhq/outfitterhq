@@ -32,8 +32,16 @@ function ConfirmContent() {
         return;
       }
 
+      // If this is a recovery (password reset) type, redirect to reset-password
+      if (type === "recovery") {
+        const resetUrl = `/reset-password${window.location.hash}`;
+        window.history.replaceState({}, document.title, resetUrl);
+        router.replace(resetUrl);
+        return;
+      }
+
       // If this is an invite type, we should redirect to accept-invite
-      const isInviteFlow = type === "invite" || type === "recovery";
+      const isInviteFlow = type === "invite";
 
       const r = await fetch("/auth/set-session", {
         method: "POST",

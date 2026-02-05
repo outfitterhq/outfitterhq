@@ -2,10 +2,48 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"overview" | "features" | "pricing">("overview");
+
+  // Check if this is a password reset redirect (Supabase might redirect here if redirectTo doesn't match)
+  // Use useEffect but run immediately on mount
+  useEffect(() => {
+    // Check for PKCE code parameter - if present, redirect to callback route
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get("code");
+    if (code) {
+      // Redirect to callback route with type=recovery so it knows to go to /reset-password
+      window.location.replace(`/auth/callback?code=${encodeURIComponent(code)}&type=recovery&next=/reset-password`);
+      return;
+    }
+    
+    // Check URL hash for recovery token
+    if (window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      const hashParams = new URLSearchParams(hash);
+      const type = hashParams.get("type");
+      if (type === "recovery") {
+        // Redirect immediately using window.location.replace (faster than router)
+        window.location.replace(`/reset-password${window.location.hash}`);
+        return;
+      }
+    }
+    
+    // Check query params for recovery token (non-PKCE flow)
+    const type = urlParams.get("type");
+    if (type === "recovery") {
+      const accessToken = urlParams.get("access_token");
+      const refreshToken = urlParams.get("refresh_token");
+      if (accessToken && refreshToken) {
+        window.location.replace(`/reset-password#access_token=${accessToken}&refresh_token=${refreshToken}&type=recovery`);
+        return;
+      }
+    }
+  }, []); // Empty deps - run once on mount
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(to bottom, #f8f9fa, #ffffff)" }}>

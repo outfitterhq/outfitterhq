@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabaseRoute } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   try {
-    const supabase = await supabaseRoute();
     const body = await req.json();
     const email = String(body.email ?? "").trim().toLowerCase();
 
@@ -11,27 +9,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Get production URL from environment variable
-    // Priority: NEXT_PUBLIC_SITE_URL > VERCEL_URL > fallback
-    const siteUrl = 
-      process.env.NEXT_PUBLIC_SITE_URL || 
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-      "https://outfitterhq.com";
+    // Call Supabase Edge Function for password reset (gives us full control over redirect URL)
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-    // Use Supabase to send password reset email with production URL
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${siteUrl}/reset-password`,
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return NextResponse.json({ error: "Supabase configuration missing" }, { status: 500 });
+    }
+
+    const edgeFunctionUrl = `${supabaseUrl}/functions/v1/auth-reset-password`;
+    
+    console.log("[forgot-password] Calling Edge Function:", edgeFunctionUrl);
+
+    const response = await fetch(edgeFunctionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({ email }),
     });
 
-    if (resetError) {
-      console.error("[forgot-password] Error:", resetError);
-      return NextResponse.json({ error: resetError.message }, { status: 400 });
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("[forgot-password] Edge Function error:", data);
+      return NextResponse.json({ error: data.error || "Failed to send reset email" }, { status: response.status });
     }
 
     // Always return success (prevents account enumeration)
     return NextResponse.json({ 
       success: true, 
-      message: "If an account exists for this email, a password reset link has been sent." 
+      message: data.message || "If an account exists for this email, a password reset link has been sent." 
     });
   } catch (e: any) {
     console.error("[forgot-password] Exception:", e);
