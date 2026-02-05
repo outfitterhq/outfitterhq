@@ -77,27 +77,21 @@ export default async function DashboardPage() {
   const userName = user.email || "Admin";
 
   return (
-    <div>
+    <div className="pro-page-container">
       {/* Welcome Section */}
-      <section style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
+      <section className="pro-section-header" style={{ marginBottom: 40 }}>
+        <h1 className="pro-section-title">
           Welcome, {userName}!
         </h1>
-        <p style={{ color: "#666", fontSize: 16 }}>
+        <p className="pro-section-subtitle">
           Manage your outfitting business for {outfitterName}. View clients, schedule hunts, manage guides, and more.
         </p>
       </section>
 
       {/* Quick Actions */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>Quick Actions</h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 16,
-          }}
-        >
+      <section style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 20, color: "var(--color-gray-900)" }}>Quick Actions</h2>
+        <div className="pro-grid pro-grid-2">
           <QuickCard
             title="Clients"
             description="View and manage all client accounts, documents, and information"
@@ -126,15 +120,9 @@ export default async function DashboardPage() {
       </section>
 
       {/* Quick Links */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>More Tools</h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: 12,
-          }}
-        >
+      <section style={{ marginBottom: 40 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 20, color: "var(--color-gray-900)" }}>More Tools</h2>
+        <div className="pro-grid pro-grid-3">
           <QuickLink href="/pricing" icon="💰" label="Pricing" />
           <QuickLink href="/private-land-tags" icon="🏷️" label="Tags for Sale" />
           <QuickLink href="/draw-results" icon="🎲" label="Draw Results" />
@@ -145,19 +133,23 @@ export default async function DashboardPage() {
 
       {/* Account Info */}
       <section>
-        <div
-          style={{
-            background: "white",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            padding: 20,
-          }}
-        >
-          <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 12 }}>Account Information</h3>
-          <div style={{ display: "grid", gap: 8, color: "#666", fontSize: 14 }}>
-            <div><strong>Email:</strong> {user.email}</div>
-            <div><strong>Outfitter:</strong> {outfitterName}</div>
-            <div><strong>Role:</strong> {current.role}</div>
+        <div className="pro-card">
+          <div className="pro-card-header">
+            <h3 className="pro-card-title">Account Information</h3>
+          </div>
+          <div style={{ display: "grid", gap: 12, fontSize: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, borderBottom: "1px solid var(--color-gray-200)" }}>
+              <span style={{ color: "var(--color-gray-600)", fontWeight: 500 }}>Email:</span>
+              <span style={{ color: "var(--color-gray-900)" }}>{user.email}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, borderBottom: "1px solid var(--color-gray-200)" }}>
+              <span style={{ color: "var(--color-gray-600)", fontWeight: 500 }}>Outfitter:</span>
+              <span style={{ color: "var(--color-gray-900)" }}>{outfitterName}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "var(--color-gray-600)", fontWeight: 500 }}>Role:</span>
+              <span className="pro-badge" style={{ textTransform: "capitalize" }}>{current.role}</span>
+            </div>
           </div>
         </div>
       </section>

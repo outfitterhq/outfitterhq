@@ -64,16 +64,16 @@ export default function ClientsPage() {
   }
 
   return (
-    <main style={{ maxWidth: 1200, margin: "32px auto", padding: 16 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ margin: 0 }}>Clients</h1>
-        <p style={{ marginTop: 6, opacity: 0.75 }}>
+    <div className="pro-page-container">
+      <div className="pro-section-header" style={{ marginBottom: 32 }}>
+        <h1 className="pro-section-title">Clients</h1>
+        <p className="pro-section-subtitle">
           Search and manage client information, contracts, and hunt history.
         </p>
       </div>
 
       {error && (
-        <div style={{ background: "#fee", padding: 12, borderRadius: 8, marginBottom: 16 }}>
+        <div className="pro-alert pro-alert-error">
           {error}
         </div>
       )}
@@ -85,86 +85,61 @@ export default function ClientsPage() {
           placeholder="Search by name, email, or phone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            fontSize: 16,
-          }}
+          className="pro-input"
         />
       </div>
 
       {loading ? (
-        <p>Loading clients...</p>
+        <div className="pro-loading">
+          <div className="pro-spinner"></div>
+          <span>Loading clients...</span>
+        </div>
       ) : clients.length === 0 ? (
-        <div style={{ textAlign: "center", padding: 48, color: "#666" }}>
-          <p>No clients found.</p>
-          {search && (
-            <p style={{ fontSize: 14, marginTop: 8 }}>
-              Try a different search term or clear the search to see all clients.
-            </p>
-          )}
+        <div className="pro-empty-state">
+          <div className="pro-empty-state-icon">👥</div>
+          <h3 className="pro-empty-state-title">No clients found</h3>
+          <p className="pro-empty-state-description">
+            {search ? (
+              <>Try a different search term or clear the search to see all clients.</>
+            ) : (
+              <>Get started by adding your first client or inviting them to create an account.</>
+            )}
+          </p>
         </div>
       ) : (
-        <div
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            overflow: "hidden",
-          }}
-        >
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div style={{ overflowX: "auto" }}>
+          <table className="pro-table">
             <thead>
-              <tr style={{ background: "#f5f5f5", borderBottom: "1px solid #ddd" }}>
-                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Name</th>
-                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Email</th>
-                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Phone</th>
-                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Location</th>
-                <th style={{ padding: 12, textAlign: "left", fontWeight: 600 }}>Actions</th>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Location</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {clients.map((client) => (
-                <tr
-                  key={client.id}
-                  style={{
-                    borderBottom: "1px solid #eee",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#f9f9f9";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "white";
-                  }}
-                >
-                  <td style={{ padding: 12 }}>
-                    <strong>{getClientName(client)}</strong>
+                <tr key={client.id}>
+                  <td>
+                    <strong style={{ color: "var(--color-gray-900)" }}>{getClientName(client)}</strong>
                   </td>
-                  <td style={{ padding: 12 }}>{client.email}</td>
-                  <td style={{ padding: 12 }}>
-                    {client.phone || <span style={{ color: "#999" }}>—</span>}
+                  <td style={{ color: "var(--color-gray-600)" }}>{client.email}</td>
+                  <td>
+                    {client.phone || <span style={{ color: "var(--color-gray-400)" }}>—</span>}
                   </td>
-                  <td style={{ padding: 12 }}>
+                  <td style={{ color: "var(--color-gray-600)" }}>
                     {client.city || client.state ? (
                       `${client.city || ""}${client.city && client.state ? ", " : ""}${client.state || ""}`
                     ) : (
-                      <span style={{ color: "#999" }}>—</span>
+                      <span style={{ color: "var(--color-gray-400)" }}>—</span>
                     )}
                   </td>
-                  <td style={{ padding: 12 }}>
+                  <td>
                     <Link
                       href={`/clients/${encodeURIComponent(client.email)}`}
-                      style={{
-                        padding: "6px 12px",
-                        background: "#0070f3",
-                        color: "white",
-                        textDecoration: "none",
-                        borderRadius: 6,
-                        fontSize: 14,
-                        display: "inline-block",
-                      }}
+                      className="pro-button pro-button-primary"
+                      style={{ fontSize: 13, padding: "6px 14px" }}
                     >
                       View Details
                     </Link>
@@ -175,6 +150,6 @@ export default function ClientsPage() {
           </table>
         </div>
       )}
-    </main>
+    </div>
   );
 }

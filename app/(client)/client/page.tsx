@@ -110,8 +110,9 @@ export default function ClientDashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: 48 }}>
-        <p>Loading your dashboard...</p>
+      <div className="pro-loading">
+        <div className="pro-spinner"></div>
+        <span>Loading your dashboard...</span>
       </div>
     );
   }

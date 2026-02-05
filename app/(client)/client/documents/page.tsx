@@ -58,8 +58,9 @@ export default function ClientDocumentsPage() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: 48 }}>
-        <p>Loading your documents...</p>
+      <div className="pro-loading">
+        <div className="pro-spinner"></div>
+        <span>Loading your documents...</span>
       </div>
     );
   }
@@ -76,23 +77,16 @@ export default function ClientDocumentsPage() {
         <button
           type="button"
           onClick={() => loadDocuments()}
-          style={{
-            padding: "8px 16px",
-            border: "1px solid #1a472a",
-            borderRadius: 8,
-            background: "white",
-            color: "#1a472a",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          className="pro-button pro-button-secondary"
+          style={{ fontSize: 14, padding: "8px 16px" }}
         >
           Refresh
         </button>
       </div>
 
       {error && (
-        <div style={{ background: "#fee", padding: 16, borderRadius: 8, marginBottom: 16 }}>
-          <p style={{ color: "#c00" }}>{error}</p>
+        <div className="pro-alert pro-alert-error">
+          {error}
         </div>
       )}
 

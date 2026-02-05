@@ -6,27 +6,18 @@ export default function QuickLink({ href, icon, label }: { href: string; icon: s
   return (
     <Link
       href={href}
+      className="pro-card"
       style={{
-        background: "white",
-        border: "1px solid #ddd",
-        borderRadius: 8,
-        padding: "16px 20px",
         textDecoration: "none",
         color: "inherit",
         display: "flex",
         alignItems: "center",
         gap: 12,
-        transition: "background 0.15s ease",
-      }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.background = "#f9f9f9";
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.background = "white";
+        padding: "16px 20px",
       }}
     >
-      <span style={{ fontSize: 20 }}>{icon}</span>
-      <span style={{ fontWeight: 500 }}>{label}</span>
+      <span style={{ fontSize: 20, lineHeight: 1 }}>{icon}</span>
+      <span style={{ fontWeight: 500, fontSize: 14 }}>{label}</span>
     </Link>
   );
 }

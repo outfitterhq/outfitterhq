@@ -85,8 +85,9 @@ export default function ClientPricingPage() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: "center", padding: 48 }}>
-        <p>Loading pricing...</p>
+      <div className="pro-loading">
+        <div className="pro-spinner"></div>
+        <span>Loading pricing...</span>
       </div>
     );
   }
@@ -117,7 +118,7 @@ export default function ClientPricingPage() {
       </div>
 
       {error && (
-        <div style={{ background: "#fee", padding: 12, borderRadius: 8, marginBottom: 16 }}>
+        <div className="pro-alert pro-alert-error">
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -167,52 +168,45 @@ export default function ClientPricingPage() {
                 </p>
               ) : (
                 <div style={{ overflowX: "auto" }}>
-                  <table 
-                    style={{ 
-                      width: "100%", 
-                      borderCollapse: "collapse",
-                      border: "2px solid #1a472a", // Make table visible for debugging
-                      background: "white"
-                    }}
-                  >
+                  <table className="pro-table">
                     <thead>
-                      <tr style={{ textAlign: "left", borderBottom: "2px solid #ddd", background: "#f5f5f5" }}>
-                        <th style={{ padding: "12px 8px", fontWeight: 600 }}>Title</th>
-                        <th style={{ padding: "12px 8px", fontWeight: 600 }}>Description</th>
-                        <th style={{ padding: "12px 8px", textAlign: "right", fontWeight: 600 }}>Guide fee</th>
-                        <th style={{ padding: "12px 8px", textAlign: "center", fontWeight: 600 }}>Days</th>
-                        <th style={{ padding: "12px 8px", fontWeight: 600 }}>Species</th>
-                        <th style={{ padding: "12px 8px", fontWeight: 600 }}>Weapons</th>
+                      <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th style={{ textAlign: "right" }}>Guide fee</th>
+                        <th style={{ textAlign: "center" }}>Days</th>
+                        <th>Species</th>
+                        <th>Weapons</th>
                         {category === ADDONS_CATEGORY && (
-                          <th style={{ padding: "12px 8px", fontWeight: 600 }}>Price Type</th>
+                          <th>Price Type</th>
                         )}
                       </tr>
                     </thead>
                     <tbody>
                       {categoryItems.length === 0 ? (
                         <tr>
-                          <td colSpan={category === ADDONS_CATEGORY ? 7 : 6} style={{ padding: "24px", textAlign: "center", color: "#666" }}>
+                          <td colSpan={category === ADDONS_CATEGORY ? 7 : 6} style={{ padding: "24px", textAlign: "center", color: "var(--color-gray-500)" }}>
                             No items in this category
                           </td>
                         </tr>
                       ) : (
                         categoryItems.map((item) => (
-                          <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
-                            <td style={{ padding: "12px 8px", border: "1px solid #f0f0f0" }}>{item.title || "—"}</td>
-                            <td style={{ padding: "12px 8px", maxWidth: 280, border: "1px solid #f0f0f0" }}>{item.description || "—"}</td>
-                            <td style={{ padding: "12px 8px", textAlign: "right", fontWeight: 600, border: "1px solid #f0f0f0" }}>
+                          <tr key={item.id}>
+                            <td>{item.title || "—"}</td>
+                            <td style={{ maxWidth: 280 }}>{item.description || "—"}</td>
+                            <td style={{ textAlign: "right", fontWeight: 600 }}>
                               {item.amount_usd != null ? `$${item.amount_usd.toFixed(2)}` : "—"}
                               {category === ADDONS_CATEGORY && item.amount_usd != null && (
-                                <div style={{ fontSize: 11, color: "#888", marginTop: 2, fontWeight: 400 }}>
+                                <div style={{ fontSize: 11, color: "var(--color-gray-500)", marginTop: 2, fontWeight: 400 }}>
                                   per {item.addon_type === "extra_days" ? "day" : item.addon_type === "non_hunter" || item.addon_type === "spotter" ? "person" : "item"}
                                 </div>
                               )}
                             </td>
-                            <td style={{ padding: "12px 8px", textAlign: "center", border: "1px solid #f0f0f0" }}>{item.included_days != null ? item.included_days : "—"}</td>
-                            <td style={{ padding: "12px 8px", maxWidth: 140, border: "1px solid #f0f0f0" }}>{item.species ? item.species.replace(/,/g, ", ") : "All"}</td>
-                            <td style={{ padding: "12px 8px", maxWidth: 120, border: "1px solid #f0f0f0" }}>{item.weapons ? item.weapons.replace(/,/g, ", ") : "All"}</td>
+                            <td style={{ textAlign: "center" }}>{item.included_days != null ? item.included_days : "—"}</td>
+                            <td style={{ maxWidth: 140 }}>{item.species ? item.species.replace(/,/g, ", ") : "All"}</td>
+                            <td style={{ maxWidth: 120 }}>{item.weapons ? item.weapons.replace(/,/g, ", ") : "All"}</td>
                             {category === ADDONS_CATEGORY && (
-                              <td style={{ padding: "12px 8px", border: "1px solid #f0f0f0" }}>
+                              <td>
                                 {item.addon_type ? item.addon_type.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()) : "—"}
                               </td>
                             )}

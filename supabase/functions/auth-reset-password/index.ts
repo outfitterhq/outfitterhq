@@ -120,12 +120,100 @@ Deno.serve(async (req) => {
       return json(500, { error: "Password reset link missing from Supabase response" });
     }
 
-    // Send email via Supabase's built-in email sending (it will use the link we generated)
-    // Note: Supabase will automatically send the email with the link we generated
-    // We don't need to send it manually - Supabase handles that when generateLink is called with type "recovery"
-    
     console.log("[auth-reset-password] Password reset link generated successfully");
     console.log("[auth-reset-password] Link preview (first 50 chars):", resetLink.substring(0, 50) + "...");
+
+    // Send email via Resend API directly (same as other invite functions)
+    const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    
+    console.log("[auth-reset-password] RESEND_API_KEY:", resendApiKey ? "SET" : "NOT SET");
+
+    if (resendApiKey) {
+      try {
+        const emailHtml = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="font-family: system-ui, -apple-system, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h1 style="color: #1a472a;">Reset Your Password</h1>
+              <p>You requested to reset your password for your Outfitter HQ account.</p>
+              <p>Click the button below to reset your password:</p>
+              <p style="margin: 30px 0;">
+                <a href="${resetLink}" style="display: inline-block; padding: 12px 24px; background-color: #1a472a; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Reset Password</a>
+              </p>
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #666; font-size: 14px;">${resetLink}</p>
+              <p style="margin-top: 30px; color: #666; font-size: 14px;">This link will expire in 1 hour. If you didn't request a password reset, you can safely ignore this email.</p>
+            </body>
+          </html>
+        `;
+
+        const emailBody = {
+          from: "OutfitterHQ <noreply@outfitterhq.app>",
+          to: [email], // Resend expects array
+          subject: "Reset Your Password - Outfitter HQ",
+          html: emailHtml,
+        };
+
+        console.log("[auth-reset-password] Sending email via Resend to:", email);
+        console.log("[auth-reset-password] Email body:", JSON.stringify({ ...emailBody, html: "[HTML content]" }, null, 2));
+
+        const resendRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(emailBody),
+        });
+
+        const resendData = await resendRes.json();
+
+        if (!resendRes.ok) {
+          console.error("[auth-reset-password] ERROR sending email via Resend:", {
+            status: resendRes.status,
+            statusText: resendRes.statusText,
+            response: resendData,
+          });
+
+          const isDomainError = resendData.message?.includes("verify a domain") || 
+                                resendData.message?.includes("testing emails");
+
+          if (isDomainError) {
+            console.warn("[auth-reset-password] Resend domain not verified - link generated but email not sent");
+            return json(200, {
+              success: true,
+              message: "Password reset link generated. Email not sent: Resend domain not verified. Verify your domain at resend.com/domains or send the link manually.",
+              warning: "To send emails automatically, verify a domain in Resend",
+            });
+          }
+
+          return json(500, {
+            error: "Failed to send email via Resend",
+            details: resendData.message || "Unknown error",
+          });
+        }
+
+        console.log("[auth-reset-password] ✅ Email sent via Resend to:", email);
+        console.log("[auth-reset-password] Resend email ID:", resendData.id);
+      } catch (emailErr) {
+        console.error("[auth-reset-password] ERROR calling Resend API:", emailErr);
+        return json(500, {
+          error: "Failed to send email",
+          details: String(emailErr),
+        });
+      }
+    } else {
+      console.warn("[auth-reset-password] RESEND_API_KEY not set, cannot send email");
+      return json(200, {
+        success: true,
+        message: "Password reset link generated but email not sent. Set RESEND_API_KEY in Edge Function secrets.",
+        warning: "Set RESEND_API_KEY secret in Supabase Dashboard → Edge Functions → auth-reset-password → Settings → Secrets",
+      });
+    }
 
     // Always return success (prevents account enumeration)
     return json(200, { 
