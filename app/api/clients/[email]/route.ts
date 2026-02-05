@@ -58,7 +58,7 @@ export async function GET(
         amount_paid_cents,
         remaining_balance_cents,
         payment_status
-      `)("id, status, client_email, hunt_id, created_at, client_signed_at, admin_signed_at, content")
+      `)
       .eq("outfitter_id", outfitterId)
       .eq("client_email", decodedEmail)
       .order("created_at", { ascending: false });
