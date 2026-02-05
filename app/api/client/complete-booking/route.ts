@@ -431,9 +431,44 @@ export async function POST(req: Request) {
   }
 
   // Auto-generate hunt contract so admin sees it for review (web and iOS)
-  const { contractId, error: contractError } = await createHuntContractIfNeeded(admin, hunt_id);
-  if (contractError && !contractId) {
-    console.warn("[complete-booking] createHuntContractIfNeeded:", contractError);
+  // Only create if one doesn't already exist (prevents duplicates)
+  const { data: existingContract } = await admin
+    .from("hunt_contracts")
+    .select("id")
+    .eq("hunt_id", hunt_id)
+    .maybeSingle();
+
+  if (!existingContract) {
+    // Only create contract if it doesn't exist
+    const { contractId, error: contractError } = await createHuntContractIfNeeded(admin, hunt_id);
+    if (contractError && !contractId) {
+      console.warn("[complete-booking] createHuntContractIfNeeded:", contractError);
+    }
+  } else {
+    // Contract already exists - update it with new completion data if needed
+    const huntWithAddon = hunt as { client_addon_data?: Record<string, unknown> | null; selected_pricing_item_id?: string | null };
+    const updateData: Record<string, unknown> = {};
+    
+    if (huntWithAddon.selected_pricing_item_id || huntWithAddon.client_addon_data) {
+      const clientCompletionData: Record<string, unknown> = {};
+      if (huntWithAddon.selected_pricing_item_id) {
+        clientCompletionData.selected_pricing_item_id = huntWithAddon.selected_pricing_item_id;
+      }
+      if (huntWithAddon.client_addon_data && typeof huntWithAddon.client_addon_data === "object") {
+        Object.assign(clientCompletionData, huntWithAddon.client_addon_data);
+      }
+      
+      if (Object.keys(clientCompletionData).length > 0) {
+        updateData.client_completion_data = clientCompletionData;
+      }
+    }
+    
+    if (Object.keys(updateData).length > 0) {
+      await admin
+        .from("hunt_contracts")
+        .update(updateData)
+        .eq("id", existingContract.id);
+    }
   }
 
   return NextResponse.json({

@@ -165,14 +165,28 @@ export default function HuntContractPage() {
     const urlParams = new URLSearchParams(window.location.search);
     const justCompleted = urlParams.get("booking_completed") === "1";
     if (justCompleted) {
-      // Remove the param and reload data to get fresh state
+      // Remove the param immediately to prevent redirect loop
       urlParams.delete("booking_completed");
       const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
       window.history.replaceState({}, "", newUrl);
+      
+      // Set a flag to prevent further redirects for this session
+      sessionStorage.setItem("booking_just_completed", "true");
+      
       // Reload contract data to get updated needs_complete_booking status
       setTimeout(() => {
         loadContract();
+        // Clear the flag after a delay
+        setTimeout(() => {
+          sessionStorage.removeItem("booking_just_completed");
+        }, 5000);
       }, 500); // Small delay to ensure backend has processed the booking
+      return;
+    }
+    
+    // Also check sessionStorage to prevent immediate redirect after returning
+    if (sessionStorage.getItem("booking_just_completed") === "true") {
+      // Don't redirect if we just completed booking
       return;
     }
     

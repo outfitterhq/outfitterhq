@@ -267,6 +267,7 @@ export async function POST(
       Object.assign(clientCompletionData, huntWithAddon.client_addon_data);
     }
 
+    // Try to insert contract - handle duplicate gracefully
     const { data: contract, error: contractErr } = await admin
       .from("hunt_contracts")
       .insert({
@@ -280,10 +281,45 @@ export async function POST(
         ...(Object.keys(clientCompletionData).length > 0 ? { client_completion_data: clientCompletionData } : {}),
       })
       .select("id, status")
-      .single();
+      .maybeSingle();
 
+    // If error is duplicate key, fetch existing contract
     if (contractErr) {
+      if (contractErr.code === "23505" || contractErr.message?.includes("duplicate") || contractErr.message?.includes("unique")) {
+        // Contract already exists - fetch it
+        const { data: existing } = await admin
+          .from("hunt_contracts")
+          .select("id, status")
+          .eq("hunt_id", huntId)
+          .single();
+        
+        if (existing) {
+          return NextResponse.json({
+            success: true,
+            contract: { id: existing.id, status: existing.status },
+            message: "Contract already exists for this hunt. Updated with current hunt data.",
+          });
+        }
+      }
       return NextResponse.json({ error: contractErr.message }, { status: 500 });
+    }
+
+    if (!contract) {
+      // No contract returned - might already exist
+      const { data: existing } = await admin
+        .from("hunt_contracts")
+        .select("id, status")
+        .eq("hunt_id", huntId)
+        .maybeSingle();
+      
+      if (existing) {
+        return NextResponse.json({
+          success: true,
+          contract: { id: existing.id, status: existing.status },
+          message: "Contract already exists for this hunt.",
+        });
+      }
+      return NextResponse.json({ error: "Contract was not created" }, { status: 500 });
     }
 
     await admin

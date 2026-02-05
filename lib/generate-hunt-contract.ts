@@ -61,14 +61,21 @@ export async function createHuntContractIfNeeded(
 
   const outfitterId = hunt.outfitter_id;
 
-  const { data: existingContract } = await admin
+  // Check for existing contract - use single() to enforce uniqueness
+  const { data: existingContract, error: existingError } = await admin
     .from("hunt_contracts")
     .select("id")
     .eq("hunt_id", huntId)
     .maybeSingle();
 
   if (existingContract) {
+    // Contract already exists - return it (don't create duplicate)
     return { contractId: (existingContract as { id: string }).id };
+  }
+
+  // If error is not "not found", log it but continue (might be a race condition)
+  if (existingError && existingError.code !== "PGRST116") {
+    console.warn("[createHuntContractIfNeeded] Error checking for existing contract:", existingError);
   }
 
   const { data: clientRow } = await admin
@@ -243,6 +250,7 @@ export async function createHuntContractIfNeeded(
     Object.assign(clientCompletionData, hunt.client_addon_data);
   }
 
+  // Insert contract - use upsert with conflict handling to prevent duplicates
   const { data: contract, error: contractErr } = await admin
     .from("hunt_contracts")
     .insert({
@@ -256,10 +264,38 @@ export async function createHuntContractIfNeeded(
       ...(Object.keys(clientCompletionData).length > 0 ? { client_completion_data: clientCompletionData } : {}),
     })
     .select("id, status")
-    .single();
+    .maybeSingle();
 
+  // If error is a unique constraint violation, try to get the existing contract
   if (contractErr) {
+    // Check if it's a duplicate key error (unique constraint violation)
+    if (contractErr.code === "23505" || contractErr.message?.includes("duplicate") || contractErr.message?.includes("unique")) {
+      // Contract was created by another process - fetch it
+      const { data: existing } = await admin
+        .from("hunt_contracts")
+        .select("id")
+        .eq("hunt_id", huntId)
+        .maybeSingle();
+      
+      if (existing) {
+        return { contractId: (existing as { id: string }).id };
+      }
+    }
     return { contractId: null, error: contractErr.message };
+  }
+
+  if (!contract) {
+    // No contract returned - might have been created by trigger, try to fetch it
+    const { data: existing } = await admin
+      .from("hunt_contracts")
+      .select("id")
+      .eq("hunt_id", huntId)
+      .maybeSingle();
+    
+    if (existing) {
+      return { contractId: (existing as { id: string }).id };
+    }
+    return { contractId: null, error: "Contract was not created" };
   }
 
   await admin

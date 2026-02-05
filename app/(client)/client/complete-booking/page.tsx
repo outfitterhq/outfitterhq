@@ -192,6 +192,8 @@ export default function CompleteBookingPage() {
         // Add booking_completed flag to prevent redirect loop
         const returnUrl = returnTo || "/client/documents";
         const separator = returnUrl.includes("?") ? "&" : "?";
+        // Use sessionStorage to prevent immediate redirect loop
+        sessionStorage.setItem("booking_just_completed", "true");
         window.location.replace(`${returnUrl}${separator}booking_completed=1`);
       })
       .catch((e) => {
