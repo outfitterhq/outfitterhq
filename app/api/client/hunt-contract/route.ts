@@ -135,8 +135,18 @@ export async function GET(req: Request) {
     const contractId = c.id != null ? String(c.id) : undefined;
     const huntId = (contractId ? contractIdToHuntId.get(contractId) : undefined) ?? (c.hunt_id ?? c.huntId ?? null) as string | null;
     const hunt = huntId ? huntDetailsByHuntId.get(String(huntId)) : undefined;
+    
+    // Check if contract is already completed (has completion data with pricing)
+    const completionData = c.client_completion_data as Record<string, unknown> | null | undefined;
+    const hasCompletionData = completionData != null && typeof completionData === "object";
+    const hasPricingInCompletion = hasCompletionData && Boolean(completionData.selected_pricing_item_id);
+    const contractStatus = c.status as string;
+    const isCompleted = contractStatus !== "pending_client_completion" || hasPricingInCompletion;
+    
+    // Only need booking if contract is not completed AND hunt doesn't have dates/price
     const hasDatesAndPrice = Boolean(hunt?.start_time && hunt?.end_time && hunt?.selected_pricing_item_id);
-    const needsCompleteBooking = !hasDatesAndPrice;
+    const needsCompleteBooking = !isCompleted && !hasDatesAndPrice;
+    
     return {
       id: c.id as string,
       status: c.status,
@@ -246,9 +256,19 @@ export async function GET(req: Request) {
     }));
 
   // Auto-create missing contracts for this client's hunts (e.g. tag purchase created hunt but contract failed earlier)
+  // Only create if hunt doesn't already have a contract (prevent duplicates)
   if (huntsWithoutContracts.length > 0) {
     for (const h of huntsWithoutContracts) {
-      await createHuntContractIfNeeded(admin, h.id);
+      // Check if contract already exists before creating
+      const { data: existing } = await admin
+        .from("hunt_contracts")
+        .select("id")
+        .eq("hunt_id", h.id)
+        .maybeSingle();
+      
+      if (!existing) {
+        await createHuntContractIfNeeded(admin, h.id);
+      }
     }
     // Re-fetch contracts so response includes the newly created one(s)
     const { data: idHuntIdRows2 } = await admin
@@ -284,7 +304,18 @@ export async function GET(req: Request) {
       const contractId = c.id != null ? String(c.id) : undefined;
       const huntId = (contractId ? contractIdToHuntId2.get(contractId) : undefined) ?? (c.hunt_id ?? c.huntId ?? null) as string | null;
       const hunt = huntId ? huntDetailsByHuntId2.get(String(huntId)) : undefined;
+      
+      // Check if contract is already completed (has completion data with pricing)
+      const completionData = c.client_completion_data as Record<string, unknown> | null | undefined;
+      const hasCompletionData = completionData != null && typeof completionData === "object";
+      const hasPricingInCompletion = hasCompletionData && Boolean(completionData.selected_pricing_item_id);
+      const contractStatus = c.status as string;
+      const isCompleted = contractStatus !== "pending_client_completion" || hasPricingInCompletion;
+      
+      // Only need booking if contract is not completed AND hunt doesn't have dates/price
       const hasDatesAndPrice = Boolean(hunt?.start_time && hunt?.end_time && hunt?.selected_pricing_item_id);
+      const needsCompleteBooking = !isCompleted && !hasDatesAndPrice;
+      
       return {
         id: c.id as string,
         status: c.status,
@@ -543,12 +574,25 @@ export async function POST(req: Request) {
   }
 
   // If client specified their hunt dates, update the linked calendar event
+  // Also update selected_pricing_item_id if it's in completion data (mark booking as complete)
   if (contract.hunt_id && clientStart && clientEnd) {
     const startTimeIso = new Date(clientStart + "T00:00:00Z").toISOString();
     const endTimeIso = new Date(clientEnd + "T23:59:59Z").toISOString();
+    const updateData: Record<string, unknown> = {
+      start_time: startTimeIso,
+      end_time: endTimeIso,
+    };
+    
+    // If completion data has selected_pricing_item_id, update hunt to mark booking complete
+    const completion = completion_data || {};
+    const selectedPricingId = (completion as Record<string, unknown>).selected_pricing_item_id as string | undefined;
+    if (selectedPricingId) {
+      updateData.selected_pricing_item_id = selectedPricingId;
+    }
+    
     await admin
       .from("calendar_events")
-      .update({ start_time: startTimeIso, end_time: endTimeIso })
+      .update(updateData)
       .eq("id", contract.hunt_id);
   }
 
