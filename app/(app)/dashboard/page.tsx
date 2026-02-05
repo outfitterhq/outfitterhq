@@ -76,6 +76,18 @@ export default async function DashboardPage() {
   const outfitterName = current.outfitters?.name || "Outfitter HQ";
   const userName = user.email || "Admin";
 
+  // Get total owed across all contracts
+  const { data: contractsData } = await supabase
+    .from("hunt_contracts")
+    .select("remaining_balance_cents")
+    .eq("outfitter_id", current.outfitter_id);
+
+  const totalOwedCents = (contractsData || []).reduce(
+    (sum: number, contract: any) => sum + (contract.remaining_balance_cents || 0),
+    0
+  );
+  const totalOwed = totalOwedCents / 100;
+
   return (
     <div className="pro-page-container">
       {/* Welcome Section */}
@@ -87,6 +99,46 @@ export default async function DashboardPage() {
           Manage your outfitting business for {outfitterName}. View clients, schedule hunts, manage guides, and more.
         </p>
       </section>
+
+      {/* Total Owed Summary */}
+      {totalOwed > 0 && (
+        <section style={{ marginBottom: 40 }}>
+          <div
+            style={{
+              padding: "24px 28px",
+              background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+              borderRadius: 12,
+              color: "white",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, marginBottom: 8 }}>
+                Total Amount Owed Across All Contracts
+              </h2>
+              <p style={{ margin: 0, fontSize: 36, fontWeight: 800 }}>
+                ${totalOwed.toFixed(2)}
+              </p>
+            </div>
+            <Link
+              href="/clients"
+              style={{
+                padding: "14px 28px",
+                background: "white",
+                color: "#1a472a",
+                borderRadius: 8,
+                textDecoration: "none",
+                fontWeight: 700,
+                fontSize: 16,
+              }}
+            >
+              View Contracts & Payments →
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Quick Actions */}
       <section style={{ marginBottom: 40 }}>

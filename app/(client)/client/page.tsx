@@ -42,6 +42,8 @@ interface DashboardData {
       balance_due_cents: number;
     }>;
   } | null;
+  totalOwedFromContracts?: number;
+  totalOwedFromContractsFormatted?: string;
   dashboardCustomization: {
     heroTitle: string;
     heroSubtitle: string;
@@ -282,6 +284,56 @@ export default function ClientDashboardPage() {
           </div>
         )}
       </section>
+
+      {/* Total Owed from Contracts */}
+      {data?.totalOwedFromContracts && data.totalOwedFromContracts > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <div
+            style={{
+              maxWidth: 900,
+              margin: "0 auto",
+              padding: "24px 28px",
+              background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+              borderRadius: 12,
+              border: "2px solid #0f3320",
+              color: "white",
+              boxShadow: "0 4px 20px rgba(26, 71, 42, 0.35)",
+            }}
+          >
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 48 }}>💵</span>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700 }}>
+                    Total Owed on All Contracts
+                  </h2>
+                  <p style={{ margin: "4px 0 0 0", fontSize: 28, fontWeight: 800 }}>
+                    {data.totalOwedFromContractsFormatted || `$${data.totalOwedFromContracts.toFixed(2)}`}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <Link
+                  href="/client/my-contracts"
+                  style={{
+                    display: "inline-block",
+                    padding: "14px 28px",
+                    background: "white",
+                    color: "#1a472a",
+                    borderRadius: 8,
+                    textDecoration: "none",
+                    fontWeight: 700,
+                    fontSize: 16,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  View Contracts & Pay →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Payment due — prominent so client sees it right away; include breakdown so amount matches iOS */}
       {data?.paymentDue && data.paymentDue.balanceDueCents > 0 && (

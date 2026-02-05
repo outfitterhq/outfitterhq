@@ -205,6 +205,19 @@ export async function GET() {
         }
       : null;
 
+  // Get total owed from contracts
+  const { data: contracts } = await supabase
+    .from("hunt_contracts")
+    .select("remaining_balance_cents")
+    .eq("client_email", userEmail)
+    .eq("outfitter_id", outfitterId);
+
+  const totalOwedFromContractsCents = (contracts || []).reduce(
+    (sum: number, contract: any) => sum + (contract.remaining_balance_cents || 0),
+    0
+  );
+  const totalOwedFromContracts = totalOwedFromContractsCents / 100;
+
   // Get dashboard customization from outfitter
   const { data: outfitterData } = await supabase
     .from("outfitters")
@@ -276,5 +289,7 @@ export async function GET() {
     successHistoryCustomization,
     availableSpecies,
     paymentDue,
+    totalOwedFromContracts,
+    totalOwedFromContractsFormatted: `$${totalOwedFromContracts.toLocaleString()}`,
   });
 }
