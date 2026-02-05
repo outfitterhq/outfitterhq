@@ -495,7 +495,7 @@ export async function GET(req: Request) {
     }
     // Use pricing item amount for BILL (this matches what the contract shows)
     // The database calculated_guide_fee_cents might be wrong if it includes extra days
-    baseGuideFeeUsd = pricingItemAmount || (cAny.base_guide_fee_usd as number) ?? 0;
+    baseGuideFeeUsd = pricingItemAmount || ((cAny.base_guide_fee_usd as number) ?? 0);
     const { data: addonItemsForPatch } = await admin.from("pricing_items").select("title, amount_usd, category, addon_type").eq("outfitter_id", outId);
     const tl = (t: string) => (t ?? "").toLowerCase();
     const isED = (i: { title?: string; category?: string; addon_type?: string | null }) => { if ((i as { addon_type?: string }).addon_type === "extra_days") return true; const cat = ((i as { category?: string }).category ?? "").trim().toLowerCase(); if (cat !== "add-ons") return false; const t = tl((i as { title?: string }).title ?? ""); if (t.includes("non")) return false; return t.includes("additional day") || t.includes("extra day") || t.includes("day"); };
