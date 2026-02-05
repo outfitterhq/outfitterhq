@@ -376,23 +376,29 @@ export async function GET(req: Request) {
         }
       }
       
-      // Recalculate contract total if it seems incorrect (e.g., includes old deposit amounts)
-      // Check if contract has guide fee/addons but total doesn't match expected calculation
+      // ALWAYS recalculate contract total to ensure it's correct (guide fee + addons + 5% platform fee)
+      // DO NOT use payment items - they are for tracking payments, not contract total
       const guideFeeCents = (cAny.calculated_guide_fee_cents as number) || 0;
       const addonsCents = (cAny.calculated_addons_cents as number) || 0;
       const currentTotal = (cAny.contract_total_cents as number) || 0;
       const expectedTotal = guideFeeCents + addonsCents + Math.round((guideFeeCents + addonsCents) * 0.05);
       
-      // If we have guide fee or addons, but total is wrong, recalculate
-      let finalContractTotal: number | undefined = currentTotal > 0 ? currentTotal : undefined;
-      if ((guideFeeCents > 0 || addonsCents > 0) && currentTotal !== expectedTotal && Math.abs(currentTotal - expectedTotal) > 100) {
-        // Recalculate asynchronously (don't block the response)
-        Promise.resolve(admin.rpc("recalculate_contract_total", { p_contract_id: c.id }))
-          .catch((err) => {
-            console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
-          });
-        // Use expected total for this response
+      // If we have guide fee or addons, always use the calculated total (not stored value)
+      let finalContractTotal: number | undefined = undefined;
+      if (guideFeeCents > 0 || addonsCents > 0) {
+        // Always use the calculated total, not the stored one (which might include old payment items)
         finalContractTotal = expectedTotal;
+        
+        // If stored total is wrong, recalculate in database (async, don't block)
+        if (currentTotal !== expectedTotal) {
+          Promise.resolve(admin.rpc("recalculate_contract_total", { p_contract_id: c.id }))
+            .catch((err) => {
+              console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
+            });
+        }
+      } else if (currentTotal > 0) {
+        // No guide fee/addons but has a total - might be old data, use stored value
+        finalContractTotal = currentTotal;
       }
       
       return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd, contract_total_cents: finalContractTotal };
