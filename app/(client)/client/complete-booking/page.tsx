@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import * as React from "react";
 
 interface HuntInfo {
   id: string;
@@ -86,13 +87,18 @@ export default function CompleteBookingPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const huntId = hunt?.id ?? huntIdFromUrl;
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple loads
+    if (hasLoadedRef.current || loading) return;
     if (!huntIdFromUrl && !contractId) {
       setError("Missing hunt_id or contract_id");
       setLoading(false);
       return;
     }
+    
+    hasLoadedRef.current = true;
     const query = huntIdFromUrl
       ? `hunt_id=${encodeURIComponent(huntIdFromUrl)}`
       : `contract_id=${encodeURIComponent(contractId!)}`;
@@ -115,6 +121,14 @@ export default function CompleteBookingPage() {
       })
       .then((data) => {
         console.error("[complete-booking] Success, data:", data);
+        
+        // If booking is already complete, show message and redirect
+        if (data.booking_complete) {
+          alert(data.message || "Your booking is already complete.");
+          window.location.replace("/client/documents/hunt-contract");
+          return;
+        }
+        
         setHunt(data.hunt);
         setPlans(data.pricing_plans || []);
         setAddonItems(data.addon_items || []);
@@ -135,7 +149,13 @@ export default function CompleteBookingPage() {
         console.error("[complete-booking] ERROR:", errorMsg, e);
         setError(errorMsg);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        // Reset ref if there was an error so user can retry
+        if (error) {
+          hasLoadedRef.current = false;
+        }
+      });
   }, [huntIdFromUrl, contractId]);
 
   // Step 1 shows only guide fees (exclude Add-ons category)

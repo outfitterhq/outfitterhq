@@ -19,13 +19,12 @@ export async function GET(
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
+    const userEmail = (userRes.user.email || "").toLowerCase().trim();
     const store = await cookies();
     const outfitterId = store.get(OUTFITTER_COOKIE)?.value;
-    if (!outfitterId) {
-      return NextResponse.json({ error: "No outfitter selected" }, { status: 400 });
-    }
 
     // Get contract with payment info
+    // Allow access if user is admin (has outfitter cookie) OR if user is the client
     const { data: contract, error: contractError } = await supabase
       .from("hunt_contracts")
       .select(`
@@ -38,7 +37,6 @@ export async function GET(
         outfitter_id
       `)
       .eq("id", id)
-      .eq("outfitter_id", outfitterId)
       .single();
 
     if (contractError || !contract) {
@@ -48,8 +46,24 @@ export async function GET(
       );
     }
 
+    // Verify access: admin (has outfitter cookie and matches) OR client (email matches)
+    const contractEmail = (contract.client_email || "").toLowerCase().trim();
+    const isClient = contractEmail === userEmail;
+    const isAdmin = outfitterId && contract.outfitter_id === outfitterId;
+
+    if (!isClient && !isAdmin) {
+      return NextResponse.json(
+        { error: "Unauthorized - you can only view your own contracts" },
+        { status: 403 }
+      );
+    }
+
+    // Use admin client for queries to avoid RLS issues (both admin and client can access)
+    const { supabaseAdmin } = await import("@/lib/supabase/server");
+    const admin = supabaseAdmin();
+
     // Get payment items for this contract
-    const { data: paymentItems } = await supabase
+    const { data: paymentItems } = await admin
       .from("payment_items")
       .select("*")
       .eq("contract_id", id)
@@ -59,16 +73,16 @@ export async function GET(
     let contractTotalCents = contract.contract_total_cents || 0;
     if (contractTotalCents === 0 && paymentItems && paymentItems.length > 0) {
       contractTotalCents = paymentItems.reduce((sum: number, item: any) => sum + (item.total_cents || 0), 0);
-      // Update contract total if it was 0
-      if (contractTotalCents > 0) {
-        await supabase
+      // Update contract total if it was 0 (only admins can update)
+      if (contractTotalCents > 0 && isAdmin) {
+        await admin
           .from("hunt_contracts")
           .update({ contract_total_cents: contractTotalCents })
           .eq("id", id);
         // Recalculate payment totals
-        await supabase.rpc("update_contract_payment_totals", { p_contract_id: id });
+        await admin.rpc("update_contract_payment_totals", { p_contract_id: id });
         // Refetch contract to get updated values
-        const { data: updatedContract } = await supabase
+        const { data: updatedContract } = await admin
           .from("hunt_contracts")
           .select(`
             id,
@@ -89,7 +103,7 @@ export async function GET(
     }
 
     // Get active payment plan
-    const { data: paymentPlan } = await supabase
+    const { data: paymentPlan } = await admin
       .from("contract_payment_plans")
       .select("*")
       .eq("contract_id", id)
@@ -99,7 +113,7 @@ export async function GET(
     // Get scheduled payments if plan exists
     let scheduledPayments: any[] = [];
     if (paymentPlan) {
-      const { data: scheduled } = await supabase
+      const { data: scheduled } = await admin
         .from("contract_scheduled_payments")
         .select("*")
         .eq("payment_plan_id", paymentPlan.id)
@@ -111,7 +125,7 @@ export async function GET(
     const paymentItemIds = (paymentItems || []).map((pi: any) => pi.id);
     let transactions: any[] = [];
     if (paymentItemIds.length > 0) {
-      const { data: trans } = await supabase
+      const { data: trans } = await admin
         .from("payment_transactions")
         .select("*")
         .in("payment_item_id", paymentItemIds)
