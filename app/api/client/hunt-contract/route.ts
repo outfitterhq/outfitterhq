@@ -479,7 +479,16 @@ export async function GET(req: Request) {
     const content = (c.content as string) || "";
     let guideFeeTitle = "Guide fee";
     const cAny = c as Record<string, unknown>;
-    let baseGuideFeeUsd = (cAny.base_guide_fee_usd as number) ?? 0;
+    // CRITICAL: Use calculated_guide_fee_cents from contract (accounts for selected days)
+    // NOT the pricing item's amount_usd directly - that doesn't account for selected days
+    let baseGuideFeeUsd = 0;
+    const calculatedGuideFeeCents = (cAny.calculated_guide_fee_cents as number | null | undefined) ?? 0;
+    if (calculatedGuideFeeCents > 0) {
+      baseGuideFeeUsd = calculatedGuideFeeCents / 100;
+    } else {
+      // Fallback to base_guide_fee_usd if calculated_guide_fee_cents is not set
+      baseGuideFeeUsd = (cAny.base_guide_fee_usd as number) ?? 0;
+    }
     if (huntId) {
       const { data: huntRow } = await admin.from("calendar_events").select("selected_pricing_item_id").eq("id", huntId).single();
       const selId = (huntRow as { selected_pricing_item_id?: string | null } | null)?.selected_pricing_item_id;
@@ -487,7 +496,10 @@ export async function GET(req: Request) {
         const { data: pr } = await admin.from("pricing_items").select("title, amount_usd").eq("id", selId).single();
         if (pr) {
           guideFeeTitle = (pr as { title?: string }).title ?? guideFeeTitle;
-          baseGuideFeeUsd = Number((pr as { amount_usd?: number }).amount_usd) || 0;
+          // Only use pricing item amount if calculated_guide_fee_cents is not available
+          if (calculatedGuideFeeCents <= 0) {
+            baseGuideFeeUsd = Number((pr as { amount_usd?: number }).amount_usd) || 0;
+          }
         }
       }
     }
@@ -506,13 +518,43 @@ export async function GET(req: Request) {
     const nhRate = nhItem != null ? Number((nhItem as { amount_usd?: number }).amount_usd) || DEFAULT_NON_HUNTER_USD : DEFAULT_NON_HUNTER_USD;
     const spotterRate = spotterItem != null ? Number((spotterItem as { amount_usd?: number }).amount_usd) || DEFAULT_SPOTTER_USD : DEFAULT_SPOTTER_USD;
     const rifleRentalRate = rifleRentalItem != null ? Number((rifleRentalItem as { amount_usd?: number }).amount_usd) || DEFAULT_RIFLE_RENTAL_USD : DEFAULT_RIFLE_RENTAL_USD;
-    const addonUsd = extraDays * dayRate + extraNonHunters * nhRate + extraSpotters * spotterRate + rifleRental * rifleRentalRate;
+    // CRITICAL: Use calculated_addons_cents from contract (matches payment calculation)
+    // NOT calculated from addon counts - that might not match what's stored
+    const calculatedAddonsCents = (cAny.calculated_addons_cents as number | null | undefined) ?? 0;
+    let addonUsd = calculatedAddonsCents / 100;
+    // Fallback: calculate from addon counts if calculated_addons_cents is not set
+    if (calculatedAddonsCents <= 0) {
+      addonUsd = extraDays * dayRate + extraNonHunters * nhRate + extraSpotters * spotterRate + rifleRental * rifleRentalRate;
+    }
     const totalUsd = baseGuideFeeUsd + addonUsd;
     const lines = ["\n---\n\nBILL", "", `${guideFeeTitle}: $${baseGuideFeeUsd.toFixed(2)}`];
-    if (extraDays > 0) lines.push(`Extra days (${extraDays} × $${dayRate.toFixed(2)}/day): $${(extraDays * dayRate).toFixed(2)}`);
-    if (extraNonHunters > 0) lines.push(`Non-hunters (${extraNonHunters} × $${nhRate.toFixed(2)}/person): $${(extraNonHunters * nhRate).toFixed(2)}`);
-    if (extraSpotters > 0) lines.push(`Spotter(s) (${extraSpotters} × $${spotterRate.toFixed(2)}/person): $${(extraSpotters * spotterRate).toFixed(2)}`);
-    if (rifleRental > 0) lines.push(`Rifle Rental (${rifleRental} × $${rifleRentalRate.toFixed(2)}/rental): $${(rifleRental * rifleRentalRate).toFixed(2)}`);
+    // Use calculated addon amounts to match payment calculation
+    // Calculate individual addon amounts proportionally if calculated_addons_cents is set
+    let remainingAddonUsd = addonUsd;
+    if (calculatedAddonsCents > 0 && addonUsd > 0) {
+      // Calculate individual addon amounts from the stored total
+      const calculatedExtraDaysUsd = extraDays > 0 ? (extraDays * dayRate) : 0;
+      const calculatedNonHuntersUsd = extraNonHunters > 0 ? (extraNonHunters * nhRate) : 0;
+      const calculatedSpottersUsd = extraSpotters > 0 ? (extraSpotters * spotterRate) : 0;
+      const calculatedRifleRentalUsd = rifleRental > 0 ? (rifleRental * rifleRentalRate) : 0;
+      const calculatedAddonTotal = calculatedExtraDaysUsd + calculatedNonHuntersUsd + calculatedSpottersUsd + calculatedRifleRentalUsd;
+      // If calculated total matches stored total, use individual amounts; otherwise show stored total
+      if (Math.abs(calculatedAddonTotal - addonUsd) < 0.01) {
+        if (extraDays > 0) lines.push(`Extra days (${extraDays} × $${dayRate.toFixed(2)}/day): $${calculatedExtraDaysUsd.toFixed(2)}`);
+        if (extraNonHunters > 0) lines.push(`Non-hunters (${extraNonHunters} × $${nhRate.toFixed(2)}/person): $${calculatedNonHuntersUsd.toFixed(2)}`);
+        if (extraSpotters > 0) lines.push(`Spotter(s) (${extraSpotters} × $${spotterRate.toFixed(2)}/person): $${calculatedSpottersUsd.toFixed(2)}`);
+        if (rifleRental > 0) lines.push(`Rifle Rental (${rifleRental} × $${rifleRentalRate.toFixed(2)}/rental): $${calculatedRifleRentalUsd.toFixed(2)}`);
+      } else {
+        // Stored total doesn't match calculated - show stored total as single line
+        if (addonUsd > 0) lines.push(`Add-ons: $${addonUsd.toFixed(2)}`);
+      }
+    } else {
+      // Fallback: calculate from counts
+      if (extraDays > 0) lines.push(`Extra days (${extraDays} × $${dayRate.toFixed(2)}/day): $${(extraDays * dayRate).toFixed(2)}`);
+      if (extraNonHunters > 0) lines.push(`Non-hunters (${extraNonHunters} × $${nhRate.toFixed(2)}/person): $${(extraNonHunters * nhRate).toFixed(2)}`);
+      if (extraSpotters > 0) lines.push(`Spotter(s) (${extraSpotters} × $${spotterRate.toFixed(2)}/person): $${(extraSpotters * spotterRate).toFixed(2)}`);
+      if (rifleRental > 0) lines.push(`Rifle Rental (${rifleRental} × $${rifleRentalRate.toFixed(2)}/rental): $${(rifleRental * rifleRentalRate).toFixed(2)}`);
+    }
     lines.push("", `Total: $${totalUsd.toFixed(2)}`);
     const newBill = lines.join("\n");
     // Match BILL section (permissive: --- BILL, BILL at start of line, etc.)
