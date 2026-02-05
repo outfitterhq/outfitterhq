@@ -285,7 +285,7 @@ export async function GET(req: Request) {
     );
     const { data: contractRows2 } = await admin
       .from("hunt_contracts")
-      .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date, contract_total_cents")
+      .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, calculated_addons_cents, client_selected_start_date, client_selected_end_date, contract_total_cents")
       .in("outfitter_id", outfitterIds)
       .order("created_at", { ascending: false });
     const filteredContractRows2 = (contractRows2 || []).filter(
@@ -375,7 +375,25 @@ export async function GET(req: Request) {
           baseGuideFeeUsd = pricingAmountById.get(hunt.selected_pricing_item_id) ?? 0;
         }
       }
-      return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd };
+      
+      // Recalculate contract total if it seems incorrect (e.g., includes old deposit amounts)
+      // Check if contract has guide fee/addons but total doesn't match expected calculation
+      const guideFeeCents = (cAny.calculated_guide_fee_cents as number) || 0;
+      const addonsCents = (cAny.calculated_addons_cents as number) || 0;
+      const currentTotal = (cAny.contract_total_cents as number) || 0;
+      const expectedTotal = guideFeeCents + addonsCents + Math.round((guideFeeCents + addonsCents) * 0.05);
+      
+      // If we have guide fee or addons, but total is wrong, recalculate
+      if ((guideFeeCents > 0 || addonsCents > 0) && currentTotal !== expectedTotal && Math.abs(currentTotal - expectedTotal) > 100) {
+        // Recalculate asynchronously (don't block the response)
+        admin.rpc("recalculate_contract_total", { p_contract_id: c.id }).catch((err) => {
+          console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
+        });
+        // Use expected total for this response
+        cAny.contract_total_cents = expectedTotal;
+      }
+      
+      return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd, contract_total_cents: cAny.contract_total_cents };
     });
     contractHuntIds = contracts.map((c) => c.hunt_id).filter(Boolean);
     huntsWithoutContracts = huntsForClient
