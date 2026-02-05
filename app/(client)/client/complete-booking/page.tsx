@@ -132,10 +132,11 @@ export default function CompleteBookingPage() {
         setHunt(data.hunt);
         setPlans(data.pricing_plans || []);
         setAddonItems(data.addon_items || []);
+        // Don't auto-select pricing - let client choose
+        // Only pre-select if there's exactly one option AND it's already been selected in the contract
         const guideOnly = (data.pricing_plans || []).filter((p: { category?: string }) => (p.category || "").trim().toLowerCase() !== "add-ons");
-        if (guideOnly.length === 1) {
-          setSelectedPlanId(guideOnly[0].id);
-        }
+        // Don't auto-select - client must choose
+        setSelectedPlanId(null);
         const addon = data.client_addon_data;
         if (addon && typeof addon === "object") {
           if (typeof addon.extra_days === "number" && addon.extra_days > 0) setExtraDays(addon.extra_days);
@@ -227,7 +228,7 @@ export default function CompleteBookingPage() {
     : 0;
   const formOk =
     step === 1
-      ? selectedPlanId != null || guideFeePlans.length === 0
+      ? true // Allow proceeding without selecting pricing - client can select later
       : step === 2
         ? true
         : startDate &&
@@ -332,22 +333,28 @@ export default function CompleteBookingPage() {
               ))}
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setStep(2)}
-            disabled={guideFeePlans.length > 0 && !selectedPlanId}
-            style={{
-              padding: "12px 24px",
-              background: guideFeePlans.length > 0 && !selectedPlanId ? "#ccc" : "#1a472a",
-              color: "white",
-              border: "none",
-              borderRadius: 8,
-              cursor: guideFeePlans.length > 0 && !selectedPlanId ? "not-allowed" : "pointer",
-              fontWeight: 600,
-            }}
-          >
-            Next: Add-ons
-          </button>
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            {guideFeePlans.length > 0 && !selectedPlanId && (
+              <p style={{ fontSize: 13, color: "#666", margin: 0 }}>
+                💡 You can select a guide fee now, or choose dates first and come back to select pricing.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              style={{
+                padding: "12px 24px",
+                background: "#1a472a",
+                color: "white",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              Next: Add-ons
+            </button>
+          </div>
         </>
       ) : step === 2 ? (
         <>

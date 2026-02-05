@@ -220,27 +220,39 @@ export async function GET(req: Request) {
   hunt = res.data as Record<string, unknown> | null;
   huntErr = res.error as { message: string } | null;
   
-  // If booking is already complete, return early with a message
+  // If booking is already complete (has dates AND pricing selected), return early with a message
+  // But allow re-selection if only dates are set (client can change pricing)
   if (hunt && hunt.start_time && hunt.end_time && hunt.selected_pricing_item_id) {
-    return NextResponse.json({
-      hunt: {
-        id: hunt.id,
-        title: hunt.title,
-        species: hunt.species,
-        unit: hunt.unit,
-        weapon: hunt.weapon === "Bow" ? "Archery" : hunt.weapon,
-        hunt_code: hunt.hunt_code,
-        hunt_window_start: hunt.hunt_window_start,
-        hunt_window_end: hunt.hunt_window_end,
-        window_start: hunt.hunt_window_start ? new Date(hunt.hunt_window_start as string).toISOString().slice(0, 10) : null,
-        window_end: hunt.hunt_window_end ? new Date(hunt.hunt_window_end as string).toISOString().slice(0, 10) : null,
-      },
-      pricing_plans: [],
-      addon_items: [],
-      client_addon_data: hunt.client_addon_data || null,
-      booking_complete: true,
-      message: "Your booking is already complete. You can view your contract in the Documents section.",
-    });
+    // Check if contract exists and has a total set
+    const { data: existingContract } = await admin
+      .from("hunt_contracts")
+      .select("contract_total_cents, selected_pricing_item_id")
+      .eq("hunt_id", hunt.id)
+      .maybeSingle();
+    
+    // Only mark as complete if contract has a total > 0 (meaning pricing was actually selected)
+    if (existingContract && existingContract.contract_total_cents && existingContract.contract_total_cents > 0) {
+      return NextResponse.json({
+        hunt: {
+          id: hunt.id,
+          title: hunt.title,
+          species: hunt.species,
+          unit: hunt.unit,
+          weapon: hunt.weapon === "Bow" ? "Archery" : hunt.weapon,
+          hunt_code: hunt.hunt_code,
+          hunt_window_start: hunt.hunt_window_start,
+          hunt_window_end: hunt.hunt_window_end,
+          window_start: hunt.hunt_window_start ? new Date(hunt.hunt_window_start as string).toISOString().slice(0, 10) : null,
+          window_end: hunt.hunt_window_end ? new Date(hunt.hunt_window_end as string).toISOString().slice(0, 10) : null,
+        },
+        pricing_plans: [],
+        addon_items: [],
+        client_addon_data: hunt.client_addon_data || null,
+        booking_complete: true,
+        message: "Your booking is already complete. You can view your contract in the Documents section.",
+      });
+    }
+    // Otherwise, allow them to select pricing even if dates are set
   }
 
   const errMsg = (huntErr as { message?: string } | null)?.message ?? String(huntErr ?? "");
