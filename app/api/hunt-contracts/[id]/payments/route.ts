@@ -69,19 +69,13 @@ export async function GET(
       .eq("contract_id", id)
       .order("created_at", { ascending: false });
 
-    // If contract_total_cents is 0 but we have payment items, calculate total from items
-    let contractTotalCents = contract.contract_total_cents || 0;
-    if (contractTotalCents === 0 && paymentItems && paymentItems.length > 0) {
-      contractTotalCents = paymentItems.reduce((sum: number, item: any) => sum + (item.total_cents || 0), 0);
-      // Update contract total if it was 0 (only admins can update)
-      if (contractTotalCents > 0 && isAdmin) {
-        await admin
-          .from("hunt_contracts")
-          .update({ contract_total_cents: contractTotalCents })
-          .eq("id", id);
-        // Recalculate payment totals
-        await admin.rpc("update_contract_payment_totals", { p_contract_id: id });
-        // Refetch contract to get updated values
+    // If contract_total_cents is 0, recalculate it from guide fee + add-ons + platform fee
+    // DO NOT calculate from payment items - they are for tracking payments, not for contract total
+    if (contract.contract_total_cents === 0 || contract.contract_total_cents === null) {
+      // Recalculate contract total using the proper function
+      const { error: recalcError } = await admin.rpc("recalculate_contract_total", { p_contract_id: id });
+      if (!recalcError) {
+        // Refetch contract to get updated total
         const { data: updatedContract } = await admin
           .from("hunt_contracts")
           .select(`
@@ -133,8 +127,8 @@ export async function GET(
       transactions = trans || [];
     }
 
-    // Use calculated total if contract_total_cents was 0
-    const finalContractTotal = contractTotalCents > 0 ? contractTotalCents : contract.contract_total_cents || 0;
+    // Use contract total from database (should be calculated by recalculate_contract_total)
+    const finalContractTotal = contract.contract_total_cents || 0;
     
     return NextResponse.json({
       contract: {
