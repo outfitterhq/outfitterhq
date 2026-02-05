@@ -237,6 +237,8 @@ export default function HuntContractPage() {
 
   // Auto-calculate end date when start date changes (for booking form)
   useEffect(() => {
+    const contract = data?.contracts?.[selectedContractIndex];
+    const needsBooking = contract?.needs_complete_booking ?? false;
     if (!needsBooking || !bookingHunt) return;
     const guideFeePlans = bookingPlans.filter((p) => (p.category || "").trim().toLowerCase() !== "add-ons");
     const selectedPlan = guideFeePlans.find((p) => p.id === selectedPlanId);
@@ -253,7 +255,7 @@ export default function HuntContractPage() {
       const clamped = windowEnd && endStr > windowEnd ? windowEnd : endStr;
       setEndDate(clamped);
     }
-  }, [startDate, selectedPlanId, extraDays, bookingPlans, bookingHunt, needsBooking]);
+  }, [startDate, selectedPlanId, extraDays, bookingPlans, bookingHunt, data, selectedContractIndex]);
 
   // When contract needs completion and has hunt_code but no hunt_window, fetch window from API
   useEffect(() => {
