@@ -218,31 +218,23 @@ export async function getContractGuideFeeCents(
     }
   }
 
-  // Use pricing item amount (this matches the BILL calculation)
-  // Only use calculated_guide_fee_cents if it matches the pricing item (within 1% tolerance)
-  // This handles cases where database values are wrong
+  // ALWAYS use pricing item amount when available (this matches the BILL calculation)
+  // Never trust calculated_guide_fee_cents from database - it might be wrong
+  // The pricing item amount is the source of truth
   let guideFeeCents = 0;
   const pricingItemCents = Math.round(pricingItemAmountUsd * 100);
-  const storedGuideFeeCents = contractAny.calculated_guide_fee_cents ?? 0;
   
-  if (storedGuideFeeCents > 0 && pricingItemCents > 0) {
-    // Check if stored value is close to pricing item (within 1% - accounts for rounding)
-    const diff = Math.abs(storedGuideFeeCents - pricingItemCents);
-    const tolerance = pricingItemCents * 0.01; // 1% tolerance
-    if (diff <= tolerance) {
-      guideFeeCents = storedGuideFeeCents;
-      console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents (matches pricing item): ${guideFeeCents} cents`);
-    } else {
-      // Stored value doesn't match - use pricing item (correct value)
-      guideFeeCents = pricingItemCents;
-      console.log(`[DEBUG getContractGuideFeeCents] Stored value (${storedGuideFeeCents}) doesn't match pricing item (${pricingItemCents}), using pricing item`);
-    }
-  } else if (pricingItemCents > 0) {
+  if (pricingItemCents > 0) {
+    // Always use pricing item amount (correct value)
     guideFeeCents = pricingItemCents;
     console.log(`[DEBUG getContractGuideFeeCents] Using pricing item: ${guideFeeCents} cents ($${(guideFeeCents / 100).toFixed(2)})`);
-  } else if (storedGuideFeeCents > 0) {
-    guideFeeCents = storedGuideFeeCents;
-    console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents (no pricing item): ${guideFeeCents} cents`);
+  } else {
+    // Fallback: use stored value only if no pricing item is available
+    const storedGuideFeeCents = contractAny.calculated_guide_fee_cents ?? 0;
+    if (storedGuideFeeCents > 0) {
+      guideFeeCents = storedGuideFeeCents;
+      console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents (no pricing item available): ${guideFeeCents} cents`);
+    }
   }
 
   // Always calculate addons from client_completion_data (matches BILL calculation)
