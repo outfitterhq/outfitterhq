@@ -6,9 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
-
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
