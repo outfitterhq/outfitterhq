@@ -432,6 +432,9 @@ export async function POST(req: Request) {
 
   // Auto-generate hunt contract so admin sees it for review (web and iOS)
   // Only create if one doesn't already exist (prevents duplicates)
+  let contractId: string | null = null;
+  let contractError: string | undefined = undefined;
+
   const { data: existingContract } = await admin
     .from("hunt_contracts")
     .select("id")
@@ -440,12 +443,15 @@ export async function POST(req: Request) {
 
   if (!existingContract) {
     // Only create contract if it doesn't exist
-    const { contractId, error: contractError } = await createHuntContractIfNeeded(admin, hunt_id);
+    const result = await createHuntContractIfNeeded(admin, hunt_id);
+    contractId = result.contractId;
+    contractError = result.error;
     if (contractError && !contractId) {
       console.warn("[complete-booking] createHuntContractIfNeeded:", contractError);
     }
   } else {
-    // Contract already exists - update it with new completion data if needed
+    // Contract already exists - use its ID and update it with new completion data if needed
+    contractId = existingContract.id;
     const huntWithAddon = hunt as { client_addon_data?: Record<string, unknown> | null; selected_pricing_item_id?: string | null };
     const updateData: Record<string, unknown> = {};
     
