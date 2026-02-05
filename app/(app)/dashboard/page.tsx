@@ -77,16 +77,30 @@ export default async function DashboardPage() {
   const outfitterName = current.outfitters?.name || "Outfitter HQ";
   const userName = user.email || "Admin";
 
-  // Get total owed across all contracts
+  // Get total owed across all contracts - use correct calculation (pricing item + addons + platform fee)
+  // Recalculate each contract's total instead of using wrong database values
   const { data: contractsData } = await supabase
     .from("hunt_contracts")
-    .select("remaining_balance_cents")
-    .eq("outfitter_id", current.outfitter_id);
+    .select("id, amount_paid_cents, status")
+    .eq("outfitter_id", current.outfitter_id)
+    .eq("status", "fully_executed"); // Only count fully executed contracts
 
-  const totalOwedCents = (contractsData || []).reduce(
-    (sum: number, contract: any) => sum + (contract.remaining_balance_cents || 0),
-    0
-  );
+  const { supabaseAdmin } = await import("@/lib/supabase/server");
+  const admin = supabaseAdmin();
+  const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
+  
+  let totalOwedCents = 0;
+  for (const contract of contractsData || []) {
+    // Calculate correct total for this contract (same as client dashboard)
+    const correctTotal = await getContractGuideFeeCents(admin, contract.id);
+    if (correctTotal && correctTotal.totalCents > 0) {
+      const amountPaid = contract.amount_paid_cents || 0;
+      const remaining = correctTotal.totalCents - amountPaid;
+      if (remaining > 0) {
+        totalOwedCents += remaining;
+      }
+    }
+  }
   const totalOwed = totalOwedCents / 100;
 
   return (
