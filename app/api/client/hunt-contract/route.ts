@@ -660,11 +660,28 @@ export async function POST(req: Request) {
   }
 
   // Rewrite BILL section in contract content to include add-ons (extra_days, extra_non_hunters) and correct total
+  // CRITICAL: Use calculated_guide_fee_cents from contract (accounts for selected days), NOT pricing item amount
   const DEFAULT_EXTRA_DAY_USD = 100;
   const DEFAULT_NON_HUNTER_USD = 75;
   let baseGuideFeeUsd = 0;
   let guideFeeTitle = "Guide fee";
-  if (contract.hunt_id) {
+  
+  // Use calculated_guide_fee_cents from contract if available (this accounts for selected days)
+  if (contract.calculated_guide_fee_cents && contract.calculated_guide_fee_cents > 0) {
+    baseGuideFeeUsd = (contract.calculated_guide_fee_cents as number) / 100;
+    // Get pricing item title for display
+    if (contract.selected_pricing_item_id) {
+      const { data: pricingRow } = await admin
+        .from("pricing_items")
+        .select("title")
+        .eq("id", contract.selected_pricing_item_id)
+        .single();
+      if (pricingRow) {
+        guideFeeTitle = (pricingRow as { title?: string }).title ?? guideFeeTitle;
+      }
+    }
+  } else if (contract.hunt_id) {
+    // Fallback: use pricing item amount (for contracts created before per-day calculation)
     const { data: huntRow } = await admin
       .from("calendar_events")
       .select("selected_pricing_item_id")
