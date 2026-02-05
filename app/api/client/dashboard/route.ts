@@ -207,11 +207,13 @@ export async function GET() {
 
   // Get total owed from ALL contracts - sum all contracts together
   // For each contract, calculate correct total (pricing item + addons + platform fee) and subtract amount paid
+  // Only include contracts that are fully_executed (signed contracts with totals)
   const { data: allContracts } = await supabase
     .from("hunt_contracts")
-    .select("id, amount_paid_cents")
+    .select("id, amount_paid_cents, status")
     .eq("client_email", userEmail)
-    .eq("outfitter_id", outfitterId);
+    .eq("outfitter_id", outfitterId)
+    .eq("status", "fully_executed"); // Only count fully executed contracts
 
   let totalOwedFromContractsCents = 0;
   const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
@@ -219,7 +221,7 @@ export async function GET() {
   for (const contract of allContracts || []) {
     // Calculate correct total for this contract (same as payment dashboard)
     const correctTotal = await getContractGuideFeeCents(admin, contract.id);
-    if (correctTotal) {
+    if (correctTotal && correctTotal.totalCents > 0) {
       const amountPaid = contract.amount_paid_cents || 0;
       const remaining = correctTotal.totalCents - amountPaid;
       if (remaining > 0) {
