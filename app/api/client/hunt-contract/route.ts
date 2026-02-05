@@ -408,7 +408,8 @@ export async function GET(req: Request) {
       
       // Use recalculated total (same as "Pay in Full") if available, otherwise use stored value
       const recalculatedTotal = c.id ? contractTotals.get(c.id) : undefined;
-      const finalContractTotal = recalculatedTotal ?? ((cAny.contract_total_cents as number) || 0) || undefined;
+      const storedTotal = (cAny.contract_total_cents as number) || 0;
+      const finalContractTotal = recalculatedTotal ?? (storedTotal > 0 ? storedTotal : undefined);
       
       return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd, contract_total_cents: finalContractTotal };
     });
