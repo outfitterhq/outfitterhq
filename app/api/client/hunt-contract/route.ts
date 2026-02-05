@@ -97,7 +97,7 @@ export async function GET(req: Request) {
   // 1b) Full contract rows for all linked outfitters (include client_completion_data, outfitter_id for BILL patch)
   const { data: contractRows, error: contractsErr } = await admin
     .from("hunt_contracts")
-    .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id")
+    .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date")
     .in("outfitter_id", outfitterIds)
     .order("created_at", { ascending: false });
 
@@ -280,7 +280,7 @@ export async function GET(req: Request) {
     );
     const { data: contractRows2 } = await admin
       .from("hunt_contracts")
-      .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id")
+      .select("id, hunt_id, status, content, client_completed_at, client_signed_at, admin_signed_at, created_at, client_email, client_completion_data, outfitter_id, selected_pricing_item_id, calculated_guide_fee_cents, client_selected_start_date, client_selected_end_date")
       .in("outfitter_id", outfitterIds)
       .order("created_at", { ascending: false });
     const filteredContractRows2 = (contractRows2 || []).filter(
@@ -355,8 +355,19 @@ export async function GET(req: Request) {
       }));
     }
     contracts = contracts.map((c) => {
-      const hunt = c.hunt as { selected_pricing_item_id?: string | null } | undefined;
-      const baseGuideFeeUsd = hunt?.selected_pricing_item_id ? (pricingAmountById.get(hunt.selected_pricing_item_id) ?? 0) : 0;
+      // Use calculated guide fee from contract if available, otherwise calculate from pricing item
+      let baseGuideFeeUsd = 0;
+      if (c.calculated_guide_fee_cents) {
+        baseGuideFeeUsd = (c.calculated_guide_fee_cents as number) / 100;
+      } else if (c.selected_pricing_item_id) {
+        baseGuideFeeUsd = pricingAmountById.get(c.selected_pricing_item_id as string) ?? 0;
+      } else {
+        // Fallback to hunt's selected_pricing_item_id
+        const hunt = c.hunt as { selected_pricing_item_id?: string | null } | undefined;
+        if (hunt?.selected_pricing_item_id) {
+          baseGuideFeeUsd = pricingAmountById.get(hunt.selected_pricing_item_id) ?? 0;
+        }
+      }
       return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd };
     });
     contractHuntIds = contracts.map((c) => c.hunt_id).filter(Boolean);

@@ -138,9 +138,9 @@ export default function HuntContractPage() {
     }));
   }, [currentContract?.id, currentContract?.status, currentContract?.client_completion_data]);
 
-  // Load guide fee bill when contract is fully signed (so client can pay or set up payment plan)
+  // Load guide fee bill only when contract is fully executed (both parties signed)
   useEffect(() => {
-    if (!isComplete || !currentContract?.id) {
+    if (!isComplete || !currentContract?.id || currentContract?.status !== "fully_executed") {
       setGuideFeeBill(null);
       setGuideFeeError(null);
       return;
@@ -855,17 +855,19 @@ export default function HuntContractPage() {
             </button>
           </div>
 
-          {/* Guide fee bill: pay in full or set up payment plan (only when contract is fully signed) */}
-          {guideFeeLoading && (
-            <p style={{ marginBottom: 24, color: "#666" }}>Loading guide fee…</p>
-          )}
-          {guideFeeError && !guideFeeLoading && (
-            <div style={{ marginBottom: 24, padding: 16, background: "#fff3e0", borderRadius: 8, border: "1px solid #ffb74d", textAlign: "left" }}>
-              <strong>Guide fee</strong>
-              <p style={{ margin: "8px 0 0", color: "#666", fontSize: 14 }}>{guideFeeError}</p>
-            </div>
-          )}
-          {guideFeeBill && !guideFeeLoading && (
+          {/* Guide fee bill: pay in full or set up payment plan (only when contract is fully executed - both parties signed) */}
+          {currentContract?.status === "fully_executed" && (
+            <>
+              {guideFeeLoading && (
+                <p style={{ marginBottom: 24, color: "#666" }}>Loading guide fee…</p>
+              )}
+              {guideFeeError && !guideFeeLoading && (
+                <div style={{ marginBottom: 24, padding: 16, background: "#fff3e0", borderRadius: 8, border: "1px solid #ffb74d", textAlign: "left" }}>
+                  <strong>Guide fee</strong>
+                  <p style={{ margin: "8px 0 0", color: "#666", fontSize: 14 }}>{guideFeeError}</p>
+                </div>
+              )}
+              {guideFeeBill && !guideFeeLoading && (
             <div
               style={{
                 marginBottom: 24,
@@ -995,6 +997,8 @@ export default function HuntContractPage() {
                 </div>
               )}
             </div>
+              )}
+            </>
           )}
 
           {paymentPlanModal && currentContract?.id && (
