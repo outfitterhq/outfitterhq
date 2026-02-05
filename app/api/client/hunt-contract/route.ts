@@ -360,6 +360,36 @@ export async function GET(req: Request) {
         tag_type: c.hunt?.private_land_tag_id ? (tagTypeById2.get(c.hunt.private_land_tag_id) ?? null) : null,
       }));
     }
+    // Recalculate contract totals using the same logic as "Pay in Full" button
+    // This ensures displayed totals match what clients will actually pay
+    const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
+    const contractTotals = new Map<string, number>();
+    await Promise.all(
+      contracts.map(async (c) => {
+        if (!c.id) return;
+        try {
+          const correctTotal = await getContractGuideFeeCents(admin, c.id);
+          if (correctTotal) {
+            contractTotals.set(c.id, correctTotal.totalCents);
+            // Update database if stored value is wrong (async, don't block)
+            const cAny = c as Record<string, unknown>;
+            const currentTotal = (cAny.contract_total_cents as number) || 0;
+            if (currentTotal !== correctTotal.totalCents) {
+              Promise.resolve(admin
+                .from("hunt_contracts")
+                .update({ contract_total_cents: correctTotal.totalCents })
+                .eq("id", c.id))
+                .catch((err) => {
+                  console.warn(`[hunt-contract] Failed to update total for contract ${c.id}:`, err);
+                });
+            }
+          }
+        } catch (err) {
+          console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
+        }
+      })
+    );
+
     contracts = contracts.map((c) => {
       // Use calculated guide fee from contract if available, otherwise calculate from pricing item
       const cAny = c as Record<string, unknown>;
@@ -376,42 +406,9 @@ export async function GET(req: Request) {
         }
       }
       
-      // ALWAYS recalculate contract total using the SAME logic as "Pay in Full" button
-      // This ensures the displayed total matches what the client will actually pay
-      // Use getContractGuideFeeCents which recalculates from pricing items + addons (not stored values)
-      let finalContractTotal: number | undefined = undefined;
-      const currentTotal = (cAny.contract_total_cents as number) || 0;
-      
-      // Use the same calculation as guide-fee-bill route (which "Pay in Full" uses)
-      if (c.id) {
-        try {
-          const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
-          const correctTotal = await getContractGuideFeeCents(admin, c.id);
-          if (correctTotal) {
-            finalContractTotal = correctTotal.totalCents;
-            
-            // If stored total is wrong, update it in database (async, don't block)
-            if (currentTotal !== correctTotal.totalCents) {
-              Promise.resolve(admin
-                .from("hunt_contracts")
-                .update({ contract_total_cents: correctTotal.totalCents })
-                .eq("id", c.id))
-                .catch((err) => {
-                  console.warn(`[hunt-contract] Failed to update total for contract ${c.id}:`, err);
-                });
-            }
-          } else {
-            // No guide fee calculated - use stored value or 0
-            finalContractTotal = currentTotal > 0 ? currentTotal : undefined;
-          }
-        } catch (err) {
-          console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
-          // Fallback to stored value if recalculation fails
-          finalContractTotal = currentTotal > 0 ? currentTotal : undefined;
-        }
-      } else {
-        finalContractTotal = currentTotal > 0 ? currentTotal : undefined;
-      }
+      // Use recalculated total (same as "Pay in Full") if available, otherwise use stored value
+      const recalculatedTotal = c.id ? contractTotals.get(c.id) : undefined;
+      const finalContractTotal = recalculatedTotal ?? ((cAny.contract_total_cents as number) || 0) || undefined;
       
       return { ...c, addon_pricing: addonPricing, base_guide_fee_usd: baseGuideFeeUsd, contract_total_cents: finalContractTotal };
     });
