@@ -67,10 +67,14 @@ export async function GET(req: NextRequest) {
 
   // CRITICAL: Use getContractGuideFeeCents which uses calculated_guide_fee_cents (accounts for selected days)
   // DO NOT calculate from pricing item amount directly - that doesn't account for selected days
+  console.log(`[DEBUG guide-fee-bill GET] Starting for contract ${contractId}`);
   const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
   const correctTotal = await getContractGuideFeeCents(admin, contractId);
   
+  console.log(`[DEBUG guide-fee-bill GET] correctTotal from getContractGuideFeeCents:`, correctTotal);
+  
   if (!correctTotal || correctTotal.subtotalCents <= 0) {
+    console.log(`[DEBUG guide-fee-bill GET] No valid total, returning error`);
     return NextResponse.json(
       { error: "No guide fee is set for this hunt. Contact your outfitter." },
       { status: 400 }
@@ -151,10 +155,28 @@ export async function GET(req: NextRequest) {
   }
 
   if (fullItem && fullItem.status !== "cancelled") {
+    console.log(`[DEBUG guide-fee-bill GET] Found existing payment_item:`, {
+      id: fullItem.id,
+      total_cents: fullItem.total_cents,
+      total_usd: (fullItem.total_cents / 100).toFixed(2),
+    });
+    
     // Use recalculated amounts so response matches contract BILL (subtotal + platform fee).
     const correct = await getContractGuideFeeCents(admin, contractId);
+    console.log(`[DEBUG guide-fee-bill GET] correct from getContractGuideFeeCents:`, correct);
+    
     const totalCents = correct ? correct.totalCents : fullItem.total_cents;
     const platformFeeCentsReturn = correct ? correct.platformFeeCents : platformFeeCents;
+    
+    console.log(`[DEBUG guide-fee-bill GET] Using values:`, {
+      totalCents,
+      totalUsd: (totalCents / 100).toFixed(2),
+      platformFeeCentsReturn,
+      platformFeeUsd: (platformFeeCentsReturn / 100).toFixed(2),
+      payment_item_total_cents: fullItem.total_cents,
+      payment_item_total_usd: (fullItem.total_cents / 100).toFixed(2),
+      match: fullItem.total_cents === totalCents,
+    });
     
     // Update payment_item if it has the wrong total
     if (correct && fullItem.total_cents !== correct.totalCents) {

@@ -173,19 +173,33 @@ export async function getContractGuideFeeCents(
   admin: SupabaseClient,
   contractId: string
 ): Promise<{ subtotalCents: number; platformFeeCents: number; totalCents: number } | null> {
+  console.log(`[DEBUG getContractGuideFeeCents] Starting for contract ${contractId}`);
+  
   const { data: contract, error: contractErr } = await admin
     .from("hunt_contracts")
-    .select("id, hunt_id, outfitter_id, client_completion_data, calculated_guide_fee_cents, calculated_addons_cents")
+    .select("id, hunt_id, outfitter_id, client_completion_data, calculated_guide_fee_cents, calculated_addons_cents, contract_total_cents")
     .eq("id", contractId)
     .single();
-  if (contractErr || !contract) return null;
+  if (contractErr || !contract) {
+    console.log(`[DEBUG getContractGuideFeeCents] Contract not found or error:`, contractErr);
+    return null;
+  }
+
+  const contractAny = contract as { calculated_guide_fee_cents?: number | null; calculated_addons_cents?: number | null; contract_total_cents?: number | null };
+  console.log(`[DEBUG getContractGuideFeeCents] Contract data:`, {
+    calculated_guide_fee_cents: contractAny.calculated_guide_fee_cents,
+    calculated_addons_cents: contractAny.calculated_addons_cents,
+    stored_contract_total_cents: contractAny.contract_total_cents,
+  });
 
   // Use calculated_guide_fee_cents from contract if available (accounts for selected days)
   // This is the correct amount based on the client's selected dates
   let guideFeeCents = 0;
-  if ((contract as { calculated_guide_fee_cents?: number | null }).calculated_guide_fee_cents) {
-    guideFeeCents = (contract as { calculated_guide_fee_cents: number }).calculated_guide_fee_cents;
+  if (contractAny.calculated_guide_fee_cents) {
+    guideFeeCents = contractAny.calculated_guide_fee_cents;
+    console.log(`[DEBUG getContractGuideFeeCents] Using calculated_guide_fee_cents from contract: ${guideFeeCents} cents ($${(guideFeeCents / 100).toFixed(2)})`);
   } else {
+    console.log(`[DEBUG getContractGuideFeeCents] No calculated_guide_fee_cents, falling back to pricing item`);
     // Fallback: calculate from pricing item (for contracts created before the per-day calculation was implemented)
     let selectedPricingId: string | null = null;
     if (contract.client_completion_data && typeof contract.client_completion_data === "object") {
@@ -206,20 +220,32 @@ export async function getContractGuideFeeCents(
         .select("id, title, amount_usd")
         .eq("id", selectedPricingId)
         .single();
-      if (pricing) guideFeeCents = Math.round(Number(pricing.amount_usd) * 100);
+      if (pricing) {
+        guideFeeCents = Math.round(Number(pricing.amount_usd) * 100);
+        console.log(`[DEBUG getContractGuideFeeCents] Using pricing item ${selectedPricingId}: ${guideFeeCents} cents ($${(guideFeeCents / 100).toFixed(2)})`);
+      }
     }
   }
 
   // Use calculated_addons_cents from contract if available
-  let addonsCents = (contract as { calculated_addons_cents?: number | null }).calculated_addons_cents || 0;
+  let addonsCents = contractAny.calculated_addons_cents || 0;
   if (addonsCents === 0) {
+    console.log(`[DEBUG getContractGuideFeeCents] No calculated_addons_cents, calculating from client_completion_data`);
     // Fallback: calculate from client_completion_data
     const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
     addonsCents = Math.round(addonUsd * 100);
+    console.log(`[DEBUG getContractGuideFeeCents] Calculated addons from completion_data: ${addonsCents} cents ($${(addonsCents / 100).toFixed(2)})`);
+  } else {
+    console.log(`[DEBUG getContractGuideFeeCents] Using calculated_addons_cents from contract: ${addonsCents} cents ($${(addonsCents / 100).toFixed(2)})`);
   }
 
   const subtotalCents = guideFeeCents + addonsCents;
-  if (subtotalCents <= 0) return null;
+  console.log(`[DEBUG getContractGuideFeeCents] Subtotal: ${subtotalCents} cents ($${(subtotalCents / 100).toFixed(2)}) = ${guideFeeCents} (guide) + ${addonsCents} (addons)`);
+  
+  if (subtotalCents <= 0) {
+    console.log(`[DEBUG getContractGuideFeeCents] Subtotal is 0 or negative, returning null`);
+    return null;
+  }
 
   const { data: feeConfig } = await admin
     .from("platform_config")
@@ -229,6 +255,17 @@ export async function getContractGuideFeeCents(
   const feePct = feeConfig ? parseFloat(String(feeConfig.value)) : 5;
   const platformFeeCents = Math.max(50, Math.ceil(subtotalCents * (feePct / 100)));
   const totalCents = subtotalCents + platformFeeCents;
+  
+  console.log(`[DEBUG getContractGuideFeeCents] Final calculation:`, {
+    subtotalCents,
+    subtotalUsd: (subtotalCents / 100).toFixed(2),
+    platformFeePercent: feePct,
+    platformFeeCents,
+    platformFeeUsd: (platformFeeCents / 100).toFixed(2),
+    totalCents,
+    totalUsd: (totalCents / 100).toFixed(2),
+  });
+  
   return { subtotalCents, platformFeeCents, totalCents };
 }
 

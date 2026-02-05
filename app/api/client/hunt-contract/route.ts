@@ -362,19 +362,46 @@ export async function GET(req: Request) {
     }
     // Recalculate contract totals using the same logic as "Pay in Full" button
     // This ensures displayed totals match what clients will actually pay
+    console.log(`[DEBUG hunt-contract GET] Recalculating totals for ${contracts.length} contracts`);
     const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
     const contractTotals = new Map<string, number>();
     await Promise.all(
       contracts.map(async (c) => {
         if (!c.id) return;
         try {
+          const cAny = c as Record<string, unknown>;
+          const currentTotal = (cAny.contract_total_cents as number) || 0;
+          const storedGuideFee = (cAny.calculated_guide_fee_cents as number) || 0;
+          const storedAddons = (cAny.calculated_addons_cents as number) || 0;
+          
+          console.log(`[DEBUG hunt-contract GET] Contract ${c.id}:`, {
+            stored_contract_total_cents: currentTotal,
+            stored_contract_total_usd: (currentTotal / 100).toFixed(2),
+            stored_guide_fee_cents: storedGuideFee,
+            stored_guide_fee_usd: (storedGuideFee / 100).toFixed(2),
+            stored_addons_cents: storedAddons,
+            stored_addons_usd: (storedAddons / 100).toFixed(2),
+          });
+          
           const correctTotal = await getContractGuideFeeCents(admin, c.id);
           if (correctTotal) {
+            console.log(`[DEBUG hunt-contract GET] Contract ${c.id} correctTotal:`, {
+              subtotalCents: correctTotal.subtotalCents,
+              subtotalUsd: (correctTotal.subtotalCents / 100).toFixed(2),
+              platformFeeCents: correctTotal.platformFeeCents,
+              platformFeeUsd: (correctTotal.platformFeeCents / 100).toFixed(2),
+              totalCents: correctTotal.totalCents,
+              totalUsd: (correctTotal.totalCents / 100).toFixed(2),
+              stored_total_cents: currentTotal,
+              stored_total_usd: (currentTotal / 100).toFixed(2),
+              difference_cents: currentTotal - correctTotal.totalCents,
+              difference_usd: ((currentTotal - correctTotal.totalCents) / 100).toFixed(2),
+            });
+            
             contractTotals.set(c.id, correctTotal.totalCents);
             // Update database if stored value is wrong (async, don't block)
-            const cAny = c as Record<string, unknown>;
-            const currentTotal = (cAny.contract_total_cents as number) || 0;
             if (currentTotal !== correctTotal.totalCents) {
+              console.log(`[DEBUG hunt-contract GET] Contract ${c.id} total mismatch! Updating database...`);
               Promise.resolve(admin
                 .from("hunt_contracts")
                 .update({ contract_total_cents: correctTotal.totalCents })
@@ -383,6 +410,8 @@ export async function GET(req: Request) {
                   console.warn(`[hunt-contract] Failed to update total for contract ${c.id}:`, err);
                 });
             }
+          } else {
+            console.log(`[DEBUG hunt-contract GET] Contract ${c.id} - getContractGuideFeeCents returned null`);
           }
         } catch (err) {
           console.warn(`[hunt-contract] Failed to recalculate total for contract ${c.id}:`, err);
