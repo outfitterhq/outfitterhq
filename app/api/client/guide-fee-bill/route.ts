@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
     
     // Update payment_item if it has the wrong total
     if (correct && fullItem.total_cents !== correct.totalCents) {
-      await admin
+      Promise.resolve(admin
         .from("payment_items")
         .update({
           subtotal_cents: correct.subtotalCents,
@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
           total_cents: correct.totalCents,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", fullItem.id)
+        .eq("id", fullItem.id))
         .catch((err) => {
           console.warn(`[guide-fee-bill] Failed to update payment_item ${fullItem.id}:`, err);
         });
