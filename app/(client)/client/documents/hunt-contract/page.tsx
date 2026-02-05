@@ -99,6 +99,17 @@ export default function HuntContractPage() {
 
   useEffect(() => {
     loadContract();
+    
+    // Safety: Force clear loading after 35 seconds no matter what
+    const safetyTimer = setTimeout(() => {
+      console.error("[hunt-contract] SAFETY TIMEOUT - forcing loading to false");
+      setLoading(false);
+      if (!data && !error) {
+        setError("Page took too long to load. Please refresh.");
+      }
+    }, 35000);
+    
+    return () => clearTimeout(safetyTimer);
   }, []);
 
   // When client returns to this tab, refetch so they see "Sign via DocuSign" after outfitter sends it
@@ -157,96 +168,97 @@ export default function HuntContractPage() {
   }, [isComplete, currentContract?.id]);
 
   // Redirect to complete-booking ONLY when contract is loaded and needs booking
-  // This happens after data loads, so user sees the contract page briefly, then redirects
+  // Wrap in setTimeout to ensure page renders first
   useEffect(() => {
-    if (loading || !data) return;
+    // Don't run redirect logic if still loading or no data
+    if (loading || !data || redirectingToBooking) return;
     
-    // Check if we just returned from complete-booking (prevent redirect loop)
-    const urlParams = new URLSearchParams(window.location.search);
-    const justCompleted = urlParams.get("booking_completed") === "1";
-    if (justCompleted) {
-      // Remove the param immediately to prevent redirect loop
-      urlParams.delete("booking_completed");
-      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
-      window.history.replaceState({}, "", newUrl);
-      
-      // Set a flag to prevent further redirects for this session
-      sessionStorage.setItem("booking_just_completed", "true");
-      
-      // Reload contract data to get updated needs_complete_booking status
-      setTimeout(() => {
-        loadContract();
-        // Clear the flag after a delay
+    // Delay redirect check to ensure page has rendered
+    const timer = setTimeout(() => {
+      // Check if we just returned from complete-booking (prevent redirect loop)
+      const urlParams = new URLSearchParams(window.location.search);
+      const justCompleted = urlParams.get("booking_completed") === "1";
+      if (justCompleted) {
+        // Remove the param immediately to prevent redirect loop
+        urlParams.delete("booking_completed");
+        const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : "");
+        window.history.replaceState({}, "", newUrl);
+        
+        // Set a flag to prevent further redirects for this session
+        sessionStorage.setItem("booking_just_completed", "true");
+        
+        // Reload contract data to get updated needs_complete_booking status
         setTimeout(() => {
-          sessionStorage.removeItem("booking_just_completed");
-        }, 5000);
-      }, 500); // Small delay to ensure backend has processed the booking
-      return;
-    }
-    
-    // Also check sessionStorage to prevent immediate redirect after returning
-    if (sessionStorage.getItem("booking_just_completed") === "true") {
-      // Don't redirect if we just completed booking
-      return;
-    }
-    
-    // Also check if redirectingToBooking is true - if so, don't check again
-    if (redirectingToBooking) return;
-    
-    // Check if we've already attempted redirect for this contract
-    const contract = data?.contracts?.[selectedContractIndex];
-    const hasTriedRedirect = contract?.id && sessionStorage.getItem(`redirect_attempted_${contract.id}`);
-    
-    // If we've tried redirecting and we're back, don't try again
-    if (hasTriedRedirect) {
-      sessionStorage.removeItem(`redirect_attempted_${contract.id}`);
-      return;
-    }
-    
-    console.log("[hunt-contract] Checking redirect:", {
-      contract: contract?.id,
-      needs_complete_booking: contract?.needs_complete_booking,
-      hunt_id: contract?.hunt_id,
-      hasDates: !!contract?.hunt?.start_date,
-      hasPrice: !!contract?.base_guide_fee_usd,
-    });
-    
-    if (contract?.needs_complete_booking) {
-      // Mark that we're attempting redirect
-      if (contract.id) {
-        sessionStorage.setItem(`redirect_attempted_${contract.id}`, "true");
+          loadContract();
+          // Clear the flag after a delay
+          setTimeout(() => {
+            sessionStorage.removeItem("booking_just_completed");
+          }, 5000);
+        }, 500);
+        return;
       }
       
-      // Redirect to booking (like purchase tags flow)
-      console.log("[hunt-contract] Redirecting to complete-booking", {
-        contract_id: contract.id,
-        hunt_id: contract.hunt_id,
+      // Also check sessionStorage to prevent immediate redirect after returning
+      if (sessionStorage.getItem("booking_just_completed") === "true") {
+        return;
+      }
+      
+      // Check if we've already attempted redirect for this contract
+      const contract = data?.contracts?.[selectedContractIndex];
+      const hasTriedRedirect = contract?.id && sessionStorage.getItem(`redirect_attempted_${contract.id}`);
+      
+      // If we've tried redirecting and we're back, don't try again
+      if (hasTriedRedirect) {
+        sessionStorage.removeItem(`redirect_attempted_${contract.id}`);
+        return;
+      }
+      
+      console.log("[hunt-contract] Checking redirect:", {
+        contract: contract?.id,
+        needs_complete_booking: contract?.needs_complete_booking,
+        hunt_id: contract?.hunt_id,
       });
-      setRedirectingToBooking(true);
-      const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}?booking_completed=1`;
       
-      // Use hunt_id if available, otherwise use contract_id (complete-booking accepts both)
-      if (contract.hunt_id) {
-        window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`);
-      } else {
-        window.location.replace(`/client/complete-booking?contract_id=${encodeURIComponent(contract.id)}&return_to=${encodeURIComponent(returnUrl)}`);
+      if (contract?.needs_complete_booking) {
+        // Mark attempt
+        if (contract.id) {
+          sessionStorage.setItem(`redirect_attempted_${contract.id}`, "true");
+        }
+        
+        console.log("[hunt-contract] Redirecting to complete-booking");
+        setRedirectingToBooking(true);
+        const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}?booking_completed=1`;
+        
+        // Delay redirect to ensure page rendered
+        setTimeout(() => {
+          const redirectUrl = contract.hunt_id
+            ? `/client/complete-booking?hunt_id=${encodeURIComponent(contract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`
+            : `/client/complete-booking?contract_id=${encodeURIComponent(contract.id)}&return_to=${encodeURIComponent(returnUrl)}`;
+          window.location.replace(redirectUrl);
+        }, 500);
+        return;
       }
-      return;
-    }
-    
-    // If no contracts but there's a hunt that needs booking, redirect to that
-    if (!data.contracts || data.contracts.length === 0) {
-      if (data.hunts_without_contracts?.length) {
-        const firstHunt = data.hunts_without_contracts[0];
-        if (firstHunt?.needs_complete_booking) {
-          console.log("[hunt-contract] Redirecting to complete-booking for hunt without contract:", firstHunt.id);
-          setRedirectingToBooking(true);
-          window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
-          return;
+      
+      // If no contracts but there's a hunt that needs booking
+      if (!data.contracts || data.contracts.length === 0) {
+        if (data.hunts_without_contracts?.length) {
+          const firstHunt = data.hunts_without_contracts[0];
+          if (firstHunt?.needs_complete_booking) {
+            console.log("[hunt-contract] Redirecting to complete-booking for hunt without contract");
+            setRedirectingToBooking(true);
+            setTimeout(() => {
+              window.location.replace(`/client/complete-booking?hunt_id=${encodeURIComponent(String(firstHunt.id))}&return_to=${encodeURIComponent("/client/documents/hunt-contract")}`);
+            }, 500);
+            return;
+          }
         }
       }
-    }
-  }, [loading, data, selectedContractIndex, contractIdFromUrl]);
+    }, 1000); // 1 second delay to ensure page has rendered
+    
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [loading, data, selectedContractIndex, contractIdFromUrl, redirectingToBooking]);
 
   // When contract needs completion and has hunt_code but no hunt_window, fetch window from API
   useEffect(() => {
@@ -306,13 +318,21 @@ export default function HuntContractPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
+      console.log("[hunt-contract] Starting fetch...");
+      const startTime = Date.now();
       const res = await fetch(`/api/client/hunt-contract?fix_bill=1&_=${Date.now()}`, { 
         credentials: "include",
         signal: controller.signal,
       });
       
+      const fetchTime = Date.now() - startTime;
+      console.log("[hunt-contract] Fetch completed in", fetchTime, "ms, status:", res.status);
+      
       clearTimeout(timeoutId);
-      const json = await res.json().catch(() => ({}));
+      const json = await res.json().catch((e) => {
+        console.error("[hunt-contract] JSON parse error:", e);
+        return {};
+      });
       if (!res.ok) {
         const msg = json.error || "Failed to load contract";
         setError(res.status === 401 ? "Please sign in again. Your session may have expired." : msg);
@@ -379,45 +399,11 @@ export default function HuntContractPage() {
           };
         });
         
-        // Check if we need to redirect BEFORE setting state
+        // ALWAYS set data and clear loading - page MUST render first
+        // Redirect logic is handled separately in useEffect
         const selectedIdx = contractIdFromUrl
           ? contracts.findIndex((c) => c.id === contractIdFromUrl)
           : 0;
-        const contractToCheck = contracts[selectedIdx >= 0 ? selectedIdx : 0];
-        
-        // Check if booking is needed, but also check if we've already tried redirecting
-        const hasTriedRedirect = sessionStorage.getItem(`redirect_attempted_${contractToCheck?.id}`);
-        if (contractToCheck?.needs_complete_booking && !hasTriedRedirect) {
-          const redirectInfo = {
-            contract_id: contractToCheck.id,
-            hunt_id: contractToCheck.hunt_id,
-            needs_booking: contractToCheck.needs_complete_booking,
-          };
-          console.log("[hunt-contract] Contract needs booking - redirecting immediately", redirectInfo);
-          
-          // Mark that we've attempted redirect to prevent loops
-          sessionStorage.setItem(`redirect_attempted_${contractToCheck.id}`, "true");
-          
-          setLoading(false);
-          setRedirectingToBooking(true);
-          const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract=${contractIdFromUrl}` : ""}`;
-          
-          // Use hunt_id if available, otherwise use contract_id (complete-booking accepts both)
-          const redirectUrl = contractToCheck.hunt_id
-            ? `/client/complete-booking?hunt_id=${encodeURIComponent(contractToCheck.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`
-            : `/client/complete-booking?contract_id=${encodeURIComponent(contractToCheck.id)}&return_to=${encodeURIComponent(returnUrl)}`;
-          
-          // Small delay to ensure state is set
-          setTimeout(() => {
-            window.location.replace(redirectUrl);
-          }, 100);
-          return;
-        }
-        
-        // If redirect was attempted but we're back here, clear the flag and show the contract
-        if (hasTriedRedirect) {
-          sessionStorage.removeItem(`redirect_attempted_${contractToCheck?.id}`);
-        }
         
         setData({
           eligible: true,
@@ -425,20 +411,30 @@ export default function HuntContractPage() {
           hunts_without_contracts: json.hunts_without_contracts ?? [],
         });
         setSelectedContractIndex(selectedIdx >= 0 ? selectedIdx : 0);
+        setLoading(false); // MUST clear loading immediately
+        
+        console.log("[hunt-contract] Contracts loaded:", contracts.length, "contracts, loading cleared");
       } else {
+        console.log("[hunt-contract] No contracts found");
         setData({
           eligible: json.eligible ?? true,
           contracts: [],
           reason: json.reason || "No contract available yet.",
           hunts_without_contracts: json.hunts_without_contracts ?? [],
         });
+        setLoading(false);
       }
     } catch (e: any) {
+      // Clear timeout if still active
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      console.error("[hunt-contract] Error loading contract:", e);
+      
       // Handle abort/timeout errors gracefully
-      if (e.name === 'AbortError') {
+      if (e.name === 'AbortError' || e.message?.includes('timeout')) {
         setError("Request timed out. Please try refreshing the page.");
       } else {
-        setError(e?.message || String(e));
+        setError(e?.message || String(e) || "Failed to load contract");
       }
       setData((prev) => prev ?? { eligible: false, contracts: [], hunts_without_contracts: [] });
       setLoading(false);
@@ -581,10 +577,42 @@ export default function HuntContractPage() {
     );
   }
 
-  if (loading) {
+  // Show loading only if we have no data and no error
+  if (loading && !data && !error) {
     return (
       <div style={{ textAlign: "center", padding: 48 }}>
         <p>Loading contract...</p>
+        <p style={{ color: "#666", fontSize: 14, marginTop: 8 }}>
+          If this takes more than 30 seconds, please refresh the page.
+        </p>
+      </div>
+    );
+  }
+  
+  // Show error if we have one and no data
+  if (error && !data) {
+    return (
+      <div style={{ maxWidth: 600, margin: "48px auto", padding: 24 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12 }}>Error</h2>
+        <p style={{ color: "#d32f2f", marginBottom: 24 }}>{error}</p>
+        <button
+          onClick={() => {
+            setError(null);
+            setLoading(true);
+            loadContract();
+          }}
+          style={{
+            padding: "12px 24px",
+            background: "#1a472a",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Try Again
+        </button>
       </div>
     );
   }

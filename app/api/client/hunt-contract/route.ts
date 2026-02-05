@@ -333,7 +333,16 @@ export async function GET(req: Request) {
         hunt_window_start: hunt?.hunt_window_start ?? null,
         hunt_window_end: hunt?.hunt_window_end ?? null,
         tag_type: null as string | null,
-        needs_complete_booking: !hasDatesAndPrice,
+        needs_complete_booking: (() => {
+          // Check if contract is already completed (has completion data with pricing)
+          const completionData = c.client_completion_data as Record<string, unknown> | null | undefined;
+          const hasCompletionData = completionData != null && typeof completionData === "object";
+          const hasPricingInCompletion = hasCompletionData && Boolean(completionData.selected_pricing_item_id);
+          const contractStatus = c.status as string;
+          const isCompleted = contractStatus !== "pending_client_completion" || hasPricingInCompletion;
+          // Only need booking if contract is not completed AND hunt doesn't have dates/price
+          return !isCompleted && !hasDatesAndPrice;
+        })(),
       };
     });
     const tagIds2 = [...new Set(contracts.map((c) => c.hunt?.private_land_tag_id).filter(Boolean) as string[])];
