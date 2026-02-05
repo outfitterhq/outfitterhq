@@ -64,21 +64,27 @@ export async function GET(
       .order("created_at", { ascending: false });
 
     // Recalculate correct totals for each contract (pricing item + addons + platform fee)
+    // If recalculation fails, use original contract data
     const { supabaseAdmin } = await import("@/lib/supabase/server");
     const admin = supabaseAdmin();
     const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
     
     const contractsWithCorrectTotals = await Promise.all(
       (huntContracts || []).map(async (contract: any) => {
-        const correctTotal = await getContractGuideFeeCents(admin, contract.id);
-        if (correctTotal) {
-          const amountPaid = contract.amount_paid_cents || 0;
-          const remaining = correctTotal.totalCents - amountPaid;
-          return {
-            ...contract,
-            contract_total_cents: correctTotal.totalCents,
-            remaining_balance_cents: remaining,
-          };
+        try {
+          const correctTotal = await getContractGuideFeeCents(admin, contract.id);
+          if (correctTotal && correctTotal.totalCents > 0) {
+            const amountPaid = contract.amount_paid_cents || 0;
+            const remaining = correctTotal.totalCents - amountPaid;
+            return {
+              ...contract,
+              contract_total_cents: correctTotal.totalCents,
+              remaining_balance_cents: remaining,
+            };
+          }
+        } catch (error) {
+          console.error(`Error recalculating total for contract ${contract.id}:`, error);
+          // If recalculation fails, return original contract data
         }
         return contract;
       })
