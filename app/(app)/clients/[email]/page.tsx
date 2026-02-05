@@ -516,8 +516,7 @@ export default function ClientDetailPage() {
                             </Link>
                           )}
                           <Link
-                            href={`/api/hunt-contracts/${contract.id}/payments`}
-                            target="_blank"
+                            href={`/hunt-contracts/${contract.id}/payments`}
                             style={{
                               padding: "6px 12px",
                               background: "#4caf50",

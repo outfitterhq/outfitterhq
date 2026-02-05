@@ -50,22 +50,13 @@ export default function MyContractsPage() {
       setLoading(true);
       setError(null);
 
-      // Get user's email from session
-      const sessionRes = await fetch("/api/session");
-      if (!sessionRes.ok) {
-        throw new Error("Not authenticated");
-      }
-      const session = await sessionRes.json();
-      const email = session.user?.email;
-
-      if (!email) {
-        throw new Error("No email found in session");
-      }
-
-      // Get contracts for this client
-      const contractsRes = await fetch(`/api/client/hunt-contracts`);
+      // Get contracts for this client (API handles auth)
+      const contractsRes = await fetch(`/api/client/hunt-contracts`, {
+        credentials: "include", // Include cookies for auth
+      });
       if (!contractsRes.ok) {
-        throw new Error("Failed to load contracts");
+        const errorData = await contractsRes.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to load contracts");
       }
       const contractsData = await contractsRes.json();
       setContracts(contractsData.contracts || []);
@@ -76,11 +67,15 @@ export default function MyContractsPage() {
 
       for (const contract of contractsData.contracts || []) {
         try {
-          const paymentRes = await fetch(`/api/hunt-contracts/${contract.id}/payments`);
+          const paymentRes = await fetch(`/api/hunt-contracts/${contract.id}/payments`, {
+            credentials: "include", // Include cookies for auth
+          });
           if (paymentRes.ok) {
             const payment = await paymentRes.json();
             paymentData[contract.id] = payment;
             total += payment.contract.remaining_balance_usd || 0;
+          } else {
+            console.error(`Failed to load payment for contract ${contract.id}:`, paymentRes.status);
           }
         } catch (e) {
           console.error(`Error loading payment for contract ${contract.id}:`, e);

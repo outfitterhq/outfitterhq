@@ -18,7 +18,31 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "No email found" }, { status: 400 });
     }
 
-    // Get all contracts for this client
+    // Get client record to find linked outfitters
+    const { data: client } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("email", userEmail)
+      .single();
+
+    if (!client) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    // Get linked outfitters
+    const { data: links } = await supabase
+      .from("client_outfitter_links")
+      .select("outfitter_id")
+      .eq("client_id", client.id)
+      .eq("is_active", true);
+
+    if (!links || links.length === 0) {
+      return NextResponse.json({ error: "Not linked to any outfitter" }, { status: 403 });
+    }
+
+    const outfitterIds = links.map((l: any) => l.outfitter_id);
+
+    // Get all contracts for this client across all linked outfitters
     const { data: contracts, error } = await supabase
       .from("hunt_contracts")
       .select(`
@@ -30,9 +54,11 @@ export async function GET(req: Request) {
         amount_paid_cents,
         remaining_balance_cents,
         payment_status,
-        client_email
+        client_email,
+        outfitter_id
       `)
       .eq("client_email", userEmail)
+      .in("outfitter_id", outfitterIds)
       .order("created_at", { ascending: false });
 
     if (error) {
