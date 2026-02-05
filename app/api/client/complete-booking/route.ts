@@ -454,51 +454,148 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: updateErr.message }, { status: 500 });
   }
 
-  // Auto-generate hunt contract so admin sees it for review (web and iOS)
-  // Only create if one doesn't already exist (prevents duplicates)
+  // Get or create contract
   let contractId: string | null = null;
   let contractError: string | undefined = undefined;
 
   const { data: existingContract } = await admin
     .from("hunt_contracts")
-    .select("id")
+    .select("id, is_locked")
     .eq("hunt_id", hunt_id)
     .maybeSingle();
 
   if (!existingContract) {
-    // Only create contract if it doesn't exist
+    // Create contract if it doesn't exist (should have been auto-generated, but just in case)
     const result = await createHuntContractIfNeeded(admin, hunt_id);
     contractId = result.contractId;
     contractError = result.error;
     if (contractError && !contractId) {
       console.warn("[complete-booking] createHuntContractIfNeeded:", contractError);
+      return NextResponse.json({ error: "Failed to create contract" }, { status: 500 });
     }
   } else {
-    // Contract already exists - use its ID and update it with new completion data if needed
     contractId = existingContract.id;
-    const huntWithAddon = hunt as { client_addon_data?: Record<string, unknown> | null; selected_pricing_item_id?: string | null };
-    const updateData: Record<string, unknown> = {};
     
-    if (huntWithAddon.selected_pricing_item_id || huntWithAddon.client_addon_data) {
-      const clientCompletionData: Record<string, unknown> = {};
-      if (huntWithAddon.selected_pricing_item_id) {
-        clientCompletionData.selected_pricing_item_id = huntWithAddon.selected_pricing_item_id;
-      }
-      if (huntWithAddon.client_addon_data && typeof huntWithAddon.client_addon_data === "object") {
-        Object.assign(clientCompletionData, huntWithAddon.client_addon_data);
-      }
-      
-      if (Object.keys(clientCompletionData).length > 0) {
-        updateData.client_completion_data = clientCompletionData;
+    // Check if contract is locked
+    if (existingContract.is_locked) {
+      return NextResponse.json(
+        { error: "This contract is locked and cannot be modified. It has been signed or a payment has been made." },
+        { status: 403 }
+      );
+    }
+  }
+
+  if (!contractId) {
+    return NextResponse.json({ error: "Contract not found" }, { status: 404 });
+  }
+
+  // Prepare contract update data
+  const contractUpdateData: Record<string, unknown> = {
+    client_selected_start_date: client_start_date,
+    client_selected_end_date: client_end_date,
+  };
+
+  if (pricing_item_id) {
+    contractUpdateData.selected_pricing_item_id = pricing_item_id;
+  }
+
+  // Store add-ons in client_completion_data
+  const clientCompletionData: Record<string, unknown> = {};
+  if (pricing_item_id) {
+    clientCompletionData.selected_pricing_item_id = pricing_item_id;
+  }
+  if (extraDaysNum > 0) clientCompletionData.extra_days = extraDaysNum;
+  if (extraNonHuntersNum > 0) clientCompletionData.extra_non_hunters = extraNonHuntersNum;
+  if (extraSpottersNum > 0) clientCompletionData.extra_spotters = extraSpottersNum;
+  if (rifleRentalNum > 0) clientCompletionData.rifle_rental = rifleRentalNum;
+  
+  if (Object.keys(clientCompletionData).length > 0) {
+    contractUpdateData.client_completion_data = clientCompletionData;
+  }
+
+  // Update contract with dates and pricing
+  const { error: contractUpdateErr } = await admin
+    .from("hunt_contracts")
+    .update(contractUpdateData)
+    .eq("id", contractId);
+
+  if (contractUpdateErr) {
+    console.error("[complete-booking] Contract update error:", contractUpdateErr);
+    return NextResponse.json({ error: "Failed to update contract" }, { status: 500 });
+  }
+
+  // Calculate guide fee based on selected days × pricing item
+  const { data: guideFeeResult, error: guideFeeErr } = await admin
+    .rpc("calculate_contract_guide_fee", { p_contract_id: contractId });
+
+  if (guideFeeErr) {
+    console.warn("[complete-booking] Guide fee calculation error:", guideFeeErr);
+    // Continue even if guide fee calculation fails - it will be recalculated later
+  }
+
+  // Recalculate contract total (guide fee + add-ons + platform fee)
+  // Note: Add-ons calculation will be done in the API layer, then we'll call recalculate
+  // For now, we'll calculate add-ons here and update calculated_addons_cents
+  let addonsCents = 0;
+  if (Object.keys(clientCompletionData).length > 0) {
+    // Get add-on pricing items
+    const { data: addonItems } = await admin
+      .from("pricing_items")
+      .select("id, amount_usd, addon_type")
+      .eq("outfitter_id", hunt.outfitter_id)
+      .eq("category", "Add-ons");
+
+    const addonMap = new Map((addonItems || []).map((item: any) => [item.addon_type, item]));
+    
+    if (extraDaysNum > 0) {
+      const extraDayItem = Array.from(addonMap.values()).find((item: any) => 
+        item.addon_type === "extra_days" || (item.addon_type === null && item.title?.toLowerCase().includes("extra day"))
+      );
+      if (extraDayItem) {
+        addonsCents += Math.round((extraDayItem.amount_usd || 0) * 100 * extraDaysNum);
       }
     }
-    
-    if (Object.keys(updateData).length > 0) {
-      await admin
-        .from("hunt_contracts")
-        .update(updateData)
-        .eq("id", existingContract.id);
+    if (extraNonHuntersNum > 0) {
+      const nonHunterItem = Array.from(addonMap.values()).find((item: any) => 
+        item.addon_type === "non_hunter" || (item.addon_type === null && item.title?.toLowerCase().includes("non"))
+      );
+      if (nonHunterItem) {
+        addonsCents += Math.round((nonHunterItem.amount_usd || 0) * 100 * extraNonHuntersNum);
+      }
     }
+    if (extraSpottersNum > 0) {
+      const spotterItem = Array.from(addonMap.values()).find((item: any) => 
+        item.addon_type === "spotter" || (item.addon_type === null && item.title?.toLowerCase().includes("spotter"))
+      );
+      if (spotterItem) {
+        addonsCents += Math.round((spotterItem.amount_usd || 0) * 100 * extraSpottersNum);
+      }
+    }
+    if (rifleRentalNum > 0) {
+      const rifleItem = Array.from(addonMap.values()).find((item: any) => 
+        item.addon_type === "rifle_rental" || (item.addon_type === null && item.title?.toLowerCase().includes("rifle"))
+      );
+      if (rifleItem) {
+        addonsCents += Math.round((rifleItem.amount_usd || 0) * 100 * rifleRentalNum);
+      }
+    }
+  }
+
+  // Update calculated_addons_cents
+  if (addonsCents > 0) {
+    await admin
+      .from("hunt_contracts")
+      .update({ calculated_addons_cents: addonsCents })
+      .eq("id", contractId);
+  }
+
+  // Recalculate total
+  const { error: totalErr } = await admin
+    .rpc("recalculate_contract_total", { p_contract_id: contractId });
+
+  if (totalErr) {
+    console.warn("[complete-booking] Total recalculation error:", totalErr);
+    // Continue even if total recalculation fails
   }
 
   return NextResponse.json({

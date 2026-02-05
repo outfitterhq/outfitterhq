@@ -106,6 +106,18 @@ CREATE TABLE IF NOT EXISTS client_predraw_submissions (
 );
 
 -- Add foreign key for species selections
+-- Drop constraint if it exists, then add it
+DO $$ 
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE constraint_name = 'fk_predraw_submission' 
+    AND table_name = 'predraw_species_selections'
+  ) THEN
+    ALTER TABLE predraw_species_selections DROP CONSTRAINT fk_predraw_submission;
+  END IF;
+END $$;
+
 ALTER TABLE predraw_species_selections 
   ADD CONSTRAINT fk_predraw_submission 
   FOREIGN KEY (submission_id) 
