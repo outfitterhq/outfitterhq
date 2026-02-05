@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { supabasePage } from "@/lib/supabase/server";
 import { OUTFITTER_COOKIE } from "@/lib/tenant";
 import QuickCard from "./QuickCard";
