@@ -313,10 +313,11 @@ export default function HuntContractPage() {
   async function loadContract() {
     setError(null);
     setLoading(true);
+    let timeoutId: NodeJS.Timeout | null = null;
     try {
       // Add timeout to prevent infinite loading
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
       
       console.log("[hunt-contract] Starting fetch...");
       const startTime = Date.now();
@@ -328,7 +329,10 @@ export default function HuntContractPage() {
       const fetchTime = Date.now() - startTime;
       console.log("[hunt-contract] Fetch completed in", fetchTime, "ms, status:", res.status);
       
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       const json = await res.json().catch((e) => {
         console.error("[hunt-contract] JSON parse error:", e);
         return {};
@@ -426,7 +430,10 @@ export default function HuntContractPage() {
       }
     } catch (e: any) {
       // Clear timeout if still active
-      if (timeoutId) clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       
       console.error("[hunt-contract] Error loading contract:", e);
       
