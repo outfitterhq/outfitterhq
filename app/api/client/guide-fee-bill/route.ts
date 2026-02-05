@@ -154,9 +154,28 @@ export async function GET(req: NextRequest) {
     const correct = await getContractGuideFeeCents(admin, contractId);
     const totalCents = correct ? correct.totalCents : fullItem.total_cents;
     const platformFeeCentsReturn = correct ? correct.platformFeeCents : platformFeeCents;
+    
+    // Update payment_item if it has the wrong total
+    if (correct && fullItem.total_cents !== correct.totalCents) {
+      await admin
+        .from("payment_items")
+        .update({
+          subtotal_cents: correct.subtotalCents,
+          platform_fee_cents: correct.platformFeeCents,
+          total_cents: correct.totalCents,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", fullItem.id)
+        .catch((err) => {
+          console.warn(`[guide-fee-bill] Failed to update payment_item ${fullItem.id}:`, err);
+        });
+    }
+    
+    // Use calculated guide fee for amount_usd (not the pricing item amount)
+    const calculatedAmountUsd = correct ? correct.subtotalCents / 100 : amountUsd;
     const balanceCents = totalCents - (fullItem.amount_paid_cents || 0);
     return NextResponse.json({
-      amount_usd: amountUsd,
+      amount_usd: calculatedAmountUsd,
       description: pricingTitle,
       payment_item_id: fullItem.id,
       total_cents: totalCents,
