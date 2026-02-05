@@ -35,6 +35,14 @@ DELETE FROM hunt_contracts;
 UPDATE calendar_events SET contract_generated_at = NULL;
 
 -- ============================================
+-- PART 1b: DISABLE AUTO-DEPOSIT TRIGGER
+-- ============================================
+-- Disable the auto-deposit creation trigger - deposits should only be created
+-- after contract total is set (when dates/add-ons are selected)
+
+DROP TRIGGER IF EXISTS create_deposit_on_contract ON hunt_contracts;
+
+-- ============================================
 -- PART 2: ADD NEW COLUMNS TO HUNT_CONTRACTS
 -- ============================================
 
@@ -143,31 +151,39 @@ BEGIN
         'Generated: ' || NOW()::date;
     END IF;
     
-    -- Insert contract (hunt now exists so FK works)
-    INSERT INTO hunt_contracts (
-      outfitter_id, 
-      hunt_id, 
-      client_email, 
-      client_name, 
-      content, 
-      status,
-      template_id
-    )
-    VALUES (
-      NEW.outfitter_id, 
-      NEW.id, 
-      NEW.client_email, 
-      v_client_name, 
-      v_content, 
-      'pending_client_completion',
-      v_template_id
-    )
-    ON CONFLICT (hunt_id) DO NOTHING;
-    
-    -- Mark contract as generated
-    UPDATE calendar_events 
-    SET contract_generated_at = NOW() 
-    WHERE id = NEW.id;
+    -- Check if contract already exists for this hunt (prevent duplicates)
+    IF NOT EXISTS (SELECT 1 FROM hunt_contracts WHERE hunt_id = NEW.id) THEN
+      -- Insert contract (hunt now exists so FK works)
+      INSERT INTO hunt_contracts (
+        outfitter_id, 
+        hunt_id, 
+        client_email, 
+        client_name, 
+        content, 
+        status,
+        template_id,
+        contract_total_cents,
+        calculated_guide_fee_cents,
+        calculated_addons_cents
+      )
+      VALUES (
+        NEW.outfitter_id, 
+        NEW.id, 
+        NEW.client_email, 
+        v_client_name, 
+        v_content, 
+        'pending_client_completion',
+        v_template_id,
+        0,  -- Start with 0 total - will be calculated when dates/add-ons are selected
+        0,  -- Start with 0 guide fee - will be calculated when dates are selected
+        0   -- Start with 0 addons - will be calculated when add-ons are selected
+      );
+      
+      -- Mark contract as generated
+      UPDATE calendar_events 
+      SET contract_generated_at = NOW() 
+      WHERE id = NEW.id;
+    END IF;
   END IF;
   
   RETURN NEW;
