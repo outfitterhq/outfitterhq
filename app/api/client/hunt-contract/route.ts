@@ -143,9 +143,13 @@ export async function GET(req: Request) {
     const contractStatus = c.status as string;
     const isCompleted = contractStatus !== "pending_client_completion" || hasPricingInCompletion;
     
-    // Only need booking if contract is not completed AND hunt doesn't have dates/price
-    const hasDatesAndPrice = Boolean(hunt?.start_time && hunt?.end_time && hunt?.selected_pricing_item_id);
-    const needsCompleteBooking = !isCompleted && !hasDatesAndPrice;
+    // Contract needs booking if it doesn't have:
+    // 1. selected_pricing_item_id (guide fee selected) in contract
+    // 2. client_selected_start_date AND client_selected_end_date (dates selected) in contract
+    const cAny = c as Record<string, unknown>;
+    const hasPricing = Boolean(cAny.selected_pricing_item_id);
+    const hasDates = Boolean(cAny.client_selected_start_date && cAny.client_selected_end_date);
+    const needsCompleteBooking = !hasPricing || !hasDates;
     
     return {
       id: c.id as string,
@@ -334,14 +338,14 @@ export async function GET(req: Request) {
         hunt_window_end: hunt?.hunt_window_end ?? null,
         tag_type: null as string | null,
         needs_complete_booking: (() => {
-          // Check if contract is already completed (has completion data with pricing)
-          const completionData = c.client_completion_data as Record<string, unknown> | null | undefined;
-          const hasCompletionData = completionData != null && typeof completionData === "object";
-          const hasPricingInCompletion = hasCompletionData && Boolean(completionData.selected_pricing_item_id);
-          const contractStatus = c.status as string;
-          const isCompleted = contractStatus !== "pending_client_completion" || hasPricingInCompletion;
-          // Only need booking if contract is not completed AND hunt doesn't have dates/price
-          return !isCompleted && !hasDatesAndPrice;
+          // Contract needs booking if it doesn't have:
+          // 1. selected_pricing_item_id (guide fee selected)
+          // 2. client_selected_start_date AND client_selected_end_date (dates selected)
+          const cAny = c as Record<string, unknown>;
+          const hasPricing = Boolean(cAny.selected_pricing_item_id);
+          const hasDates = Boolean(cAny.client_selected_start_date && cAny.client_selected_end_date);
+          // Need booking if missing pricing OR dates
+          return !hasPricing || !hasDates;
         })(),
       };
     });

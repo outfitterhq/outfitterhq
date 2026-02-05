@@ -624,7 +624,9 @@ export default function HuntContractPage() {
     );
   }
 
-  const needsCompletion = currentContract?.status === "pending_client_completion";
+  // Check if contract needs booking (missing pricing or dates) - should redirect, not show form
+  const needsBooking = currentContract?.needs_complete_booking ?? false;
+  const needsCompletion = currentContract?.status === "pending_client_completion" && !needsBooking;
   const pendingReview = currentContract?.status === "pending_admin_review";
   const approvedWaitingDocuSign = currentContract?.status === "ready_for_signature";
   const readyForSignature = currentContract?.status === "sent_to_docusign";
@@ -1328,8 +1330,47 @@ export default function HuntContractPage() {
             </div>
           )}
 
-          {/* Client Completion Form (if needed) */}
-          {needsCompletion && (
+          {/* Show message if needs booking (should have redirected, but just in case) */}
+          {needsBooking && (
+            <div
+              style={{
+                background: "#e3f2fd",
+                border: "1px solid #2196f3",
+                borderRadius: 8,
+                padding: 24,
+                marginBottom: 24,
+              }}
+            >
+              <h3 style={{ fontWeight: 600, marginBottom: 16, color: "#1565c0" }}>Complete Your Booking First</h3>
+              <p style={{ marginBottom: 16, color: "#666" }}>
+                Before you can view and sign your contract, you need to complete your booking by selecting your guide fee and hunt dates.
+              </p>
+              <button
+                onClick={() => {
+                  const returnUrl = `/client/documents/hunt-contract${contractIdFromUrl ? `?contract_id=${contractIdFromUrl}` : ""}`;
+                  const redirectUrl = currentContract?.hunt_id
+                    ? `/client/complete-booking?hunt_id=${encodeURIComponent(currentContract.hunt_id)}&return_to=${encodeURIComponent(returnUrl)}`
+                    : `/client/complete-booking?contract_id=${encodeURIComponent(currentContract?.id || "")}&return_to=${encodeURIComponent(returnUrl)}`;
+                  window.location.replace(redirectUrl);
+                }}
+                style={{
+                  padding: "12px 24px",
+                  background: "#1a472a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontSize: 15,
+                }}
+              >
+                Go to Complete Booking →
+              </button>
+            </div>
+          )}
+
+          {/* Client Completion Form (if needed - only for contracts that have pricing/dates but need acknowledgment) */}
+          {needsCompletion && !needsBooking && (
             <div
               style={{
                 background: "#fff3cd",
@@ -1343,20 +1384,6 @@ export default function HuntContractPage() {
               <p style={{ marginBottom: 16, color: "#666" }}>
                 Please review the contract above. Your hunt details (species, dates, hunt code) are shown at the top. Confirm below to submit for your outfitter&apos;s review.
               </p>
-
-              {!currentContract?.hunt?.start_date || !currentContract?.hunt?.end_date ? (
-                <div style={{ 
-                  background: "#fff3cd", 
-                  border: "1px solid #ffc107", 
-                  borderRadius: 8, 
-                  padding: 12, 
-                  marginBottom: 16 
-                }}>
-                  <p style={{ margin: 0, color: "#856404", fontSize: 14 }}>
-                    ⚠️ <strong>Missing hunt dates.</strong> Your hunt needs start and end dates. If dates are not shown at the top, contact your outfitter or complete your booking first.
-                  </p>
-                </div>
-              ) : null}
 
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
@@ -1401,120 +1428,28 @@ export default function HuntContractPage() {
                 />
               </div>
 
-              {/* Add-ons: extra days and non-hunters — always show; add to total */}
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 14, color: "#666", marginBottom: 12 }}>
-                  Add-ons (extra days, non-hunters, spotter) are added to your guide fee and included in the contract total.
+              {/* Note: Pricing and add-ons are selected in complete-booking, not here */}
+              {currentContract?.contract_total_cents && currentContract.contract_total_cents > 0 && (
+                <div
+                  style={{
+                    marginBottom: 24,
+                    padding: 16,
+                    background: "#f0f7f4",
+                    border: "1px solid #c8e6c9",
+                    borderRadius: 8,
+                  }}
+                >
+                  <h4 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#1a472a" }}>
+                    Contract Total
+                  </h4>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#1a472a" }}>
+                    ${((currentContract.contract_total_cents as number) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <p style={{ margin: "8px 0 0 0", fontSize: 12, color: "#666" }}>
+                    This total includes your guide fee and any add-ons you selected during booking.
+                  </p>
                 </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
-                  <div>
-                    <label style={{ display: "block", marginBottom: 6, fontWeight: 500, fontSize: 14 }}>
-                      Extra days (extend hunt)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      value={completionData.extra_days}
-                      onChange={(e) =>
-                        setCompletionData({
-                          ...completionData,
-                          extra_days: Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0)),
-                        })
-                      }
-                      style={{ width: 80, padding: 8, border: "1px solid #ddd", borderRadius: 4, fontSize: 14 }}
-                    />
-                    <span style={{ marginLeft: 8, fontSize: 14, color: "#666" }}>
-                      ${(currentContract?.addon_pricing?.extra_day_usd ?? 100).toLocaleString()}/day
-                    </span>
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: 6, fontWeight: 500, fontSize: 14 }}>
-                      Non-hunters
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      value={completionData.extra_non_hunters}
-                      onChange={(e) =>
-                        setCompletionData({
-                          ...completionData,
-                          extra_non_hunters: Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0)),
-                        })
-                      }
-                      style={{ width: 80, padding: 8, border: "1px solid #ddd", borderRadius: 4, fontSize: 14 }}
-                    />
-                    <span style={{ marginLeft: 8, fontSize: 14, color: "#666" }}>
-                      ${(currentContract?.addon_pricing?.non_hunter_usd ?? 75).toLocaleString()}/person
-                    </span>
-                  </div>
-                  <div>
-                    <label style={{ display: "block", marginBottom: 6, fontWeight: 500, fontSize: 14 }}>
-                      Spotter(s)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={20}
-                      value={completionData.extra_spotters}
-                      onChange={(e) =>
-                        setCompletionData({
-                          ...completionData,
-                          extra_spotters: Math.max(0, Math.min(20, parseInt(e.target.value, 10) || 0)),
-                        })
-                      }
-                      style={{ width: 80, padding: 8, border: "1px solid #ddd", borderRadius: 4, fontSize: 14 }}
-                    />
-                    <span style={{ marginLeft: 8, fontSize: 14, color: "#666" }}>
-                      ${(currentContract?.addon_pricing?.spotter_usd ?? 50).toLocaleString()}/person
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price summary: guide fee + add-ons = total (what you are reviewing) */}
-              {(() => {
-                const baseUsd = currentContract?.base_guide_fee_usd ?? 0;
-                const dayRate = currentContract?.addon_pricing?.extra_day_usd ?? 100;
-                const nonHunterRate = currentContract?.addon_pricing?.non_hunter_usd ?? 75;
-                const spotterRate = currentContract?.addon_pricing?.spotter_usd ?? 50;
-                const extraDays = completionData.extra_days || 0;
-                const nonHunters = completionData.extra_non_hunters || 0;
-                const spotters = completionData.extra_spotters || 0;
-                const addonsUsd = extraDays * dayRate + nonHunters * nonHunterRate + spotters * spotterRate;
-                const totalUsd = baseUsd + addonsUsd;
-                return (
-                  <div
-                    style={{
-                      marginBottom: 24,
-                      padding: 16,
-                      background: "#f0f7f4",
-                      border: "1px solid #c8e6c9",
-                      borderRadius: 8,
-                    }}
-                  >
-                    <h4 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#1a472a" }}>
-                      Contract total (what you are reviewing)
-                    </h4>
-                    <div style={{ fontSize: 14, color: "#333", lineHeight: 1.8 }}>
-                      <div>Guide fee: ${baseUsd.toLocaleString()}</div>
-                      {extraDays > 0 && (
-                        <div>Extra days ({extraDays} × ${dayRate.toLocaleString()}/day): ${(extraDays * dayRate).toLocaleString()}</div>
-                      )}
-                      {nonHunters > 0 && (
-                        <div>Non-hunters ({nonHunters} × ${nonHunterRate.toLocaleString()}/person): ${(nonHunters * nonHunterRate).toLocaleString()}</div>
-                      )}
-                      {spotters > 0 && (
-                        <div>Spotter(s) ({spotters} × ${spotterRate.toLocaleString()}/person): ${(spotters * spotterRate).toLocaleString()}</div>
-                      )}
-                      <div style={{ marginTop: 8, fontWeight: 700, fontSize: 16 }}>
-                        Total: ${totalUsd.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
+              )}
 
               {(() => {
                 const hunt = currentContract?.hunt;
