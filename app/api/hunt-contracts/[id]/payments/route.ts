@@ -55,6 +55,39 @@ export async function GET(
       .eq("contract_id", id)
       .order("created_at", { ascending: false });
 
+    // If contract_total_cents is 0 but we have payment items, calculate total from items
+    let contractTotalCents = contract.contract_total_cents || 0;
+    if (contractTotalCents === 0 && paymentItems && paymentItems.length > 0) {
+      contractTotalCents = paymentItems.reduce((sum: number, item: any) => sum + (item.total_cents || 0), 0);
+      // Update contract total if it was 0
+      if (contractTotalCents > 0) {
+        await supabase
+          .from("hunt_contracts")
+          .update({ contract_total_cents: contractTotalCents })
+          .eq("id", id);
+        // Recalculate payment totals
+        await supabase.rpc("update_contract_payment_totals", { p_contract_id: id });
+        // Refetch contract to get updated values
+        const { data: updatedContract } = await supabase
+          .from("hunt_contracts")
+          .select(`
+            id,
+            contract_total_cents,
+            amount_paid_cents,
+            remaining_balance_cents,
+            payment_status
+          `)
+          .eq("id", id)
+          .single();
+        if (updatedContract) {
+          contract.contract_total_cents = updatedContract.contract_total_cents;
+          contract.amount_paid_cents = updatedContract.amount_paid_cents;
+          contract.remaining_balance_cents = updatedContract.remaining_balance_cents;
+          contract.payment_status = updatedContract.payment_status;
+        }
+      }
+    }
+
     // Get active payment plan
     const { data: paymentPlan } = await supabase
       .from("contract_payment_plans")
@@ -86,14 +119,18 @@ export async function GET(
       transactions = trans || [];
     }
 
+    // Use calculated total if contract_total_cents was 0
+    const finalContractTotal = contractTotalCents > 0 ? contractTotalCents : contract.contract_total_cents || 0;
+    
     return NextResponse.json({
       contract: {
         ...contract,
-        contract_total_usd: contract.contract_total_cents / 100,
+        contract_total_cents: finalContractTotal,
+        contract_total_usd: finalContractTotal / 100,
         amount_paid_usd: contract.amount_paid_cents / 100,
         remaining_balance_usd: contract.remaining_balance_cents / 100,
-        payment_percentage: contract.contract_total_cents > 0
-          ? Math.round((contract.amount_paid_cents / contract.contract_total_cents) * 100 * 10) / 10
+        payment_percentage: finalContractTotal > 0
+          ? Math.round((contract.amount_paid_cents / finalContractTotal) * 100 * 10) / 10
           : 0,
       },
       paymentItems: paymentItems || [],

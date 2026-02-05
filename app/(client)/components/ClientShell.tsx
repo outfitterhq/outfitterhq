@@ -23,6 +23,7 @@ interface ClientShellProps {
 
 const TABS = [
   { href: "/client", label: "Dashboard", icon: "🏠" },
+  { href: "/client/my-contracts", label: "My Contracts", icon: "📋" },
   { href: "/client/calendar", label: "My Calendar", icon: "📅" },
   { href: "/client/documents", label: "My Documents", icon: "📄" },
   { href: "/client/payments", label: "My Payments", icon: "💳" },
