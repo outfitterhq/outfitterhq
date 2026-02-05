@@ -130,11 +130,12 @@ export async function GET(req: NextRequest) {
       (sum: number, i: { amount_paid_cents?: number }) => sum + (i.amount_paid_cents || 0),
       0
     );
+    // Use calculated amounts (accounts for selected days)
     return NextResponse.json({
-      amount_usd: amountUsd,
+      amount_usd: amountUsd, // From correctTotal.subtotalCents / 100
       description: pricingTitle,
       total_cents: totalDue,
-      platform_fee_cents: platformFeeCents,
+      platform_fee_cents: platformFeeCents, // From correctTotal.platformFeeCents
       payment_plan: true,
       installments: installments.map((i: { id: string; total_cents: number; status: string; due_date: string | null; amount_paid_cents?: number }) => ({
         payment_item_id: i.id,
@@ -187,14 +188,8 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const { data: feeConfig } = await admin
-    .from("platform_config")
-    .select("value")
-    .eq("key", "platform_fee_percentage")
-    .maybeSingle();
-  const feePct = feeConfig ? parseFloat(String(feeConfig.value)) : 5;
-  const platformCents = Math.max(50, Math.ceil(subtotalCents * (feePct / 100)));
-  const totalCentsFinal = subtotalCents + platformCents;
+  // Use calculated amounts (already computed above from getContractGuideFeeCents)
+  // subtotalCents, platformFeeCents, and totalCents are already set correctly
 
   const { data: newItem, error: insertErr } = await admin
     .from("payment_items")
@@ -204,8 +199,8 @@ export async function GET(req: NextRequest) {
       item_type: "guide_fee",
       description: `${pricingTitle} (signed contract)`,
       subtotal_cents: subtotalCents,
-      platform_fee_cents: platformCents,
-      total_cents: totalCentsFinal,
+      platform_fee_cents: platformFeeCents,
+      total_cents: totalCents,
       hunt_id: contract.hunt_id,
       contract_id: contractId,
       status: "pending",
