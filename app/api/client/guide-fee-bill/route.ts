@@ -282,7 +282,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Client record not found" }, { status: 404 });
   }
 
-  let amountUsd = 0;
+  // CRITICAL: Use getContractGuideFeeCents which uses calculated_guide_fee_cents (accounts for selected days)
+  const { getContractGuideFeeCents } = await import("@/lib/guide-fee-bill-server");
+  const correctTotal = await getContractGuideFeeCents(admin, contractId);
+  
+  if (!correctTotal || correctTotal.subtotalCents <= 0) {
+    return NextResponse.json({ error: "No guide fee set for this hunt." }, { status: 400 });
+  }
+
+  // Get pricing item title for display
   let pricingTitle = "Guide fee";
   if (contract.hunt_id) {
     const { data: hunt } = await admin
@@ -294,30 +302,25 @@ export async function POST(req: NextRequest) {
     if (selectedId) {
       const { data: pricing } = await admin
         .from("pricing_items")
-        .select("title, amount_usd")
+        .select("title")
         .eq("id", selectedId)
         .single();
       if (pricing) {
         pricingTitle = pricing.title || "Guide fee";
-        amountUsd = Number(pricing.amount_usd) || 0;
       }
     }
   }
-  const addonUsd = await getAddonAmountUsd(admin, contract.outfitter_id, contract.client_completion_data as Record<string, unknown> | null);
-  amountUsd += addonUsd;
-  if (amountUsd <= 0) {
-    return NextResponse.json({ error: "No guide fee set for this hunt." }, { status: 400 });
-  }
 
-  const subtotalCents = Math.round(amountUsd * 100);
+  // Use calculated amounts (accounts for selected days)
+  const subtotalCents = correctTotal.subtotalCents;
   const { data: feeConfig } = await admin
     .from("platform_config")
     .select("value")
     .eq("key", "platform_fee_percentage")
     .maybeSingle();
   const feePct = feeConfig ? parseFloat(String(feeConfig.value)) : 5;
-  const platformFeeCents = Math.max(50, Math.ceil(subtotalCents * (feePct / 100)));
-  const totalCents = subtotalCents + platformFeeCents;
+  const platformFeeCents = correctTotal.platformFeeCents;
+  const totalCents = correctTotal.totalCents;
   const installmentCents = Math.floor(totalCents / n);
   const remainder = totalCents - installmentCents * n;
 
