@@ -268,19 +268,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const n = Math.min(12, Math.max(2, Number(numPayments) || 4));
-  let firstDue = firstDueDate;
-  if (!firstDue || typeof firstDue !== "string") {
-    const d = new Date();
-    d.setMonth(d.getMonth() + 1);
-    firstDue = d.toISOString().slice(0, 10);
-  }
+  const n = Math.min(6, Math.max(1, Number(numPayments) || 4)); // Allow 1-6 payments
 
   const admin = supabaseAdmin();
 
   const { data: contract, error: contractErr } = await admin
     .from("hunt_contracts")
-    .select("id, status, client_email, hunt_id, outfitter_id, client_completion_data")
+    .select("id, status, client_email, hunt_id, outfitter_id, client_completion_data, client_signed_at, admin_signed_at")
     .eq("id", contractId)
     .single();
 
@@ -312,12 +306,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No guide fee set for this hunt." }, { status: 400 });
   }
 
-  // Get pricing item title for display
+  // Get pricing item title and hunt start date for display
   let pricingTitle = "Guide fee";
+  let huntStartDate: Date | null = null;
   if (contract.hunt_id) {
     const { data: hunt } = await admin
       .from("calendar_events")
-      .select("selected_pricing_item_id")
+      .select("selected_pricing_item_id, start_time")
       .eq("id", contract.hunt_id)
       .single();
     const selectedId = (hunt as { selected_pricing_item_id?: string | null } | null)?.selected_pricing_item_id;
@@ -330,6 +325,77 @@ export async function POST(req: NextRequest) {
       if (pricing) {
         pricingTitle = pricing.title || "Guide fee";
       }
+    }
+    if (hunt && (hunt as { start_time?: string | null }).start_time) {
+      huntStartDate = new Date((hunt as { start_time: string }).start_time);
+    }
+  }
+
+  // Get contract completion date (when both parties signed - use the later of the two)
+  let contractCompletionDate: Date | null = null;
+  const clientSigned = contract.client_signed_at ? new Date(contract.client_signed_at) : null;
+  const adminSigned = contract.admin_signed_at ? new Date(contract.admin_signed_at) : null;
+  if (clientSigned && adminSigned) {
+    contractCompletionDate = clientSigned > adminSigned ? clientSigned : adminSigned;
+  } else if (clientSigned) {
+    contractCompletionDate = clientSigned;
+  } else if (adminSigned) {
+    contractCompletionDate = adminSigned;
+  } else {
+    // Fallback to current date if neither is signed (shouldn't happen for fully_executed contracts)
+    contractCompletionDate = new Date();
+  }
+
+  // Validate we have both dates
+  if (!huntStartDate || !contractCompletionDate) {
+    return NextResponse.json(
+      { error: "Missing hunt start date or contract completion date. Cannot calculate payment schedule." },
+      { status: 400 }
+    );
+  }
+
+  // Ensure hunt start is after contract completion
+  if (huntStartDate <= contractCompletionDate) {
+    return NextResponse.json(
+      { error: "Hunt start date must be after contract completion date." },
+      { status: 400 }
+    );
+  }
+
+  // Calculate payment dates evenly spaced from contract completion to hunt start
+  // If n=1, payment is due at hunt start
+  // If n>1, payments are evenly spaced between completion and hunt start
+  const timeDiff = huntStartDate.getTime() - contractCompletionDate.getTime();
+  const daysBetween = Math.max(1, Math.floor(timeDiff / (1000 * 60 * 60 * 24))); // Days between dates
+  
+  const dueDates: string[] = [];
+  if (n === 1) {
+    // Single payment due on hunt start date
+    dueDates.push(huntStartDate.toISOString().slice(0, 10));
+  } else {
+    // Multiple payments: space evenly from completion to hunt start
+    const intervalDays = Math.floor(daysBetween / n);
+    for (let i = 0; i < n; i++) {
+      const paymentDate = new Date(contractCompletionDate);
+      // First payment is due shortly after contract completion (3 days)
+      // Subsequent payments are evenly spaced
+      if (i === 0) {
+        paymentDate.setDate(paymentDate.getDate() + 3); // First payment 3 days after completion
+      } else {
+        // Space remaining payments evenly to hunt start
+        const daysFromStart = 3 + (intervalDays * i);
+        paymentDate.setDate(paymentDate.getDate() + daysFromStart);
+        // Ensure last payment is not after hunt start
+        if (paymentDate > huntStartDate) {
+          paymentDate.setTime(huntStartDate.getTime());
+        }
+      }
+      dueDates.push(paymentDate.toISOString().slice(0, 10));
+    }
+    // Ensure last payment is on or before hunt start
+    const lastDate = new Date(dueDates[dueDates.length - 1]);
+    if (lastDate > huntStartDate) {
+      dueDates[dueDates.length - 1] = huntStartDate.toISOString().slice(0, 10);
     }
   }
 
@@ -361,18 +427,17 @@ export async function POST(req: NextRequest) {
       .eq("id", fullItem.id);
   }
 
-  const dueDates: string[] = [];
-  let d = new Date(firstDue + "T12:00:00Z");
-  for (let i = 0; i < n; i++) {
-    dueDates.push(d.toISOString().slice(0, 10));
-    d.setMonth(d.getMonth() + 1);
-  }
+  // dueDates already calculated above
 
   const installments: { payment_item_id: string; amount_cents: number; due_date: string }[] = [];
+  const calendarEventIds: string[] = [];
+  
   for (let i = 0; i < n; i++) {
     const amount = installmentCents + (i < remainder ? 1 : 0);
     const platFee = Math.max(1, Math.ceil(amount * (feePct / 100)));
     const subtotal = amount - platFee;
+    const dueDate = dueDates[i];
+    
     const { data: item, error: insErr } = await admin
       .from("payment_items")
       .insert({
@@ -385,7 +450,7 @@ export async function POST(req: NextRequest) {
         total_cents: amount,
         hunt_id: contract.hunt_id,
         contract_id: contractId,
-        due_date: dueDates[i],
+        due_date: dueDate,
         status: "pending",
       })
       .select("id, total_cents, due_date")
@@ -399,6 +464,51 @@ export async function POST(req: NextRequest) {
       amount_cents: item.total_cents,
       due_date: item.due_date,
     });
+
+    // Create calendar event/reminder for this payment
+    const paymentDate = new Date(dueDate + "T09:00:00Z"); // 9 AM on due date
+    const reminderDate = new Date(paymentDate);
+    reminderDate.setDate(reminderDate.getDate() - 7); // 7 days before
+    
+    // Create reminder event 7 days before payment
+    const { data: reminderEvent, error: reminderErr } = await admin
+      .from("calendar_events")
+      .insert({
+        outfitter_id: contract.outfitter_id,
+        client_email: contract.client_email,
+        title: `Payment Reminder: ${pricingTitle} Payment ${i + 1} of ${n}`,
+        start_time: reminderDate.toISOString(),
+        end_time: new Date(reminderDate.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour event
+        notes: `Payment due in 7 days: $${(amount / 100).toFixed(2)} for ${pricingTitle} (Payment ${i + 1} of ${n})`,
+        audience: "client",
+        status: "Pending",
+      })
+      .select("id")
+      .single();
+    
+    if (!reminderErr && reminderEvent) {
+      calendarEventIds.push(reminderEvent.id);
+    }
+
+    // Create payment due event on the due date
+    const { data: dueEvent, error: dueErr } = await admin
+      .from("calendar_events")
+      .insert({
+        outfitter_id: contract.outfitter_id,
+        client_email: contract.client_email,
+        title: `Payment Due: ${pricingTitle} Payment ${i + 1} of ${n}`,
+        start_time: paymentDate.toISOString(),
+        end_time: new Date(paymentDate.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour event
+        notes: `Payment due today: $${(amount / 100).toFixed(2)} for ${pricingTitle} (Payment ${i + 1} of ${n})`,
+        audience: "client",
+        status: "Pending",
+      })
+      .select("id")
+      .single();
+    
+    if (!dueErr && dueEvent) {
+      calendarEventIds.push(dueEvent.id);
+    }
   }
 
   return NextResponse.json({
@@ -406,6 +516,7 @@ export async function POST(req: NextRequest) {
     payment_plan: true,
     number_of_payments: n,
     installments,
-    message: `Payment plan set up: ${n} payments. First due ${dueDates[0]}.`,
+    calendar_events_created: calendarEventIds.length,
+    message: `Payment plan set up: ${n} payments spaced from contract completion to hunt start. First due ${dueDates[0]}. Calendar reminders created.`,
   });
 }
