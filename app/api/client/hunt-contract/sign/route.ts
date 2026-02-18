@@ -32,14 +32,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User email not found" }, { status: 400 });
   }
 
-  let body: { contract_id?: string } = {};
+  let body: { contract_id?: string; typed_name?: string } = {};
   try {
     body = await req.json();
   } catch {
     // Body is optional
   }
-  
-  const { contract_id } = body;
+
+  const { contract_id, typed_name } = body;
 
   // Get client record
   const { data: client } = await supabase
@@ -104,40 +104,36 @@ export async function POST(req: Request) {
   const isMockEnvelope =
     contract.docusign_envelope_id &&
     String(contract.docusign_envelope_id).startsWith("mock-");
+  const useInAppSigning =
+    !docusignConfigured ||
+    isMockEnvelope ||
+    !contract.docusign_envelope_id ||
+    (typeof typed_name === "string" && typed_name.trim().length > 0);
 
-  if (!docusignConfigured || isMockEnvelope) {
-    if (isMockEnvelope || !contract.docusign_envelope_id) {
-      const { data: updatedContract, error: updateErr } = await supabase
-        .from("hunt_contracts")
-        .update({
-          status: "client_signed",
-          client_signed_at: new Date().toISOString(),
-          docusign_status: "signed",
-        })
-        .eq("id", contract.id)
-        .eq("client_email", userEmail)
-        .select()
-        .single();
-      if (updateErr) {
-        return NextResponse.json({ error: updateErr.message }, { status: 500 });
-      }
-      return NextResponse.json({
-        success: true,
-        signing_method: "mock",
-        contract: updatedContract,
-        message: "Contract marked as signed (testing mode).",
-      });
+  if (useInAppSigning) {
+    const { data: updatedContract, error: updateErr } = await supabase
+      .from("hunt_contracts")
+      .update({
+        status: "client_signed",
+        client_signed_at: new Date().toISOString(),
+        docusign_status: "signed",
+      })
+      .eq("id", contract.id)
+      .eq("client_email", userEmail)
+      .select()
+      .single();
+    if (updateErr) {
+      return NextResponse.json({ error: updateErr.message }, { status: 500 });
     }
-    return NextResponse.json(
-      {
-        error:
-          "DocuSign isn't set up yet. Your outfitter can enable electronic signing in Settings.",
-        needsConfiguration: true,
-      },
-      { status: 503 }
-    );
+    return NextResponse.json({
+      success: true,
+      signing_method: "in_app",
+      contract: updatedContract,
+      message: "Contract signed successfully.",
+    });
   }
 
+  // DocuSign path (when configured with real envelope and no typed_name from iOS)
   if (contract.docusign_envelope_id) {
     try {
       const origin =

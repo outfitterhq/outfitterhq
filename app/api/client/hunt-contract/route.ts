@@ -547,6 +547,7 @@ export async function GET(req: Request) {
       hunts_without_contracts: huntsWithoutContracts,
       eligible: (contracts && contracts.length > 0) || (huntsWithoutContracts.length > 0),
       first_hunt_id: firstContract?.hunt_id ?? null,
+      client_email: userEmailLower,
       ...(debug ? {
         debug: {
           email_mask: maskEmail(userEmailLower),

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import InAppSigningFlow from "@/app/(client)/components/InAppSigningFlow";
 
 interface SpeciesChoice {
   species: string;
@@ -226,6 +227,20 @@ const defaultSpeciesPreferences: Record<SpeciesPreferenceKey, SpeciesPreference>
   bighorn_sheep: "none",
 };
 
+const PREDRAW_CONTRACT_TEXT = `By submitting this Pre-Draw Contract, you agree to the following terms and conditions for New Mexico Game & Fish draw applications:
+
+• You authorize the outfitter to use the information provided to submit applications on your behalf (if you selected that option), and you understand that a $75.00 application handling fee may apply.
+
+• You agree to the refund policy for draw applications as stated by the outfitter and NMDGF.
+
+• You certify that all information provided (license, identity, payment) is accurate and current.
+
+• You understand that hunt codes and dates are subject to NMDGF rules and availability.
+
+• Once this form is submitted to G3 (or your outfitter), no changes can be made. Please review everything before submitting.
+
+Please ensure your Client License Information (Step 2) is complete and accurate before signing.`;
+
 const defaultData: PreDrawData = {
   nmdgf_username: "",
   height: "",
@@ -260,15 +275,13 @@ export default function PreDrawPage() {
   const [isExisting, setIsExisting] = useState(false);
   const [step, setStep] = useState(1);
   const [speciesOptions, setSpeciesOptions] = useState<string[]>(DEFAULT_SPECIES_OPTIONS);
+  const [predrawSignedAt, setPredrawSignedAt] = useState<string | null>(null);
   const [clientProfile, setClientProfile] = useState<{
     full_name?: string;
     email?: string;
     phone?: string;
     mailing_address?: string;
   } | null>(null);
-  const [docusignLoading, setDocusignLoading] = useState(false);
-  const [docusignError, setDocusignError] = useState<string | null>(null);
-  const [docusignNotConfigured, setDocusignNotConfigured] = useState(false);
   const [huntRows, setHuntRows] = useState<HuntRow[]>([]);
 
   useEffect(() => {
@@ -297,7 +310,8 @@ export default function PreDrawPage() {
       if (res.ok) {
         const json = await res.json();
         if (json.predraw) {
-          const pred = json.predraw;
+          const pred = json.predraw as { client_signed_at?: string | null; allow_g3_to_select?: boolean; species_preferences?: Record<string, string>; [key: string]: unknown };
+          setPredrawSignedAt(pred.client_signed_at ?? null);
           const loadedSelections = json.selections || [];
           const slots = buildDefaultSelections();
           for (const row of loadedSelections) {
@@ -960,73 +974,45 @@ export default function PreDrawPage() {
               </label>
             </div>
 
-            {/* Sign with DocuSign (matches iOS) */}
+            {/* Sign pre-draw contract (unified in-app flow) */}
             <div style={{ marginTop: 24, marginBottom: 16 }}>
-              <button
-                type="button"
-                disabled={!data.acknowledged_contract || (!data.allow_g3_to_select && !data.selections.some((s) => (s.codeOrUnit || "").trim())) || docusignLoading}
-                onClick={async () => {
-                  const hasSelections = data.allow_g3_to_select
-                    ? PREFERENCE_SPECIES_KEYS.some((k) => (data.species_preferences[k] ?? "none") !== "none")
-                    : data.selections.some((s) => (s.codeOrUnit || "").trim() !== "");
-                  if (!data.acknowledged_contract || !hasSelections) return;
-                  setDocusignError(null);
-                  setDocusignNotConfigured(false);
-                  setDocusignLoading(true);
-                  try {
-                    const res = await fetch("/api/client/predraw/docusign", { method: "POST" });
-                    const json = await res.json();
-                    if (res.status === 503 && (json.needsConfiguration || /not configured/i.test(json.error || ""))) {
-                      setDocusignNotConfigured(true);
-                      return;
-                    }
-                    if (!res.ok) throw new Error(json.error || "Failed to start signing");
-                    if (json.signingUrl) {
-                      window.open(json.signingUrl, "_blank");
-                    } else throw new Error("No signing URL returned");
-                  } catch (e: any) {
-                    setDocusignError(e.message);
-                  } finally {
-                    setDocusignLoading(false);
-                  }
-                }}
-                style={{
-                  padding: "14px 24px",
-                  background: docusignLoading ? "#ccc" : "#1a472a",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  cursor: docusignLoading ? "not-allowed" : "pointer",
-                }}
-              >
-                {docusignLoading ? "Opening DocuSign…" : "Sign with DocuSign"}
-              </button>
-              {docusignNotConfigured && (
+              {predrawSignedAt ? (
                 <div
                   style={{
-                    marginTop: 12,
-                    padding: 14,
-                    background: "#e3f2fd",
-                    border: "1px solid #90caf9",
+                    padding: 16,
+                    background: "#e8f5e9",
+                    border: "1px solid #81c784",
                     borderRadius: 8,
                     fontSize: 14,
-                    color: "#1565c0",
+                    color: "#2e7d32",
                   }}
                 >
-                  <strong>DocuSign isn’t set up yet.</strong> Your outfitter can enable electronic signing in their
-                  settings. You can still <strong>submit your pre-draw form</strong> below—it will be saved and your
-                  outfitter can have you sign later or use another process.
+                  <strong>Pre-draw contract signed</strong> on {new Date(predrawSignedAt).toLocaleDateString()}.
                 </div>
+              ) : (
+                <>
+                  <p style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>
+                    Sign the pre-draw contract below. Submit the form first if you haven&apos;t already.
+                  </p>
+                  <InAppSigningFlow
+                    documentTitle="Pre-Draw Contract"
+                    documentContent={PREDRAW_CONTRACT_TEXT}
+                    clientEmail={clientProfile?.email ?? ""}
+                    onSign={async ({ typedName }) => {
+                      const res = await fetch("/api/client/predraw/sign", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ typed_name: typedName }),
+                      });
+                      const json = await res.json();
+                      if (!res.ok) throw new Error(json.error || "Failed to sign");
+                      setPredrawSignedAt(new Date().toISOString());
+                    }}
+                    backHref="/client/documents"
+                    backLabel="← Back to Documents"
+                  />
+                </>
               )}
-              {docusignError && (
-                <p style={{ color: "#c62828", fontSize: 14, marginTop: 8 }}>{docusignError}</p>
-              )}
-              <p style={{ fontSize: 13, color: "#666", marginTop: 8 }}>
-                Complete your signature via DocuSign when available. You can also save and submit the form first, then
-                sign later.
-              </p>
             </div>
           </FormSection>
         )}

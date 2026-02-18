@@ -106,5 +106,6 @@ export async function GET() {
     signed_at: waiver?.client_signed_at,
     content: waiverContent,
     waiver_pdf_url: waiverPdfUrl,
+    client_email: clientData?.email ?? userEmail,
   });
 }

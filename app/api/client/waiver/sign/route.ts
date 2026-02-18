@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
 import { supabaseRoute } from "@/lib/supabase/server";
 
-// DocuSign API configuration
-// These should be set in your environment variables:
-// DOCUSIGN_INTEGRATION_KEY, DOCUSIGN_SECRET_KEY, DOCUSIGN_ACCOUNT_ID, DOCUSIGN_BASE_PATH
+/**
+ * POST /api/client/waiver/sign
+ * Signs the waiver. Supports in-app signing (typed_name) or DocuSign.
+ */
 
-export async function POST() {
+export async function POST(req: Request) {
   const supabase = await supabaseRoute();
 
-  // Get authenticated user
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const userEmail = userData.user.email;
+
+  let body: { typed_name?: string } = {};
+  try {
+    body = await req.json();
+  } catch { /* optional */ }
+  const typed_name = body.typed_name;
 
   // Get client record
   const { data: client } = await supabase
@@ -40,6 +46,44 @@ export async function POST() {
   }
 
   const outfitterId = links[0].outfitter_id;
+
+  // In-app signing when typed_name provided
+  const useInAppSigning = typeof typed_name === "string" && typed_name.trim().length > 0;
+  if (useInAppSigning) {
+    const { data: existingDoc } = await supabase
+      .from("documents")
+      .select("id")
+      .eq("linked_id", userEmail)
+      .eq("outfitter_id", outfitterId)
+      .eq("document_type", "waiver")
+      .single();
+    if (existingDoc) {
+      const { error: updateErr } = await supabase
+        .from("documents")
+        .update({
+          status: "signed",
+          client_signed_at: new Date().toISOString(),
+          docusign_status: "signed",
+        })
+        .eq("id", existingDoc.id);
+      if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+    } else {
+      const { error: insertErr } = await supabase
+        .from("documents")
+        .insert({
+          outfitter_id: outfitterId,
+          linked_type: "client",
+          linked_id: userEmail,
+          document_type: "waiver",
+          status: "signed",
+          client_signed_at: new Date().toISOString(),
+          docusign_status: "signed",
+        });
+      if (insertErr) return NextResponse.json({ error: insertErr.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: true, signing_method: "in_app", message: "Waiver signed successfully." });
+  }
+
   const outfitterName = (links[0] as any).outfitters?.name || "Outfitter";
   const clientName = `${client.first_name || ""} ${client.last_name || ""}`.trim() || (userEmail ?? "");
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import InAppSigningFlow from "@/app/(client)/components/InAppSigningFlow";
 
 interface ContractItem {
   id: string;
@@ -47,6 +48,7 @@ interface ContractData {
   contracts: ContractItem[];
   reason?: string;
   hunts_without_contracts?: { id: string; needs_complete_booking?: boolean }[];
+  client_email?: string;
 }
 
 export default function HuntContractPage() {
@@ -55,11 +57,9 @@ export default function HuntContractPage() {
   const contractIdFromUrl = searchParams.get("contract");
   const [data, setData] = useState<ContractData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [signingLoading, setSigningLoading] = useState(false);
   const [completingLoading, setCompletingLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [docusignNotConfigured, setDocusignNotConfigured] = useState(false);
   const [selectedContractIndex, setSelectedContractIndex] = useState(0);
   const [fetchedHuntWindow, setFetchedHuntWindow] = useState<{ start: string; end: string } | null>(null);
   const [huntWindowLoading, setHuntWindowLoading] = useState(false);
@@ -410,6 +410,7 @@ export default function HuntContractPage() {
           eligible: true,
           contracts,
           hunts_without_contracts: json.hunts_without_contracts ?? [],
+          client_email: json.client_email,
         });
         setSelectedContractIndex(selectedIdx >= 0 ? selectedIdx : 0);
         setLoading(false); // MUST clear loading immediately
@@ -422,6 +423,7 @@ export default function HuntContractPage() {
           contracts: [],
           reason: json.reason || "No contract available yet.",
           hunts_without_contracts: json.hunts_without_contracts ?? [],
+          client_email: json.client_email,
         });
         setLoading(false);
       }
@@ -535,41 +537,17 @@ export default function HuntContractPage() {
     }
   }
 
-  async function handleStartSigning() {
+  async function handleSignInApp({ typedName }: { typedName: string }) {
     if (!currentContract?.id) return;
-    setSigningLoading(true);
-    setError(null);
-    setDocusignNotConfigured(false);
-
-    try {
-      const res = await fetch("/api/client/hunt-contract/sign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contract_id: currentContract.id }),
-      });
-      const json = await res.json().catch(() => ({}));
-
-      if (res.status === 503 && (json.needsConfiguration || /not configured|not set up/i.test(json.error || ""))) {
-        setDocusignNotConfigured(true);
-        setError(json.error || "DocuSign isn't set up yet. Your outfitter can enable it in Settings.");
-        return;
-      }
-
-      if (!res.ok) {
-        throw new Error(json.error || "Failed to start signing");
-      }
-
-      if (json.signingUrl) {
-        window.open(json.signingUrl, "_blank");
-      } else if (json.message) {
-        setSuccessMessage(json.message);
-        await loadContract();
-      }
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to start signing");
-    } finally {
-      setSigningLoading(false);
-    }
+    const res = await fetch("/api/client/hunt-contract/sign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contract_id: currentContract.id, typed_name: typedName }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(json.error || "Failed to sign");
+    setSuccessMessage(json.message ?? "Contract signed successfully.");
+    await loadContract();
   }
 
 
@@ -2074,53 +2052,20 @@ export default function HuntContractPage() {
                 color: "#1565c0",
               }}
             >
-              <strong>Contract approved.</strong> Your outfitter will send it to DocuSign for your signature. When they do, click <strong>Refresh</strong> above or return to this page—the &quot;Sign via DocuSign&quot; button will appear so you can sign here.
+              <strong>Contract approved.</strong> Your outfitter will send it for your signature. When they do, click <strong>Refresh</strong> above or return to this page—the Sign button will appear so you can sign here.
             </div>
           )}
 
-          {/* Sign Button (when contract has been sent to DocuSign) */}
+          {/* Sign (unified in-app flow) */}
           {readyForSignature && (
-            <>
-              <button
-                onClick={handleStartSigning}
-                disabled={signingLoading}
-                style={{
-                  width: "100%",
-                  padding: "16px 28px",
-                  background: signingLoading ? "#ccc" : "#1a472a",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  fontSize: 18,
-                  fontWeight: 600,
-                  cursor: signingLoading ? "not-allowed" : "pointer",
-                }}
-              >
-                {signingLoading ? "Preparing DocuSign…" : "Sign via DocuSign"}
-              </button>
-
-              <p style={{ textAlign: "center", marginTop: 16, fontSize: 14, color: "#666" }}>
-                You will be redirected to DocuSign to complete signing.
-              </p>
-
-              {docusignNotConfigured && (
-                <div
-                  style={{
-                    marginTop: 16,
-                    padding: 16,
-                    background: "#fff3e0",
-                    border: "1px solid #ffb74d",
-                    borderRadius: 8,
-                    fontSize: 14,
-                    color: "#e65100",
-                  }}
-                >
-                  <strong>DocuSign isn&apos;t set up yet.</strong> Your outfitter can enable
-                  electronic signing in Settings. Once enabled, you&apos;ll be able to sign
-                  this contract via DocuSign here.
-                </div>
-              )}
-            </>
+            <InAppSigningFlow
+              documentTitle="Hunt Contract"
+              documentContent={currentContract?.content ?? undefined}
+              clientEmail={data?.client_email ?? ""}
+              onSign={handleSignInApp}
+              backHref="/client/documents"
+              backLabel="← Back to Documents"
+            />
           )}
 
           {/* Status message if contract is in draft */}
