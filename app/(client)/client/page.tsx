@@ -73,8 +73,11 @@ export default function ClientDashboardPage() {
   const [showSlideshow, setShowSlideshow] = useState(false);
   const [outfitterId, setOutfitterId] = useState<string | null>(null);
   const [clientEmail, setClientEmail] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // Mark as client-side to prevent hydration errors
+    setIsClient(true);
     loadDashboard();
   }, []);
 
