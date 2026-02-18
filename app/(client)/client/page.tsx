@@ -173,14 +173,28 @@ export default function ClientDashboardPage() {
 
   // Show slideshow if enabled and we have the required data
   // MarketingSlideshow is dynamically imported with ssr: false to prevent hydration errors
-  // Only show after client-side hydration is complete (isClient === true)
-  // This ensures server and client initial render match
-  // Use a separate useEffect to show slideshow only after mount to prevent hydration errors
+  // Only show after component is fully mounted to prevent hydration errors
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
+    // Set mounted after component has hydrated
     setMounted(true);
   }, []);
+
+  // Only show slideshow after mount AND client check AND all data is ready
+  // This ensures server and client initial render are identical
+  if (!mounted) {
+    // During SSR and initial client render, show loading state
+    // This ensures server and client render the same thing
+    if (loading) {
+      return (
+        <div className="pro-loading">
+          <div className="pro-spinner"></div>
+          <span>Loading your dashboard...</span>
+        </div>
+      );
+    }
+  }
 
   if (mounted && isClient && showSlideshow && outfitterId && clientEmail) {
     return (
