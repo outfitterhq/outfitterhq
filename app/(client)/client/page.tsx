@@ -80,6 +80,7 @@ export default function ClientDashboardPage() {
 
   async function loadDashboard() {
     try {
+      // Always load dashboard data first
       const res = await fetch("/api/client/dashboard");
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -88,7 +89,7 @@ export default function ClientDashboardPage() {
       const json = await res.json();
       setData(json);
       
-      // Check if we should show slideshow (check localStorage for skip preference)
+      // After dashboard loads, check if we should show slideshow
       const skipSlideshow = typeof window !== "undefined" && localStorage.getItem("skipMarketingSlideshow") === "true";
       
       if (!skipSlideshow && json.client?.id) {
@@ -97,10 +98,11 @@ export default function ClientDashboardPage() {
           const linkRes = await fetch("/api/client/outfitter-link");
           if (linkRes.ok) {
             const linkData = await linkRes.json();
-            if (linkData.outfitter_id) {
+            if (linkData.outfitter_id && json.client?.email) {
               setOutfitterId(linkData.outfitter_id);
-              setClientEmail(json.client?.email || null);
+              setClientEmail(json.client.email);
               setShowSlideshow(true);
+              // Keep loading false so dashboard is ready when slideshow closes
             }
           }
         } catch (e) {
@@ -124,6 +126,7 @@ export default function ClientDashboardPage() {
   
   function handleContinueFromSlideshow() {
     setShowSlideshow(false);
+    // Dashboard is already loaded, so it will show immediately
   }
 
   async function handleContactSubmit(e: React.FormEvent) {
@@ -144,6 +147,19 @@ export default function ClientDashboardPage() {
     } finally {
       setSubmittingContact(false);
     }
+  }
+
+  // Show slideshow if enabled and we have the required data
+  // Check this BEFORE loading/error checks so it shows immediately
+  if (showSlideshow && outfitterId && clientEmail) {
+    return (
+      <MarketingSlideshow
+        outfitterId={outfitterId}
+        clientEmail={clientEmail}
+        onSkip={handleSkipSlideshow}
+        onContinue={handleContinueFromSlideshow}
+      />
+    );
   }
 
   if (loading) {
