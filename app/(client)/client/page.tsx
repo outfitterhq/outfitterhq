@@ -83,8 +83,12 @@ export default function ClientDashboardPage() {
 
   useEffect(() => {
     // Mark as client-side to prevent hydration errors
-    setIsClient(true);
+    // Use setTimeout to ensure this runs after initial hydration
+    const timer = setTimeout(() => {
+      setIsClient(true);
+    }, 0);
     loadDashboard();
+    return () => clearTimeout(timer);
   }, []);
 
   async function loadDashboard() {
@@ -169,7 +173,8 @@ export default function ClientDashboardPage() {
 
   // Show slideshow if enabled and we have the required data
   // Check this BEFORE loading/error checks so it shows immediately
-  // Only render on client to avoid hydration errors
+  // MarketingSlideshow is dynamically imported with ssr: false to prevent hydration errors
+  // Only show after client-side hydration is complete
   if (isClient && showSlideshow && outfitterId && clientEmail) {
     return (
       <MarketingSlideshow
