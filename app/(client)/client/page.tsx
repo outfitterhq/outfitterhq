@@ -171,19 +171,30 @@ export default function ClientDashboardPage() {
     }
   }
 
-  // TEMPORARILY DISABLED: Slideshow causing hydration errors
-  // TODO: Fix hydration issue - the slideshow component or its conditional rendering is causing server/client mismatch
-  // For now, skip slideshow to prevent hydration errors
-  // if (isClient && showSlideshow && outfitterId && clientEmail) {
-  //   return (
-  //     <MarketingSlideshow
-  //       outfitterId={outfitterId}
-  //       clientEmail={clientEmail}
-  //       onSkip={handleSkipSlideshow}
-  //       onContinue={handleContinueFromSlideshow}
-  //     />
-  //   );
-  // }
+  // Show slideshow ONLY after component has fully mounted and hydrated
+  // Use a portal-like approach to completely isolate from hydration
+  const [showSlideshowAfterMount, setShowSlideshowAfterMount] = useState(false);
+  
+  useEffect(() => {
+    // Wait for next tick to ensure hydration is complete
+    const timer = setTimeout(() => {
+      if (isClient && showSlideshow && outfitterId && clientEmail) {
+        setShowSlideshowAfterMount(true);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isClient, showSlideshow, outfitterId, clientEmail]);
+
+  if (showSlideshowAfterMount) {
+    return (
+      <MarketingSlideshow
+        outfitterId={outfitterId!}
+        clientEmail={clientEmail!}
+        onSkip={handleSkipSlideshow}
+        onContinue={handleContinueFromSlideshow}
+      />
+    );
+  }
 
   if (loading) {
     return (
