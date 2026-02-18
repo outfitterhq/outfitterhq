@@ -163,7 +163,8 @@ export default function ClientDashboardPage() {
 
   // Show slideshow if enabled and we have the required data
   // Check this BEFORE loading/error checks so it shows immediately
-  if (showSlideshow && outfitterId && clientEmail) {
+  // Only render on client to avoid hydration errors
+  if (isClient && showSlideshow && outfitterId && clientEmail) {
     return (
       <MarketingSlideshow
         outfitterId={outfitterId}
