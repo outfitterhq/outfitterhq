@@ -22,10 +22,22 @@ export async function GET(req: Request) {
     }
 
     // Verify user is a client linked to this outfitter
+    // First, get the client record for this user
+    const { data: client } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    if (!client) {
+      return NextResponse.json({ error: "Client record not found" }, { status: 403 });
+    }
+
+    // Then check the link using the client record ID
     const { data: clientLink } = await supabase
       .from("client_outfitter_links")
       .select("id")
-      .eq("client_id", user.id)
+      .eq("client_id", client.id)
       .eq("outfitter_id", outfitterId)
       .maybeSingle();
 
