@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface MarketingPhoto {
@@ -30,6 +30,7 @@ export default function MarketingSlideshow({
   const [isLoading, setIsLoading] = useState(true);
   const [isAutoAdvancing, setIsAutoAdvancing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasCalledOnContinueRef = useRef(false);
 
   // Auto-advance timer
   useEffect(() => {
@@ -144,8 +145,9 @@ export default function MarketingSlideshow({
           flexDirection: "column",
           gap: 20,
         }}
+        suppressHydrationWarning
       >
-        <div className="pro-spinner" style={{ width: 48, height: 48 }}></div>
+        <div className="pro-spinner" style={{ width: 48, height: 48 }} />
         <p style={{ fontSize: 18 }}>Loading Success Stories...</p>
       </div>
     );
@@ -167,6 +169,7 @@ export default function MarketingSlideshow({
           gap: 20,
           padding: 40,
         }}
+        suppressHydrationWarning
       >
         <p style={{ fontSize: 18, textAlign: "center" }}>Unable to load photos</p>
         <button
@@ -188,10 +191,10 @@ export default function MarketingSlideshow({
     );
   }
 
-  // Handle empty photos - redirect after component mounts
+  // Handle empty photos - redirect after component mounts (call onContinue once only)
   useEffect(() => {
-    if (photos.length === 0 && !isLoading && !error) {
-      // No photos available, skip to dashboard
+    if (photos.length === 0 && !isLoading && !error && !hasCalledOnContinueRef.current) {
+      hasCalledOnContinueRef.current = true;
       const timer = setTimeout(() => {
         onContinue();
       }, 500); // Small delay to avoid flash
@@ -215,8 +218,9 @@ export default function MarketingSlideshow({
           flexDirection: "column",
           gap: 20,
         }}
+        suppressHydrationWarning
       >
-        <div className="pro-spinner" style={{ width: 48, height: 48 }}></div>
+        <div className="pro-spinner" style={{ width: 48, height: 48 }} />
         <p style={{ fontSize: 18 }}>No photos available</p>
       </div>
     );

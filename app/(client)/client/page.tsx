@@ -80,10 +80,11 @@ export default function ClientDashboardPage() {
   const [outfitterId, setOutfitterId] = useState<string | null>(null);
   const [clientEmail, setClientEmail] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  // Gate: render identical placeholder until after hydration to fix React #310
+  const [hasMounted, setHasMounted] = useState(false);
 
   useEffect(() => {
-    // Mark as client-side to prevent hydration errors
-    // Use setTimeout to ensure this runs after initial hydration
+    setHasMounted(true);
     const timer = setTimeout(() => {
       setIsClient(true);
     }, 0);
@@ -121,10 +122,23 @@ export default function ClientDashboardPage() {
           if (linkRes.ok) {
             const linkData = await linkRes.json();
             if (linkData.outfitter_id && json.client?.email) {
-              setOutfitterId(linkData.outfitter_id);
+              const oid = linkData.outfitter_id as string;
+              setOutfitterId(oid);
               setClientEmail(json.client.email);
-              setShowSlideshow(true);
-              // Keep loading false so dashboard is ready when slideshow closes
+              // Pre-fetch marketing photos - only show slideshow if we have photos
+              // This prevents React #310 infinite loop when 0 photos load in slideshow
+              try {
+                const photosRes = await fetch(`/api/client/marketing-photos?outfitter_id=${encodeURIComponent(oid)}`);
+                if (photosRes.ok) {
+                  const photosData = await photosRes.json();
+                  const photos = photosData.photos || [];
+                  if (photos.length > 0) {
+                    setShowSlideshow(true);
+                  }
+                }
+              } catch {
+                // On photo fetch failure, skip slideshow and go to dashboard
+              }
             }
           }
         } catch (e) {
@@ -144,10 +158,12 @@ export default function ClientDashboardPage() {
       localStorage.setItem("skipMarketingSlideshow", "true");
     }
     setShowSlideshow(false);
+    setShowSlideshowAfterMount(false);
   }
   
   function handleContinueFromSlideshow() {
     setShowSlideshow(false);
+    setShowSlideshowAfterMount(false);
     // Dashboard is already loaded, so it will show immediately
   }
 
@@ -187,8 +203,23 @@ export default function ClientDashboardPage() {
     });
   }, [isClient, showSlideshow, outfitterId, clientEmail]);
 
-  // CRITICAL: Never render slideshow during SSR or initial client render
-  // This ensures server and client render identically
+  // SSR + first client paint: render one static placeholder (no text) so HTML matches and hydration succeeds
+  if (!hasMounted) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+        }}
+        aria-hidden="true"
+      />
+    );
+  }
+
   if (showSlideshowAfterMount) {
     return (
       <MarketingSlideshow
@@ -202,8 +233,8 @@ export default function ClientDashboardPage() {
 
   if (loading) {
     return (
-      <div className="pro-loading">
-        <div className="pro-spinner"></div>
+      <div className="pro-loading" style={{ minHeight: "100vh", flexDirection: "column", gap: 12 }}>
+        <div className="pro-spinner" style={{ marginRight: 0 }} />
         <span>Loading your dashboard...</span>
       </div>
     );

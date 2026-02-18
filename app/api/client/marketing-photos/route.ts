@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseRoute } from "@/lib/supabase/server";
+import { supabaseRoute, supabaseAdmin } from "@/lib/supabase/server";
 
 export async function GET(req: Request) {
   try {
@@ -80,8 +80,9 @@ export async function GET(req: Request) {
         (result.marketing_photos ?? 0) > 0
       ) {
         try {
-          // Generate signed URL
-          const { data: urlData, error: urlError } = await supabase.storage
+          // Use service role to bypass storage RLS (same as success-records API)
+          const admin = supabaseAdmin();
+          const { data: urlData, error: urlError } = await admin.storage
             .from("hunt-photos")
             .createSignedUrl(result.primary_photo_storage_path, 3600);
 

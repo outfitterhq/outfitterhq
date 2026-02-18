@@ -109,7 +109,7 @@ export default function ClientShell({
   const backgroundStyle = getBackgroundStyle();
 
   return (
-    <div className="client-shell" style={{ minHeight: "100vh", ...backgroundStyle }}>
+    <div className="client-shell" style={{ minHeight: "100vh", ...backgroundStyle }} suppressHydrationWarning>
       {/* Header */}
       <header
         className="client-shell-header"
@@ -334,7 +334,7 @@ export default function ClientShell({
           marginTop: "auto",
         }}
       >
-        <p style={{ margin: 0 }}>&copy; {new Date().getFullYear()} {outfitterName}. All rights reserved.</p>
+        <p style={{ margin: 0 }} suppressHydrationWarning>&copy; {new Date().getFullYear()} {outfitterName}. All rights reserved.</p>
       </footer>
     </div>
   );
