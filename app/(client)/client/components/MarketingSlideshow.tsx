@@ -151,10 +151,74 @@ export default function MarketingSlideshow({
     );
   }
 
-  if (error || photos.length === 0) {
-    // If no photos, skip to dashboard
-    onContinue();
-    return null;
+  if (error) {
+    // If error loading photos, show error but don't auto-redirect
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          flexDirection: "column",
+          gap: 20,
+          padding: 40,
+        }}
+      >
+        <p style={{ fontSize: 18, textAlign: "center" }}>Unable to load photos</p>
+        <button
+          onClick={onContinue}
+          style={{
+            padding: "12px 24px",
+            background: "white",
+            color: "#1a472a",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            fontWeight: 600,
+            fontSize: 14,
+          }}
+        >
+          Continue to Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  // Handle empty photos - redirect after component mounts
+  useEffect(() => {
+    if (photos.length === 0 && !isLoading && !error) {
+      // No photos available, skip to dashboard
+      const timer = setTimeout(() => {
+        onContinue();
+      }, 500); // Small delay to avoid flash
+      return () => clearTimeout(timer);
+    }
+  }, [photos.length, isLoading, error]);
+
+  if (photos.length === 0 && !isLoading && !error) {
+    // Show loading state while redirecting
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          flexDirection: "column",
+          gap: 20,
+        }}
+      >
+        <div className="pro-spinner" style={{ width: 48, height: 48 }}></div>
+        <p style={{ fontSize: 18 }}>No photos available</p>
+      </div>
+    );
   }
 
   const currentPhoto = photos[currentIndex];
