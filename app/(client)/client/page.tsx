@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import MarketingSlideshow from "./components/MarketingSlideshow";
+import dynamic from "next/dynamic";
+
+// Dynamically import slideshow with no SSR to prevent hydration errors
+const MarketingSlideshow = dynamic(
+  () => import("./components/MarketingSlideshow"),
+  { ssr: false }
+);
 
 interface DashboardData {
   client: {
