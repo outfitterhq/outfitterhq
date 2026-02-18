@@ -139,41 +139,64 @@ export default function GuidesList() {
                     {g.created_at ? new Date(g.created_at).toLocaleString() : ""}
                   </td>
                   <td style={{ padding: "10px 8px", borderBottom: "1px solid #f3f3f3" }}>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!confirm(`Delete guide ${g.name || g.email}? This will deactivate them but preserve history.`)) {
-                          return;
-                        }
-                        try {
-                          const res = await fetch(`/api/guides/${g.user_id}`, { method: "DELETE" });
-                          if (!res.ok) {
-                            const data = await res.json().catch(() => ({}));
-                            throw new Error(data.error || "Failed to delete guide");
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <a
+                        href={`/guides/${g.user_id}/hunts`}
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: 13,
+                          borderRadius: 6,
+                          border: "1px solid #0070f3",
+                          background: "#0070f3",
+                          color: "white",
+                          cursor: "pointer",
+                          textDecoration: "none",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#0051cc";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#0070f3";
+                        }}
+                      >
+                        View Hunts
+                      </a>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!confirm(`Delete guide ${g.name || g.email}? This will deactivate them but preserve history.`)) {
+                            return;
                           }
-                          await load(); // Refresh the list
-                        } catch (e: any) {
-                          alert("Error: " + String(e));
-                        }
-                      }}
-                      style={{
-                        padding: "6px 12px",
-                        fontSize: 13,
-                        borderRadius: 6,
-                        border: "1px solid #dc3545",
-                        background: "#dc3545",
-                        color: "white",
-                        cursor: "pointer",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#c82333";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "#dc3545";
-                      }}
-                    >
-                      Delete
-                    </button>
+                          try {
+                            const res = await fetch(`/api/guides/${g.user_id}`, { method: "DELETE" });
+                            if (!res.ok) {
+                              const data = await res.json().catch(() => ({}));
+                              throw new Error(data.error || "Failed to delete guide");
+                            }
+                            await load(); // Refresh the list
+                          } catch (e: any) {
+                            alert("Error: " + String(e));
+                          }
+                        }}
+                        style={{
+                          padding: "6px 12px",
+                          fontSize: 13,
+                          borderRadius: 6,
+                          border: "1px solid #dc3545",
+                          background: "#dc3545",
+                          color: "white",
+                          cursor: "pointer",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#c82333";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "#dc3545";
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

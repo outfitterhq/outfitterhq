@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import MarketingSlideshow from "./components/MarketingSlideshow";
 
 interface DashboardData {
   client: {
@@ -69,6 +70,9 @@ export default function ClientDashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState({ firstName: "", lastName: "", email: "", message: "" });
   const [submittingContact, setSubmittingContact] = useState(false);
+  const [showSlideshow, setShowSlideshow] = useState(false);
+  const [outfitterId, setOutfitterId] = useState<string | null>(null);
+  const [clientEmail, setClientEmail] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -83,11 +87,43 @@ export default function ClientDashboardPage() {
       }
       const json = await res.json();
       setData(json);
+      
+      // Check if we should show slideshow (check localStorage for skip preference)
+      const skipSlideshow = typeof window !== "undefined" && localStorage.getItem("skipMarketingSlideshow") === "true";
+      
+      if (!skipSlideshow && json.client?.id) {
+        // Get outfitter ID from client link
+        try {
+          const linkRes = await fetch("/api/client/outfitter-link");
+          if (linkRes.ok) {
+            const linkData = await linkRes.json();
+            if (linkData.outfitter_id) {
+              setOutfitterId(linkData.outfitter_id);
+              setClientEmail(json.client?.email || null);
+              setShowSlideshow(true);
+            }
+          }
+        } catch (e) {
+          // If we can't get outfitter ID, just show dashboard
+          console.error("Failed to get outfitter ID:", e);
+        }
+      }
     } catch (e: any) {
       setError(String(e));
     } finally {
       setLoading(false);
     }
+  }
+  
+  function handleSkipSlideshow() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("skipMarketingSlideshow", "true");
+    }
+    setShowSlideshow(false);
+  }
+  
+  function handleContinueFromSlideshow() {
+    setShowSlideshow(false);
   }
 
   async function handleContactSubmit(e: React.FormEvent) {

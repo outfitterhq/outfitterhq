@@ -1274,13 +1274,251 @@ export default function SettingsPage() {
           )}
         </section>
 
+        {/* Year Closeout Section */}
+        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 24, marginTop: 24 }}>
+          <h2 style={{ marginTop: 0, marginBottom: 16 }}>Year Closeout</h2>
+          <p style={{ opacity: 0.7, marginBottom: 24 }}>
+            Export year snapshot and archive/reset documents for a new year. This will export all Clients, Guides, and Pre-Draw Contracts to CSV/JSON files, then clear client/guide documents so you can start fresh. Client & guide logins remain.
+          </p>
+          <YearCloseoutSection />
+        </section>
+
+        {/* Pre-Draw Export Section */}
+        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 24, marginTop: 24 }}>
+          <h2 style={{ marginTop: 0, marginBottom: 16 }}>Export Pre-Draw Applications</h2>
+          <p style={{ opacity: 0.7, marginBottom: 24 }}>
+            Export all clients who selected "I authorize G3 to submit" into a CSV (Excel) with all Pre-Draw contract + license fields and the $75 fee applied where relevant.
+          </p>
+          <PreDrawExportSection />
+        </section>
+
         {/* Account Section */}
-        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 24 }}>
+        <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 24, marginTop: 24 }}>
           <h2 style={{ marginTop: 0, marginBottom: 16 }}>Account</h2>
           <p style={{ opacity: 0.7 }}>Account settings and preferences coming soon.</p>
         </section>
       </div>
     </main>
+  );
+}
+
+// Year Closeout Component
+function YearCloseoutSection() {
+  const [year, setYear] = useState(new Date().getFullYear().toString());
+  const [exporting, setExporting] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleExport = async () => {
+    setExporting(true);
+    setMessage("");
+    try {
+      const res = await fetch(`/api/admin/year-closeout?year=${year}`);
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Export failed");
+      }
+
+      // Download all files
+      for (const [key, file] of Object.entries(data.files)) {
+        const fileData = file as { filename: string; content: string; mimeType: string };
+        const blob = new Blob([Uint8Array.from(atob(fileData.content), c => c.charCodeAt(0))], { type: fileData.mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileData.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      setMessage(`Exported ${Object.keys(data.files).length} files successfully.`);
+    } catch (error: any) {
+      setMessage(`Export failed: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleArchiveAndReset = async () => {
+    if (!confirm("Close Out Year? This will export all data first, then clear client/guide documents so you can start fresh. Client & guide logins remain.")) {
+      return;
+    }
+
+    setResetting(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/year-closeout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ year: parseInt(year) }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Archive & reset failed");
+      }
+
+      // Download all files
+      for (const [key, file] of Object.entries(data.files)) {
+        const fileData = file as { filename: string; content: string; mimeType: string };
+        const blob = new Blob([Uint8Array.from(atob(fileData.content), c => c.charCodeAt(0))], { type: fileData.mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileData.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      setMessage(`Archived and reset complete. ${Object.keys(data.files).length} files downloaded.`);
+    } catch (error: any) {
+      setMessage(`Archive & reset failed: ${error.message}`);
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div>
+        <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>Year to Close</label>
+        <input
+          type="number"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          style={{ width: 200, padding: 10, border: "1px solid #ddd", borderRadius: 6 }}
+        />
+      </div>
+
+      <div style={{ display: "flex", gap: 12 }}>
+        <button
+          onClick={handleExport}
+          disabled={exporting || resetting}
+          style={{
+            padding: "12px 24px",
+            background: exporting ? "#999" : "#0070f3",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: exporting || resetting ? "not-allowed" : "pointer",
+            fontWeight: 600,
+          }}
+        >
+          {exporting ? "Exporting…" : "Export Year Snapshot (CSV + JSON)"}
+        </button>
+
+        <button
+          onClick={handleArchiveAndReset}
+          disabled={exporting || resetting}
+          style={{
+            padding: "12px 24px",
+            background: resetting ? "#999" : "#dc2626",
+            color: "white",
+            border: "none",
+            borderRadius: 6,
+            cursor: exporting || resetting ? "not-allowed" : "pointer",
+            fontWeight: 600,
+          }}
+        >
+          {resetting ? "Archiving…" : "Close Out Year (Archive & Reset Documents)"}
+        </button>
+      </div>
+
+      {message && (
+        <p style={{ 
+          padding: 12, 
+          background: message.includes("failed") ? "#fee2e2" : "#dcfce7", 
+          color: message.includes("failed") ? "#991b1b" : "#166534",
+          borderRadius: 6,
+          margin: 0
+        }}>
+          {message}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Pre-Draw Export Component
+function PreDrawExportSection() {
+  const [exporting, setExporting] = useState(false);
+  const [exportCount, setExportCount] = useState(0);
+  const [message, setMessage] = useState("");
+
+  const handleExport = async () => {
+    setExporting(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/export-predraw");
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Export failed");
+      }
+
+      // Download file
+      const fileData = data.file as { filename: string; content: string; mimeType: string };
+      const blob = new Blob([Uint8Array.from(atob(fileData.content), c => c.charCodeAt(0))], { type: fileData.mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileData.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      setExportCount(data.count);
+      setMessage(`Exported ${data.count} authorized G3 applications successfully.`);
+    } catch (error: any) {
+      setMessage(`Export failed: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <button
+        onClick={handleExport}
+        disabled={exporting}
+        style={{
+          padding: "12px 24px",
+          background: exporting ? "#999" : "#059669",
+          color: "white",
+          border: "none",
+          borderRadius: 6,
+          cursor: exporting ? "not-allowed" : "pointer",
+          fontWeight: 600,
+          alignSelf: "flex-start",
+        }}
+      >
+        {exporting ? "Exporting…" : "Export CSV"}
+      </button>
+
+      {exportCount > 0 && (
+        <p style={{ color: "#666", margin: 0 }}>
+          {exportCount} records exported.
+        </p>
+      )}
+
+      {message && (
+        <p style={{ 
+          padding: 12, 
+          background: message.includes("failed") ? "#fee2e2" : "#dcfce7", 
+          color: message.includes("failed") ? "#991b1b" : "#166534",
+          borderRadius: 6,
+          margin: 0
+        }}>
+          {message}
+        </p>
+      )}
+    </div>
   );
 }
 
