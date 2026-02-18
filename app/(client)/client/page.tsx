@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+
+// Set to false to disable marketing slideshow entirely (use if React #310 persists)
+const ENABLE_MARKETING_SLIDESHOW = true;
 
 // Dynamically import slideshow with no SSR to prevent hydration errors
 const MarketingSlideshow = dynamic(
@@ -82,6 +85,7 @@ export default function ClientDashboardPage() {
   const [isClient, setIsClient] = useState(false);
   // Gate: render identical placeholder until after hydration to fix React #310
   const [hasMounted, setHasMounted] = useState(false);
+  const slideshowMountedRef = useRef(false);
 
   useEffect(() => {
     setHasMounted(true);
@@ -115,7 +119,7 @@ export default function ClientDashboardPage() {
         }
       }
       
-      if (!skipSlideshow && json.client?.id) {
+      if (ENABLE_MARKETING_SLIDESHOW && !skipSlideshow && json.client?.id) {
         // Get outfitter ID from client link
         try {
           const linkRes = await fetch("/api/client/outfitter-link");
@@ -126,18 +130,18 @@ export default function ClientDashboardPage() {
               setOutfitterId(oid);
               setClientEmail(json.client.email);
               // Pre-fetch marketing photos - only show slideshow if we have photos
-              // This prevents React #310 infinite loop when 0 photos load in slideshow
+              // Prevents React #310 when 0 photos (avoids mounting MarketingSlideshow with empty state)
               try {
                 const photosRes = await fetch(`/api/client/marketing-photos?outfitter_id=${encodeURIComponent(oid)}`);
                 if (photosRes.ok) {
                   const photosData = await photosRes.json();
                   const photos = photosData.photos || [];
-                  if (photos.length > 0) {
+                  if (Array.isArray(photos) && photos.length > 0) {
                     setShowSlideshow(true);
                   }
                 }
               } catch {
-                // On photo fetch failure, skip slideshow and go to dashboard
+                // On API failure, skip slideshow and go straight to dashboard
               }
             }
           }
@@ -188,19 +192,17 @@ export default function ClientDashboardPage() {
   }
 
   // Show slideshow ONLY after component has fully mounted and hydrated
-  // Use a portal-like approach to completely isolate from hydration
+  // Guard with ref to prevent multiple setState calls (fixes React #310 infinite loop)
   const [showSlideshowAfterMount, setShowSlideshowAfterMount] = useState(false);
   
   useEffect(() => {
-    // Wait for next tick to ensure hydration is complete
-    // Use requestAnimationFrame to ensure it's after the browser has painted
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        if (isClient && showSlideshow && outfitterId && clientEmail) {
-          setShowSlideshowAfterMount(true);
-        }
-      }, 0);
-    });
+    if (slideshowMountedRef.current) return;
+    if (!isClient || !showSlideshow || !outfitterId || !clientEmail) return;
+    
+    slideshowMountedRef.current = true;
+    // Defer to avoid hydration mismatch and batch with other updates
+    const id = setTimeout(() => setShowSlideshowAfterMount(true), 0);
+    return () => clearTimeout(id);
   }, [isClient, showSlideshow, outfitterId, clientEmail]);
 
   // SSR + first client paint: render one static placeholder (no text) so HTML matches and hydration succeeds
