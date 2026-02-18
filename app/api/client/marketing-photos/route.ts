@@ -79,7 +79,11 @@ export async function GET(req: Request) {
             .createSignedUrl(result.primary_photo_storage_path, 3600);
 
           if (urlError || !urlData) {
-            console.error("Failed to generate signed URL:", urlError);
+            console.error(
+              `Failed to generate signed URL for path: ${result.primary_photo_storage_path}`,
+              urlError
+            );
+            // Continue to next photo - don't fail entire request
             continue;
           }
 
@@ -97,6 +101,10 @@ export async function GET(req: Request) {
         }
       }
     }
+
+    console.log(
+      `Marketing photos: Found ${results?.length || 0} success records, ${marketingPhotos.length} with valid photos`
+    );
 
     return NextResponse.json({ photos: marketingPhotos });
   } catch (error: any) {
