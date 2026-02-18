@@ -46,8 +46,15 @@ export async function GET(req: Request) {
     }
 
     // Call RPC to get success records (same as iOS)
+    // The RPC expects p_outfitter_id as UUID, other params are optional
     const { data: results, error: rpcError } = await supabase.rpc("get_success_records", {
-      p_outfitter_id: outfitterId,
+      p_outfitter_id: outfitterId, // Supabase will convert string to UUID
+      p_species: null,
+      p_weapon: null,
+      p_unit: null,
+      p_state: null,
+      p_year: null,
+      p_guide_username: null,
     });
 
     if (rpcError) {

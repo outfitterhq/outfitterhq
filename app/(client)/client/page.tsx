@@ -177,14 +177,18 @@ export default function ClientDashboardPage() {
   
   useEffect(() => {
     // Wait for next tick to ensure hydration is complete
-    const timer = setTimeout(() => {
-      if (isClient && showSlideshow && outfitterId && clientEmail) {
-        setShowSlideshowAfterMount(true);
-      }
-    }, 100);
-    return () => clearTimeout(timer);
+    // Use requestAnimationFrame to ensure it's after the browser has painted
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (isClient && showSlideshow && outfitterId && clientEmail) {
+          setShowSlideshowAfterMount(true);
+        }
+      }, 0);
+    });
   }, [isClient, showSlideshow, outfitterId, clientEmail]);
 
+  // CRITICAL: Never render slideshow during SSR or initial client render
+  // This ensures server and client render identically
   if (showSlideshowAfterMount) {
     return (
       <MarketingSlideshow
