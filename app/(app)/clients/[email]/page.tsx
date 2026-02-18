@@ -553,6 +553,101 @@ export default function ClientDetailPage() {
                           >
                             View Payments
                           </Link>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(`/api/hunt-contracts/${contract.id}`);
+                                if (!res.ok) throw new Error("Failed to load contract");
+                                const contractData = await res.json();
+                                const printWindow = window.open("", "_blank");
+                                if (printWindow) {
+                                  printWindow.document.write(`
+                                    <!DOCTYPE html>
+                                    <html>
+                                      <head>
+                                        <title>Hunt Contract - ${contract.id.slice(0, 8)}</title>
+                                        <style>
+                                          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+                                          @media print { body { padding: 20px; } }
+                                          .header { text-align: center; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 2px solid #000; }
+                                          .section { background: #f5f5f5; padding: 16px; border-radius: 8px; margin-bottom: 24px; }
+                                          .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 16px 0; }
+                                          .detail-grid { display: grid; grid-template-columns: 150px 1fr; gap: 12px 16px; font-size: 11px; }
+                                          .detail-label { font-weight: 600; color: #666; }
+                                          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #ddd; text-align: center; font-size: 9px; color: #999; }
+                                        </style>
+                                      </head>
+                                      <body>
+                                        <div class="header">
+                                          <h1 style="font-size: 32px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 1px;">HUNT CONTRACT</h1>
+                                          <p style="font-size: 14px; font-weight: 500; color: #666; margin: 0;">Agreement for Guided Hunting Services</p>
+                                        </div>
+                                        <div class="section">
+                                          <div class="section-title">CONTRACT INFORMATION</div>
+                                          <div class="detail-grid">
+                                            <div class="detail-label">Contract ID:</div>
+                                            <div>${contract.id.slice(0, 8).toUpperCase()}</div>
+                                            <div class="detail-label">Date Created:</div>
+                                            <div>${contract.created_at ? new Date(contract.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "Not set"}</div>
+                                            <div class="detail-label">Status:</div>
+                                            <div>${contract.status.replace(/_/g, " ").replace(/\\b\\w/g, (l: string) => l.toUpperCase())}</div>
+                                          </div>
+                                        </div>
+                                        <div class="section">
+                                          <div class="section-title">CLIENT INFORMATION</div>
+                                          <div class="detail-grid">
+                                            <div class="detail-label">Client:</div>
+                                            <div>${client?.name || client?.email || "Unknown"}</div>
+                                            <div class="detail-label">Email:</div>
+                                            <div>${client?.email || "Not set"}</div>
+                                          </div>
+                                        </div>
+                                        ${contractData.hunt ? `
+                                        <div class="section">
+                                          <div class="section-title">HUNT DETAILS</div>
+                                          <div class="detail-grid">
+                                            ${contractData.hunt.species ? `<div class="detail-label">Species:</div><div>${contractData.hunt.species}</div>` : ""}
+                                            ${contractData.hunt.unit ? `<div class="detail-label">Unit:</div><div>${contractData.hunt.unit}</div>` : ""}
+                                          </div>
+                                        </div>
+                                        ` : ""}
+                                        <div class="section">
+                                          <div class="section-title">TERMS & CONDITIONS</div>
+                                          <div style="font-size: 11px; line-height: 1.6; color: #333; white-space: pre-wrap; font-family: inherit;">
+                                            ${contractData.content || "Contract text is not available."}
+                                          </div>
+                                        </div>
+                                        <div class="footer">
+                                          <p style="margin: 8px 0;">This contract is a legally binding agreement between the client and outfitter.</p>
+                                          <p style="margin: 0;">Generated on ${new Date().toLocaleString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
+                                        </div>
+                                      </body>
+                                    </html>
+                                  `);
+                                  printWindow.document.close();
+                                  printWindow.focus();
+                                  setTimeout(() => {
+                                    printWindow.print();
+                                  }, 250);
+                                }
+                              } catch (e) {
+                                alert("Failed to load contract for printing");
+                              }
+                            }}
+                            style={{
+                              padding: "6px 12px",
+                              background: "#1a472a",
+                              color: "white",
+                              border: "none",
+                              borderRadius: 6,
+                              fontSize: 14,
+                              cursor: "pointer",
+                              marginLeft: 8,
+                            }}
+                          >
+                            Print
+                          </button>
                         </div>
                       </td>
                     </tr>

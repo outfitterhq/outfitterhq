@@ -1118,10 +1118,11 @@ export default function HuntContractPage() {
               onClick={() => setShowFullContractModal(false)}
             >
               <div
+                id="contract-print-view"
                 style={{
                   background: "white",
                   borderRadius: 12,
-                  maxWidth: 720,
+                  maxWidth: 800,
                   width: "100%",
                   maxHeight: "90vh",
                   display: "flex",
@@ -1131,44 +1132,211 @@ export default function HuntContractPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <div style={{ padding: "20px 24px", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Full contract</h2>
-                  <button
-                    type="button"
-                    onClick={() => setShowFullContractModal(false)}
-                    style={{
-                      padding: "8px 16px",
-                      background: "#f5f5f5",
-                      border: "1px solid #ccc",
-                      borderRadius: 8,
-                      cursor: "pointer",
-                      fontWeight: 500,
-                      fontSize: 14,
-                    }}
-                  >
-                    Close
-                  </button>
+                  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Hunt Contract</h2>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        window.print();
+                      }}
+                      style={{
+                        padding: "8px 16px",
+                        background: "#1a472a",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        fontWeight: 500,
+                        fontSize: 14,
+                      }}
+                    >
+                      Print
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowFullContractModal(false)}
+                      style={{
+                        padding: "8px 16px",
+                        background: "#f5f5f5",
+                        border: "1px solid #ccc",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        fontWeight: 500,
+                        fontSize: 14,
+                      }}
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
                 <div
                   style={{
-                    padding: 24,
+                    padding: 32,
                     overflowY: "auto",
                     flex: 1,
-                    whiteSpace: "pre-wrap",
-                    fontFamily: "inherit",
-                    fontSize: 14,
-                    lineHeight: 1.7,
-                    color: "#333",
                   }}
                 >
-                  {currentContract.content ? (
-                    currentContract.content
-                  ) : (
-                    <p style={{ color: "#666" }}>Contract text is not available.</p>
+                  {/* Professional Contract Header */}
+                  <div style={{ textAlign: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "2px solid #000" }}>
+                    <h1 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 8px 0", letterSpacing: "1px" }}>
+                      HUNT CONTRACT
+                    </h1>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: "#666", margin: 0 }}>
+                      Agreement for Guided Hunting Services
+                    </p>
+                  </div>
+
+                  {/* Contract Information Section */}
+                  <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                      CONTRACT INFORMATION
+                    </h3>
+                    <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "12px 16px", fontSize: 11 }}>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Contract ID:</div>
+                      <div>{currentContract.id.slice(0, 8).toUpperCase()}</div>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Date Created:</div>
+                      <div>{currentContract.client_completed_at ? new Date(currentContract.client_completed_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "Not set"}</div>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Status:</div>
+                      <div>{currentContract.status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}</div>
+                    </div>
+                  </div>
+
+                  {/* Client Information Section */}
+                  <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                      CLIENT INFORMATION
+                    </h3>
+                    <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "12px 16px", fontSize: 11 }}>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Name:</div>
+                      <div>Client Name</div>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Email:</div>
+                      <div>client@example.com</div>
+                    </div>
+                  </div>
+
+                  {/* Hunt Details Section */}
+                  {currentContract.hunt && (
+                    <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                        HUNT DETAILS
+                      </h3>
+                      <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "12px 16px", fontSize: 11 }}>
+                        {currentContract.hunt.species && (
+                          <>
+                            <div style={{ fontWeight: 600, color: "#666" }}>Species:</div>
+                            <div>{currentContract.hunt.species}</div>
+                          </>
+                        )}
+                        {currentContract.hunt.unit && (
+                          <>
+                            <div style={{ fontWeight: 600, color: "#666" }}>Unit:</div>
+                            <div>{currentContract.hunt.unit}</div>
+                          </>
+                        )}
+                        {currentContract.hunt_code && (
+                          <>
+                            <div style={{ fontWeight: 600, color: "#666" }}>Hunt Code:</div>
+                            <div>{currentContract.hunt_code}</div>
+                          </>
+                        )}
+                        {currentContract.hunt.start_date && currentContract.hunt.end_date && (
+                          <>
+                            <div style={{ fontWeight: 600, color: "#666" }}>Dates:</div>
+                            <div>{formatDate(currentContract.hunt.start_date)} – {formatDate(currentContract.hunt.end_date)}</div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                   )}
+
+                  {/* Terms & Conditions Section */}
+                  <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                      TERMS & CONDITIONS
+                    </h3>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        lineHeight: 1.6,
+                        color: "#333",
+                        whiteSpace: "pre-wrap",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {currentContract.content ? (
+                        currentContract.content
+                      ) : (
+                        <p style={{ color: "#666" }}>Contract text is not available.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Payment Information (if available) */}
+                  {guideFeeBill && (
+                    <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                        PAYMENT INFORMATION
+                      </h3>
+                      <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "12px 16px", fontSize: 11 }}>
+                        <div style={{ fontWeight: 600, color: "#666" }}>Description:</div>
+                        <div>{guideFeeBill.description}</div>
+                        {guideFeeBill.total_cents && (
+                          <>
+                            <div style={{ fontWeight: 600, color: "#666" }}>Total Amount:</div>
+                            <div>${(guideFeeBill.total_cents / 100).toLocaleString()}</div>
+                          </>
+                        )}
+                        {guideFeeBill.balance_due_cents && (
+                          <>
+                            <div style={{ fontWeight: 600, color: "#666" }}>Balance Due:</div>
+                            <div>${(guideFeeBill.balance_due_cents / 100).toLocaleString()}</div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer */}
+                  <div style={{ marginTop: 32, paddingTop: 16, borderTop: "1px solid #ddd", textAlign: "center" }}>
+                    <p style={{ fontSize: 9, color: "#999", margin: "8px 0" }}>
+                      This contract is a legally binding agreement between the client and outfitter.
+                    </p>
+                    <p style={{ fontSize: 9, color: "#999", margin: 0 }}>
+                      Generated on {new Date().toLocaleString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Print Styles */}
+          <style jsx global>{`
+            @media print {
+              body * {
+                visibility: hidden;
+              }
+              #contract-print-view,
+              #contract-print-view * {
+                visibility: visible;
+              }
+              #contract-print-view {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+              }
+              #contract-print-view > div:first-child {
+                display: none;
+              }
+            }
+          `}</style>
 
           <Link
             href="/client/documents"
@@ -1248,57 +1416,144 @@ export default function HuntContractPage() {
             </div>
           )}
 
-          {/* Contract Content */}
+          {/* Professional Contract Display */}
           <div
+            id="contract-main-view"
             style={{
-              background: "#f9f9f9",
-              border: "1px solid #eee",
+              background: "white",
+              border: "1px solid #ddd",
               borderRadius: 8,
-              padding: 24,
+              padding: 32,
               marginBottom: 24,
-              maxHeight: 500,
-              overflowY: "auto",
             }}
           >
-            <h3 style={{ fontWeight: 600, marginBottom: 16 }}>
-              HUNT CONTRACT TERMS & CONDITIONS
-            </h3>
-            <div
-              style={{
-                fontSize: 14,
-                lineHeight: 1.8,
-                color: "#333",
-                whiteSpace: "pre-wrap",
-              }}
-            >
-              {currentContract?.content ? (
-                <div style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 14 }}>
-                  {currentContract.content}
+            {/* Professional Header */}
+            <div style={{ textAlign: "center", marginBottom: 32, paddingBottom: 16, borderBottom: "2px solid #000" }}>
+              <h1 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 8px 0", letterSpacing: "1px" }}>
+                HUNT CONTRACT
+              </h1>
+              <p style={{ fontSize: 14, fontWeight: 500, color: "#666", margin: 0 }}>
+                Agreement for Guided Hunting Services
+              </p>
+            </div>
+
+            {/* Contract Information Section */}
+            <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                CONTRACT INFORMATION
+              </h3>
+              <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "12px 16px", fontSize: 11 }}>
+                <div style={{ fontWeight: 600, color: "#666" }}>Contract ID:</div>
+                <div>{currentContract?.id.slice(0, 8).toUpperCase()}</div>
+                <div style={{ fontWeight: 600, color: "#666" }}>Date Created:</div>
+                <div>{currentContract?.client_completed_at ? new Date(currentContract.client_completed_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "Not set"}</div>
+                <div style={{ fontWeight: 600, color: "#666" }}>Status:</div>
+                <div>{currentContract?.status.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}</div>
+              </div>
+            </div>
+
+            {/* Hunt Details Section */}
+            {currentContract?.hunt && (
+              <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                  HUNT DETAILS
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "150px 1fr", gap: "12px 16px", fontSize: 11 }}>
+                  {currentContract.hunt.species && (
+                    <>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Species:</div>
+                      <div>{currentContract.hunt.species}</div>
+                    </>
+                  )}
+                  {currentContract.hunt.unit && (
+                    <>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Unit:</div>
+                      <div>{currentContract.hunt.unit}</div>
+                    </>
+                  )}
+                  {currentContract.hunt_code && (
+                    <>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Hunt Code:</div>
+                      <div>{currentContract.hunt_code}</div>
+                    </>
+                  )}
+                  {currentContract.hunt.start_date && currentContract.hunt.end_date && (
+                    <>
+                      <div style={{ fontWeight: 600, color: "#666" }}>Dates:</div>
+                      <div>{formatDate(currentContract.hunt.start_date)} – {formatDate(currentContract.hunt.end_date)}</div>
+                    </>
+                  )}
                 </div>
-              ) : (
-                <div>
-                  <p>
-                    This Hunt Contract ("Agreement") is entered into between the Outfitter
-                    ("Outfitter") and the undersigned Client ("Hunter").
-                  </p>
-                  <p style={{ marginTop: 16 }}>
-                    <strong>SERVICES:</strong> Outfitter agrees to provide guided hunting services
-                    as described in this contract, including lodging, meals, transportation during
-                    the hunt, and professional guide services.
-                  </p>
-                  <p style={{ marginTop: 16 }}>
-                    <strong>PAYMENT TERMS:</strong> Payment schedule as agreed. Full payment is
-                    due before hunt start date. See My Payments for details.
-                  </p>
-                  <p style={{ marginTop: 16 }}>
-                    <strong>CANCELLATION POLICY:</strong> Deposits are non-refundable. Rescheduling
-                    may be available depending on circumstances and availability.
-                  </p>
-                  <p style={{ marginTop: 16, fontStyle: "italic", color: "#666" }}>
-                    [Contract content will be displayed here once available]
-                  </p>
-                </div>
-              )}
+              </div>
+            )}
+
+            {/* Terms & Conditions Section */}
+            <div style={{ background: "#f5f5f5", padding: 16, borderRadius: 8, marginBottom: 24 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", margin: "0 0 16px 0" }}>
+                TERMS & CONDITIONS
+              </h3>
+              <div
+                style={{
+                  fontSize: 11,
+                  lineHeight: 1.6,
+                  color: "#333",
+                  whiteSpace: "pre-wrap",
+                  fontFamily: "inherit",
+                  maxHeight: 400,
+                  overflowY: "auto",
+                }}
+              >
+                {currentContract?.content ? (
+                  currentContract.content
+                ) : (
+                  <p style={{ color: "#666" }}>Contract text is not available.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Print Button */}
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 24 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const printWindow = window.open("", "_blank");
+                  if (printWindow) {
+                    const contractHTML = document.getElementById("contract-main-view")?.innerHTML || "";
+                    printWindow.document.write(`
+                      <!DOCTYPE html>
+                      <html>
+                        <head>
+                          <title>Hunt Contract</title>
+                          <style>
+                            body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+                            @media print { body { padding: 0; } }
+                          </style>
+                        </head>
+                        <body>
+                          ${contractHTML}
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                    printWindow.focus();
+                    setTimeout(() => {
+                      printWindow.print();
+                    }, 250);
+                  }
+                }}
+                style={{
+                  padding: "12px 24px",
+                  background: "#1a472a",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontWeight: 600,
+                  fontSize: 14,
+                }}
+              >
+                Print Contract
+              </button>
             </div>
           </div>
 
