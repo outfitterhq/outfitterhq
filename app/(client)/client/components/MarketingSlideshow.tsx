@@ -197,6 +197,7 @@ export default function MarketingSlideshow({
       }, 500); // Small delay to avoid flash
       return () => clearTimeout(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos.length, isLoading, error]);
 
   if (photos.length === 0 && !isLoading && !error) {

@@ -90,7 +90,16 @@ export default function ClientDashboardPage() {
       setData(json);
       
       // After dashboard loads, check if we should show slideshow
-      const skipSlideshow = typeof window !== "undefined" && localStorage.getItem("skipMarketingSlideshow") === "true";
+      // Only check localStorage on client side to avoid hydration errors
+      let skipSlideshow = false;
+      if (typeof window !== "undefined") {
+        try {
+          skipSlideshow = localStorage.getItem("skipMarketingSlideshow") === "true";
+        } catch (e) {
+          // localStorage might not be available
+          console.warn("Could not access localStorage:", e);
+        }
+      }
       
       if (!skipSlideshow && json.client?.id) {
         // Get outfitter ID from client link
