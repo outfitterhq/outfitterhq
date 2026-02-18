@@ -172,17 +172,19 @@ export default function ClientDashboardPage() {
   }
 
   // Show slideshow if enabled and we have the required data
-  // Check this BEFORE loading/error checks so it shows immediately
   // MarketingSlideshow is dynamically imported with ssr: false to prevent hydration errors
-  // Only show after client-side hydration is complete
+  // Only show after client-side hydration is complete (isClient === true)
+  // This ensures server and client initial render match
   if (isClient && showSlideshow && outfitterId && clientEmail) {
     return (
-      <MarketingSlideshow
-        outfitterId={outfitterId}
-        clientEmail={clientEmail}
-        onSkip={handleSkipSlideshow}
-        onContinue={handleContinueFromSlideshow}
-      />
+      <div suppressHydrationWarning>
+        <MarketingSlideshow
+          outfitterId={outfitterId}
+          clientEmail={clientEmail}
+          onSkip={handleSkipSlideshow}
+          onContinue={handleContinueFromSlideshow}
+        />
+      </div>
     );
   }
 
