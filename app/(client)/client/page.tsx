@@ -5,8 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 
-// Set to false to disable marketing slideshow entirely (use if React #310 persists)
-const ENABLE_MARKETING_SLIDESHOW = true;
+// Set to false to disable marketing slideshow entirely (client-side error workaround)
+const ENABLE_MARKETING_SLIDESHOW = false;
 
 // Dynamically import slideshow with no SSR to prevent hydration errors
 const MarketingSlideshow = dynamic(
