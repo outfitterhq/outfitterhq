@@ -175,16 +175,21 @@ export default function ClientDashboardPage() {
   // MarketingSlideshow is dynamically imported with ssr: false to prevent hydration errors
   // Only show after client-side hydration is complete (isClient === true)
   // This ensures server and client initial render match
-  if (isClient && showSlideshow && outfitterId && clientEmail) {
+  // Use a separate useEffect to show slideshow only after mount to prevent hydration errors
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (mounted && isClient && showSlideshow && outfitterId && clientEmail) {
     return (
-      <div suppressHydrationWarning>
-        <MarketingSlideshow
-          outfitterId={outfitterId}
-          clientEmail={clientEmail}
-          onSkip={handleSkipSlideshow}
-          onContinue={handleContinueFromSlideshow}
-        />
-      </div>
+      <MarketingSlideshow
+        outfitterId={outfitterId}
+        clientEmail={clientEmail}
+        onSkip={handleSkipSlideshow}
+        onContinue={handleContinueFromSlideshow}
+      />
     );
   }
 
