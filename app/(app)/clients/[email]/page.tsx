@@ -560,6 +560,9 @@ export default function ClientDetailPage() {
                                 const res = await fetch(`/api/hunt-contracts/${contract.id}`);
                                 if (!res.ok) throw new Error("Failed to load contract");
                                 const contractData = await res.json();
+                                const clientName = client?.first_name || client?.last_name 
+                                  ? `${client.first_name || ""} ${client.last_name || ""}`.trim()
+                                  : client?.email || "Unknown";
                                 const printWindow = window.open("", "_blank");
                                 if (printWindow) {
                                   printWindow.document.write(`
@@ -598,7 +601,7 @@ export default function ClientDetailPage() {
                                           <div class="section-title">CLIENT INFORMATION</div>
                                           <div class="detail-grid">
                                             <div class="detail-label">Client:</div>
-                                            <div>${client?.name || client?.email || "Unknown"}</div>
+                                            <div>${clientName}</div>
                                             <div class="detail-label">Email:</div>
                                             <div>${client?.email || "Not set"}</div>
                                           </div>
