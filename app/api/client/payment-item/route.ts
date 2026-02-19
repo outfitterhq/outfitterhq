@@ -45,7 +45,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Client not found" }, { status: 404 });
   }
 
-  let item: { id: string; description: string; total_cents: number; amount_paid_cents: number; status: string } | null = null;
+  type PaymentItemRow = {
+    id: string;
+    description: string;
+    total_cents: number;
+    amount_paid_cents: number | null;
+    status: string;
+  };
+
+  let item: PaymentItemRow | null = null;
   let err: unknown = null;
 
   if (itemId) {
@@ -55,7 +63,7 @@ export async function GET(req: NextRequest) {
       .eq("id", itemId)
       .eq("client_id", client.id)
       .single();
-    item = res.data as typeof item;
+    item = res.data as PaymentItemRow | null;
     err = res.error;
   } else if (contractId) {
     const res = await admin
@@ -67,7 +75,7 @@ export async function GET(req: NextRequest) {
       .order("due_date", { ascending: true, nullsFirst: false })
       .limit(1)
       .maybeSingle();
-    item = res.data as typeof item;
+    item = res.data as PaymentItemRow | null;
     err = res.error;
     if (!item && !err) {
       const { data: paid } = await admin
@@ -88,13 +96,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Payment item not found" }, { status: 404 });
   }
 
-  const balanceCents = item.total_cents - (item.amount_paid_cents || 0);
+  const paymentItem: PaymentItemRow = item;
+  const balanceCents = paymentItem.total_cents - (paymentItem.amount_paid_cents ?? 0);
   return NextResponse.json({
-    id: item.id,
-    description: item.description,
-    total_cents: item.total_cents,
-    amount_paid_cents: item.amount_paid_cents || 0,
+    id: paymentItem.id,
+    description: paymentItem.description,
+    total_cents: paymentItem.total_cents,
+    amount_paid_cents: paymentItem.amount_paid_cents ?? 0,
     balance_due_cents: balanceCents,
-    status: item.status,
+    status: paymentItem.status,
   });
 }
