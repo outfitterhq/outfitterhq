@@ -72,7 +72,7 @@ export default function InAppSigningFlow({
             style={{
               flex: 1,
               height: 4,
-              background: i <= stepIndex ? "#1a472a" : "#e0e0e0",
+              background: i <= stepIndex ? "var(--client-accent, #1a472a)" : "#e0e0e0",
               borderRadius: 2,
             }}
           />
@@ -103,7 +103,7 @@ export default function InAppSigningFlow({
             padding: 32,
           }}
         >
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#1a472a" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "var(--client-accent, #1a472a)" }}>
             1. Electronic Consent
           </h2>
           <div
@@ -173,7 +173,7 @@ export default function InAppSigningFlow({
               disabled={!canProceedConsent}
               style={{
                 padding: "12px 28px",
-                background: canProceedConsent ? "#1a472a" : "#ccc",
+                background: canProceedConsent ? "var(--client-accent, #1a472a)" : "#ccc",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
@@ -197,7 +197,7 @@ export default function InAppSigningFlow({
             padding: 32,
           }}
         >
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#1a472a" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "var(--client-accent, #1a472a)" }}>
             2. Review {documentTitle}
           </h2>
           {documentPdfUrl ? (
@@ -272,7 +272,7 @@ export default function InAppSigningFlow({
               disabled={!canProceedReview}
               style={{
                 padding: "12px 28px",
-                background: canProceedReview ? "#1a472a" : "#ccc",
+                background: canProceedReview ? "var(--client-accent, #1a472a)" : "#ccc",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
@@ -296,7 +296,7 @@ export default function InAppSigningFlow({
             padding: 32,
           }}
         >
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "#1a472a" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16, color: "var(--client-accent, #1a472a)" }}>
             3. Sign {documentTitle}
           </h2>
           <div style={{ marginBottom: 16 }}>
@@ -359,7 +359,7 @@ export default function InAppSigningFlow({
               disabled={!canSign}
               style={{
                 padding: "12px 28px",
-                background: canSign ? "#1a472a" : "#ccc",
+                background: canSign ? "var(--client-accent, #1a472a)" : "#ccc",
                 color: "white",
                 border: "none",
                 borderRadius: 8,

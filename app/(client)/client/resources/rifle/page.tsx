@@ -8,7 +8,7 @@ export default function RifleGearPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/resources"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Resources
         </Link>
@@ -99,7 +99,7 @@ export default function RifleGearPage() {
           border: "1px solid #c8e6c9",
         }}
       >
-        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "#1a472a" }}>Pro Tips</h3>
+        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "var(--client-accent, #1a472a)" }}>Pro Tips</h3>
         <ul style={{ margin: 0, paddingLeft: 20, color: "#555", lineHeight: 1.8 }}>
           <li>Verify rifle zero before leaving home and after travel</li>
           <li>Blaze orange is required - bring extra in case of loss</li>

@@ -67,11 +67,16 @@ export async function POST(req: Request) {
     const ROLE_COOKIE = "hc_role";
 
     // Check if user is a client first (clients take priority)
-    const { data: clientRecord } = await supabase
+    const { data: clientRecord, error: clientErr } = await supabase
       .from("clients")
       .select("id")
       .eq("email", data.user.email)
       .single();
+
+    if (clientErr && clientErr.code !== "PGRST116") {
+      console.error("Login: client lookup failed", clientErr);
+      return NextResponse.json({ ok: false, error: "Something went wrong. Please try again." }, { status: 500 });
+    }
 
     if (clientRecord) {
       // User is a client - redirect to client portal

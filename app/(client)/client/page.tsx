@@ -64,8 +64,6 @@ interface DashboardData {
     ctaSecondaryText?: string;
     ctaSecondaryUrl?: string;
     featureCards: Array<{ title: string; description: string; icon?: string; href: string }>;
-    huntShowcases: Array<{ title: string; imageUrl?: string; href: string }>;
-    testimonials: Array<{ name: string; location: string; text: string; imageUrl?: string }>;
     specialSections: Array<{ title: string; description: string; imageUrl?: string; href?: string; buttonText?: string }>;
     partnerLogos: Array<{ name: string; logoUrl: string; href?: string }>;
     contactEnabled: boolean;
@@ -260,7 +258,7 @@ export default function ClientDashboardPage() {
         <div style={{ fontSize: 48, marginBottom: 16 }}>
           {isSessionError ? "🔐" : isNotLinked ? "🔗" : isNoProfile ? "👤" : "⚠️"}
         </div>
-        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12, color: "#1a472a" }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 12, color: "var(--client-accent, #1a472a)" }}>
           {isSessionError ? "Session Expired" : 
            isNotLinked ? "Not Connected" :
            isNoProfile ? "Profile Not Found" : 
@@ -273,7 +271,7 @@ export default function ClientDashboardPage() {
               href="/login"
               style={{
                 padding: "12px 24px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 textDecoration: "none",
                 borderRadius: 8,
@@ -288,7 +286,7 @@ export default function ClientDashboardPage() {
               href="/client/enter-code"
               style={{
                 padding: "12px 24px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 textDecoration: "none",
                 borderRadius: 8,
@@ -322,8 +320,6 @@ export default function ClientDashboardPage() {
     heroSubtitle: "Manage your hunts, documents, and more",
     welcomeText: undefined,
     featureCards: [],
-    huntShowcases: [],
-    testimonials: [],
     specialSections: [],
     partnerLogos: [],
     contactEnabled: false,
@@ -339,7 +335,7 @@ export default function ClientDashboardPage() {
           textAlign: "center",
           background: customization.heroImageUrl
             ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${customization.heroImageUrl})`
-            : "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+            : "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
           backgroundSize: "cover",
           backgroundPosition: "center",
           borderRadius: 12,
@@ -416,7 +412,7 @@ export default function ClientDashboardPage() {
               maxWidth: 900,
               margin: "0 auto",
               padding: "24px 28px",
-              background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+              background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
               borderRadius: 12,
               border: "2px solid #0f3320",
               color: "white",
@@ -442,7 +438,7 @@ export default function ClientDashboardPage() {
                     display: "inline-block",
                     padding: "14px 28px",
                     background: "white",
-                    color: "#1a472a",
+                    color: "var(--client-accent, #1a472a)",
                     borderRadius: 8,
                     textDecoration: "none",
                     fontWeight: 700,
@@ -466,7 +462,7 @@ export default function ClientDashboardPage() {
               maxWidth: 900,
               margin: "0 auto",
               padding: "24px 28px",
-              background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+              background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
               borderRadius: 12,
               border: "2px solid #0f3320",
               color: "white",
@@ -501,7 +497,7 @@ export default function ClientDashboardPage() {
                     display: "inline-block",
                     padding: "14px 28px",
                     background: "white",
-                    color: "#1a472a",
+                    color: "var(--client-accent, #1a472a)",
                     borderRadius: 8,
                     textDecoration: "none",
                     fontWeight: 700,
@@ -625,66 +621,10 @@ export default function ClientDashboardPage() {
                 }}
               >
                 {card.icon && <div style={{ fontSize: 48, marginBottom: 16 }}>{card.icon}</div>}
-                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "#1a472a" }}>
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: "var(--client-accent, #1a472a)" }}>
                   {card.title}
                 </h3>
                 <p style={{ color: "#666", fontSize: 14, lineHeight: 1.6 }}>{card.description}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Hunt Showcases */}
-      {customization.huntShowcases && customization.huntShowcases.length > 0 && (
-        <section style={{ marginBottom: 48 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 24, textAlign: "center" }}>
-            Our Hunts
-          </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: 24,
-            }}
-          >
-            {customization.huntShowcases.map((showcase, idx) => (
-              <Link
-                key={idx}
-                href={showcase.href}
-                style={{
-                  background: "white",
-                  border: "1px solid #ddd",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "block",
-                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.12)";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                {showcase.imageUrl && (
-                  <div
-                    style={{
-                      width: "100%",
-                      height: 200,
-                      backgroundImage: `url(${showcase.imageUrl})`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  />
-                )}
-                <div style={{ padding: 20 }}>
-                  <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1a472a" }}>{showcase.title}</h3>
-                </div>
               </Link>
             ))}
           </div>
@@ -783,64 +723,13 @@ export default function ClientDashboardPage() {
             style={{
               display: "inline-block",
               marginTop: 16,
-              color: "#1a472a",
+              color: "var(--client-accent, #1a472a)",
               fontWeight: 600,
               fontSize: 16,
             }}
           >
             View Full Calendar →
           </Link>
-        </section>
-      )}
-
-      {/* Testimonials */}
-      {customization.testimonials && customization.testimonials.length > 0 && (
-        <section style={{ marginBottom: 48 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 32, textAlign: "center" }}>
-            Client Testimonials
-          </h2>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: 24,
-            }}
-          >
-            {customization.testimonials.map((testimonial, idx) => (
-              <div
-                key={idx}
-                style={{
-                  background: "white",
-                  border: "1px solid #ddd",
-                  borderRadius: 12,
-                  padding: 24,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                }}
-              >
-                <p style={{ fontSize: 16, lineHeight: 1.8, marginBottom: 16, fontStyle: "italic", color: "#333" }}>
-                  "{testimonial.text}"
-                </p>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  {testimonial.imageUrl && (
-                    <img
-                      src={testimonial.imageUrl}
-                      alt={testimonial.name}
-                      style={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  )}
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 16 }}>{testimonial.name}</div>
-                    <div style={{ fontSize: 14, color: "#666" }}>{testimonial.location}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </section>
       )}
 
@@ -874,7 +763,7 @@ export default function ClientDashboardPage() {
                 />
               )}
               <div style={{ flex: 1, padding: 40 }}>
-                <h3 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16, color: "#1a472a" }}>
+                <h3 style={{ fontSize: 28, fontWeight: 700, marginBottom: 16, color: "var(--client-accent, #1a472a)" }}>
                   {section.title}
                 </h3>
                 <p style={{ fontSize: 16, lineHeight: 1.8, color: "#666", marginBottom: 24 }}>

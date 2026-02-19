@@ -130,7 +130,7 @@ export default function MyContractsPage() {
           onClick={loadContracts}
           style={{
             padding: "12px 24px",
-            background: "#1a472a",
+            background: "var(--client-accent, #1a472a)",
             color: "white",
             border: "none",
             borderRadius: 8,
@@ -158,7 +158,7 @@ export default function MyContractsPage() {
         <div
           style={{
             padding: "24px 28px",
-            background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+            background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
             borderRadius: 12,
             color: "white",
             marginBottom: 32,
@@ -178,7 +178,7 @@ export default function MyContractsPage() {
               style={{
                 padding: "14px 28px",
                 background: "white",
-                color: "#1a472a",
+                color: "var(--client-accent, #1a472a)",
                 borderRadius: 8,
                 textDecoration: "none",
                 fontWeight: 700,
@@ -286,7 +286,7 @@ export default function MyContractsPage() {
                           style={{
                             width: `${Math.min(100, percentage)}%`,
                             height: "100%",
-                            background: percentage >= 100 ? "#2e7d32" : "#1a472a",
+                            background: percentage >= 100 ? "#2e7d32" : "var(--client-accent, #1a472a)",
                             transition: "width 0.3s ease",
                           }}
                         />
@@ -346,7 +346,7 @@ export default function MyContractsPage() {
                       href={`/client/pay?contract_id=${contract.id}`}
                       style={{
                         padding: "10px 20px",
-                        background: "#1a472a",
+                        background: "var(--client-accent, #1a472a)",
                         color: "white",
                         textDecoration: "none",
                         borderRadius: 6,

@@ -16,7 +16,8 @@ async function getClientEmail(supabase: Awaited<ReturnType<typeof supabaseRoute>
 }
 
 /**
- * GET: Get a single payment item for the current client (by item_id).
+ * GET: Get a single payment item for the current client (by item_id or contract_id).
+ * When contract_id is provided, returns the first unpaid payment item for that contract.
  * Used so the client pay page can show amount and description before paying.
  */
 export async function GET(req: NextRequest) {
@@ -28,8 +29,9 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const itemId = searchParams.get("item_id");
-  if (!itemId) {
-    return NextResponse.json({ error: "item_id is required" }, { status: 400 });
+  const contractId = searchParams.get("contract_id");
+  if (!itemId && !contractId) {
+    return NextResponse.json({ error: "item_id or contract_id is required" }, { status: 400 });
   }
 
   const admin = supabaseAdmin();
@@ -43,14 +45,46 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Client not found" }, { status: 404 });
   }
 
-  const { data: item, error } = await admin
-    .from("payment_items")
-    .select("id, description, total_cents, amount_paid_cents, status")
-    .eq("id", itemId)
-    .eq("client_id", client.id)
-    .single();
+  let item: { id: string; description: string; total_cents: number; amount_paid_cents: number; status: string } | null = null;
+  let err: unknown = null;
 
-  if (error || !item) {
+  if (itemId) {
+    const res = await admin
+      .from("payment_items")
+      .select("id, description, total_cents, amount_paid_cents, status")
+      .eq("id", itemId)
+      .eq("client_id", client.id)
+      .single();
+    item = res.data as typeof item;
+    err = res.error;
+  } else if (contractId) {
+    const res = await admin
+      .from("payment_items")
+      .select("id, description, total_cents, amount_paid_cents, status")
+      .eq("contract_id", contractId)
+      .eq("client_id", client.id)
+      .neq("status", "paid")
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+    item = res.data as typeof item;
+    err = res.error;
+    if (!item && !err) {
+      const { data: paid } = await admin
+        .from("payment_items")
+        .select("id")
+        .eq("contract_id", contractId)
+        .eq("client_id", client.id)
+        .limit(1)
+        .maybeSingle();
+      if (paid) {
+        return NextResponse.json({ error: "This contract is already paid in full" }, { status: 400 });
+      }
+      return NextResponse.json({ error: "No payment due for this contract yet" }, { status: 404 });
+    }
+  }
+
+  if (err || !item) {
     return NextResponse.json({ error: "Payment item not found" }, { status: 404 });
   }
 

@@ -298,7 +298,7 @@ export default function ClientPrivateTagsPage() {
             onClick={() => setShowDebugPanel(!showDebugPanel)}
             style={{
               padding: "8px 16px",
-              background: showDebugPanel ? "#1a472a" : "#f0f0f0",
+              background: showDebugPanel ? "var(--client-accent, #1a472a)" : "#f0f0f0",
               color: showDebugPanel ? "white" : "#333",
               border: "1px solid #ddd",
               borderRadius: 6,
@@ -349,10 +349,10 @@ export default function ClientPrivateTagsPage() {
             padding: "12px 24px",
             background: "none",
             border: "none",
-            borderBottom: activeTab === "available" ? "2px solid #1a472a" : "2px solid transparent",
+            borderBottom: activeTab === "available" ? "2px solid var(--client-accent, #1a472a)" : "2px solid transparent",
             marginBottom: -2,
             fontWeight: activeTab === "available" ? 600 : 400,
-            color: activeTab === "available" ? "#1a472a" : "#666",
+            color: activeTab === "available" ? "var(--client-accent, #1a472a)" : "#666",
             cursor: "pointer",
             fontSize: 15,
           }}
@@ -365,10 +365,10 @@ export default function ClientPrivateTagsPage() {
             padding: "12px 24px",
             background: "none",
             border: "none",
-            borderBottom: activeTab === "my-tags" ? "2px solid #1a472a" : "2px solid transparent",
+            borderBottom: activeTab === "my-tags" ? "2px solid var(--client-accent, #1a472a)" : "2px solid transparent",
             marginBottom: -2,
             fontWeight: activeTab === "my-tags" ? 600 : 400,
-            color: activeTab === "my-tags" ? "#1a472a" : "#666",
+            color: activeTab === "my-tags" ? "var(--client-accent, #1a472a)" : "#666",
             cursor: "pointer",
             fontSize: 15,
           }}
@@ -416,7 +416,7 @@ export default function ClientPrivateTagsPage() {
                 style={{
                   marginTop: 16,
                   padding: "8px 16px",
-                  background: "#1a472a",
+                  background: "var(--client-accent, #1a472a)",
                   color: "white",
                   border: "none",
                   borderRadius: 6,
@@ -564,7 +564,7 @@ export default function ClientPrivateTagsPage() {
                       style={{
                         padding: 14,
                         textAlign: "left",
-                        border: "2px solid #1a472a",
+                        border: "2px solid var(--client-accent, #1a472a)",
                         borderRadius: 8,
                         background: "#f0f7f4",
                         cursor: "pointer",
@@ -630,7 +630,7 @@ export default function ClientPrivateTagsPage() {
                     disabled={purchasing === purchaseTagForDates?.id}
                     style={{
                       padding: "10px 20px",
-                      background: purchasing === purchaseTagForDates?.id ? "#ccc" : "#1a472a",
+                      background: purchasing === purchaseTagForDates?.id ? "#ccc" : "var(--client-accent, #1a472a)",
                       color: "white",
                       border: "none",
                       borderRadius: 8,
@@ -657,7 +657,7 @@ export default function ClientPrivateTagsPage() {
           border: "1px solid #c8e6c9",
         }}
       >
-        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "#1a472a" }}>
+        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "var(--client-accent, #1a472a)" }}>
           About Tags for Sale
         </h3>
         <ul style={{ margin: 0, paddingLeft: 20, color: "#555", lineHeight: 1.8, fontSize: 14 }}>
@@ -694,7 +694,7 @@ function AvailableTagCard({
       {/* Header with species */}
       <div
         style={{
-          background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+          background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
           padding: 20,
           color: "white",
         }}
@@ -786,7 +786,7 @@ function AvailableTagCard({
       >
         <div>
           <div style={{ fontSize: 12, color: "#666" }}>Tag price</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "#1a472a" }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "var(--client-accent, #1a472a)" }}>
             {tag.price != null && Number(tag.price) > 0
               ? `$${Number(tag.price).toLocaleString()}`
               : "Contact for price"}
@@ -797,7 +797,7 @@ function AvailableTagCard({
           disabled={purchasing}
           style={{
             padding: "12px 24px",
-            background: purchasing ? "#ccc" : "#1a472a",
+            background: purchasing ? "#ccc" : "var(--client-accent, #1a472a)",
             color: "white",
             border: "none",
             borderRadius: 8,
@@ -857,7 +857,7 @@ function MyTagCard({ tag }: { tag: PrivateTag }) {
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16, color: "#666", fontSize: 14 }}>
             {tag.tag_type && (
-              <span style={{ fontWeight: 600, color: "#1a472a" }}>
+              <span style={{ fontWeight: 600, color: "var(--client-accent, #1a472a)" }}>
                 {tag.tag_type === "unit_wide" ? "Unit Wide" : "Private Land"}
               </span>
             )}

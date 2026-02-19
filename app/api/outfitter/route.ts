@@ -59,6 +59,8 @@ export async function PUT(req: Request) {
     if (body.client_portal_background_image_url !== undefined) updateData.client_portal_background_image_url = body.client_portal_background_image_url;
     if (body.client_portal_per_page_backgrounds !== undefined) updateData.client_portal_per_page_backgrounds = body.client_portal_per_page_backgrounds;
     if (body.client_portal_header_color !== undefined) updateData.client_portal_header_color = body.client_portal_header_color;
+    if (body.client_portal_accent_color !== undefined) updateData.client_portal_accent_color = body.client_portal_accent_color;
+    if (body.client_portal_background_image_urls !== undefined) updateData.client_portal_background_image_urls = body.client_portal_background_image_urls;
     if (body.dashboard_hero_title !== undefined) updateData.dashboard_hero_title = body.dashboard_hero_title;
     if (body.dashboard_hero_subtitle !== undefined) updateData.dashboard_hero_subtitle = body.dashboard_hero_subtitle;
     if (body.dashboard_hero_image_url !== undefined) updateData.dashboard_hero_image_url = body.dashboard_hero_image_url;
@@ -67,8 +69,6 @@ export async function PUT(req: Request) {
     if (body.dashboard_cta_secondary_text !== undefined) updateData.dashboard_cta_secondary_text = body.dashboard_cta_secondary_text;
     if (body.dashboard_cta_secondary_url !== undefined) updateData.dashboard_cta_secondary_url = body.dashboard_cta_secondary_url;
     if (body.dashboard_feature_cards !== undefined) updateData.dashboard_feature_cards = body.dashboard_feature_cards;
-    if (body.dashboard_hunt_showcases !== undefined) updateData.dashboard_hunt_showcases = body.dashboard_hunt_showcases;
-    if (body.dashboard_testimonials !== undefined) updateData.dashboard_testimonials = body.dashboard_testimonials;
     if (body.dashboard_special_sections !== undefined) updateData.dashboard_special_sections = body.dashboard_special_sections;
     if (body.dashboard_partner_logos !== undefined) updateData.dashboard_partner_logos = body.dashboard_partner_logos;
     if (body.dashboard_contact_enabled !== undefined) updateData.dashboard_contact_enabled = body.dashboard_contact_enabled;

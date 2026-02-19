@@ -16,6 +16,7 @@ interface PaymentItem {
 export default function ClientPayPage() {
   const searchParams = useSearchParams();
   const itemId = searchParams.get("item_id");
+  const contractId = searchParams.get("contract_id");
   const [item, setItem] = useState<PaymentItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +33,15 @@ export default function ClientPayPage() {
     searchParams.get("simulate") === "1" || process.env.NEXT_PUBLIC_ALLOW_SIMULATE_PAYMENT === "true";
 
   useEffect(() => {
-    if (!itemId) {
+    if (!itemId && !contractId) {
       setError("Missing payment item");
       setLoading(false);
       return;
     }
-    fetch(`/api/client/payment-item?item_id=${encodeURIComponent(itemId)}`)
+    const qs = itemId
+      ? `item_id=${encodeURIComponent(itemId)}`
+      : `contract_id=${encodeURIComponent(contractId!)}`;
+    fetch(`/api/client/payment-item?${qs}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) setError(data.error);
@@ -45,7 +49,7 @@ export default function ClientPayPage() {
       })
       .catch(() => setError("Failed to load payment"))
       .finally(() => setLoading(false));
-  }, [itemId]);
+  }, [itemId, contractId]);
 
   // Mount Stripe card element when item is loaded and not paid
   useEffect(() => {
@@ -73,8 +77,10 @@ export default function ClientPayPage() {
     };
   }, [item?.id]);
 
+  const paymentItemId = item?.id ?? itemId;
+
   async function handlePay() {
-    if (!itemId || !item || item.status === "paid" || item.balance_due_cents <= 0) return;
+    if (!paymentItemId || !item || item.status === "paid" || item.balance_due_cents <= 0) return;
     if (!cardRef.current || !stripeRef.current) {
       setPayError("Please wait for the payment form to load.");
       return;
@@ -85,7 +91,7 @@ export default function ClientPayPage() {
       const res = await fetch("/api/payments/create-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_item_id: itemId }),
+        body: JSON.stringify({ payment_item_id: paymentItemId }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -114,14 +120,14 @@ export default function ClientPayPage() {
   }
 
   async function handleSimulatePay() {
-    if (!itemId || !item || item.status === "paid" || item.balance_due_cents <= 0) return;
+    if (!paymentItemId || !item || item.status === "paid" || item.balance_due_cents <= 0) return;
     setSimulating(true);
     setPayError(null);
     try {
       const res = await fetch("/api/client/simulate-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payment_item_id: itemId }),
+        body: JSON.stringify({ payment_item_id: paymentItemId }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -148,7 +154,7 @@ export default function ClientPayPage() {
     return (
       <div style={{ maxWidth: 480, margin: "48px auto", padding: 24 }}>
         <p style={{ color: "#c00", marginBottom: 16 }}>{error || "Payment not found"}</p>
-        <Link href="/client/documents/hunt-contract" style={{ color: "#1a472a", fontWeight: 600 }}>
+        <Link href="/client/documents/hunt-contract" style={{ color: "var(--client-accent, #1a472a)", fontWeight: 600 }}>
           ← Back to Hunt Contract
         </Link>
       </div>
@@ -166,7 +172,7 @@ export default function ClientPayPage() {
           style={{
             display: "inline-block",
             padding: "12px 24px",
-            background: "#1a472a",
+            background: "var(--client-accent, #1a472a)",
             color: "white",
             borderRadius: 8,
             textDecoration: "none",
@@ -184,13 +190,13 @@ export default function ClientPayPage() {
   return (
     <div style={{ maxWidth: 480, margin: "48px auto", padding: 24 }}>
       <div style={{ marginBottom: 24 }}>
-        <Link href="/client/documents/hunt-contract" style={{ color: "#1a472a", fontSize: 14, fontWeight: 500 }}>
+        <Link href="/client/documents/hunt-contract" style={{ color: "var(--client-accent, #1a472a)", fontSize: 14, fontWeight: 500 }}>
           ← Back to Hunt Contract
         </Link>
       </div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Pay guide fee</h1>
       <p style={{ color: "#666", marginBottom: 24 }}>{item.description}</p>
-      <div style={{ marginBottom: 24, fontSize: 28, fontWeight: 700, color: "#1a472a" }}>
+      <div style={{ marginBottom: 24, fontSize: 28, fontWeight: 700, color: "var(--client-accent, #1a472a)" }}>
         ${(item.balance_due_cents / 100).toLocaleString()}
       </div>
 
@@ -218,7 +224,7 @@ export default function ClientPayPage() {
             style={{
               width: "100%",
               padding: 14,
-              background: paying || simulating ? "#999" : "#1a472a",
+              background: paying || simulating ? "#999" : "var(--client-accent, #1a472a)",
               color: "white",
               border: "none",
               borderRadius: 8,

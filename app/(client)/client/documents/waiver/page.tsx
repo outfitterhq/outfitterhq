@@ -63,7 +63,7 @@ export default function WaiverPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/documents"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Documents
         </Link>
@@ -104,7 +104,7 @@ export default function WaiverPage() {
               style={{
                 display: "inline-block",
                 padding: "12px 24px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 borderRadius: 8,
                 textDecoration: "none",

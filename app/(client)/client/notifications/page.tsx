@@ -123,7 +123,7 @@ export default function ClientNotificationsPage() {
               onClick={markAllAsRead}
               style={{
                 padding: "10px 20px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
@@ -144,7 +144,7 @@ export default function ClientNotificationsPage() {
           style={{
             padding: "8px 16px",
             border: "1px solid #ddd",
-            background: filter === "unread" ? "#1a472a" : "white",
+            background: filter === "unread" ? "var(--client-accent, #1a472a)" : "white",
             color: filter === "unread" ? "white" : "#333",
             borderRadius: 6,
             cursor: "pointer",
@@ -157,7 +157,7 @@ export default function ClientNotificationsPage() {
           style={{
             padding: "8px 16px",
             border: "1px solid #ddd",
-            background: filter === "all" ? "#1a472a" : "white",
+            background: filter === "all" ? "var(--client-accent, #1a472a)" : "white",
             color: filter === "all" ? "white" : "#333",
             borderRadius: 6,
             cursor: "pointer",
@@ -190,7 +190,7 @@ export default function ClientNotificationsPage() {
                 transition: "all 0.2s",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#1a472a";
+                e.currentTarget.style.borderColor = "var(--client-accent, #1a472a)";
                 e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
               }}
               onMouseLeave={(e) => {
@@ -235,7 +235,7 @@ export default function ClientNotificationsPage() {
                       style={{
                         marginTop: 12,
                         padding: "8px 16px",
-                        background: "#1a472a",
+                        background: "var(--client-accent, #1a472a)",
                         color: "white",
                         border: "none",
                         borderRadius: 6,

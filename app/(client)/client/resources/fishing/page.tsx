@@ -8,7 +8,7 @@ export default function FishingPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/resources"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Resources
         </Link>
@@ -56,7 +56,7 @@ export default function FishingPage() {
               style={{
                 display: "inline-block",
                 padding: "10px 20px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 borderRadius: 6,
                 textDecoration: "none",
@@ -139,7 +139,7 @@ export default function FishingPage() {
               href="https://www.wildlife.state.nm.us/fishing/"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#1a472a" }}
+              style={{ color: "var(--client-accent, #1a472a)" }}
             >
               NMDGF Fishing Page
             </a>
@@ -149,7 +149,7 @@ export default function FishingPage() {
               href="https://www.wildlife.state.nm.us/fishing/weekly-report/"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: "#1a472a" }}
+              style={{ color: "var(--client-accent, #1a472a)" }}
             >
               Weekly Fishing Report
             </a>
@@ -171,7 +171,7 @@ function Section({ title, content }: { title: string; content: React.ReactNode }
         marginBottom: 16,
       }}
     >
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: "#1a472a" }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: "var(--client-accent, #1a472a)" }}>
         {title}
       </h2>
       <div style={{ color: "#555", lineHeight: 1.7 }}>{content}</div>

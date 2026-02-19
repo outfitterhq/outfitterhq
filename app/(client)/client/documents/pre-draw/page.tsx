@@ -440,7 +440,7 @@ export default function PreDrawPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/documents"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Documents
         </Link>
@@ -455,7 +455,7 @@ export default function PreDrawPage() {
           for New Mexico Game & Fish application submissions.
         </p>
         {isExisting && (
-          <p style={{ color: "#1a472a", fontWeight: 500, marginTop: 8 }}>
+          <p style={{ color: "var(--client-accent, #1a472a)", fontWeight: 500, marginTop: 8 }}>
             You've already submitted this form for {new Date().getFullYear()}. You can update your information below.
           </p>
         )}
@@ -524,7 +524,7 @@ export default function PreDrawPage() {
             style={{
               flex: 1,
               padding: "12px 16px",
-              background: step === s ? "#1a472a" : "white",
+              background: step === s ? "var(--client-accent, #1a472a)" : "white",
               color: step === s ? "white" : "#666",
               border: "1px solid #ddd",
               borderRadius: 6,
@@ -1045,7 +1045,7 @@ export default function PreDrawPage() {
               onClick={() => setStep(step + 1)}
               style={{
                 padding: "14px 24px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 border: "none",
                 borderRadius: 8,
@@ -1067,7 +1067,7 @@ export default function PreDrawPage() {
                   disabled={saving || !canSubmit}
                   style={{
                     padding: "14px 32px",
-                    background: saving || !canSubmit ? "#ccc" : "#1a472a",
+                    background: saving || !canSubmit ? "#ccc" : "var(--client-accent, #1a472a)",
                     color: "white",
                     border: "none",
                     borderRadius: 8,
@@ -1097,7 +1097,7 @@ function FormSection({ title, children }: { title: string; children: React.React
         marginBottom: 24,
       }}
     >
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: "#1a472a" }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: "var(--client-accent, #1a472a)" }}>
         {title}
       </h2>
       {children}

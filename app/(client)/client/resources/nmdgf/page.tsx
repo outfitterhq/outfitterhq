@@ -8,7 +8,7 @@ export default function NMDGFPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/resources"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Resources
         </Link>
@@ -34,7 +34,7 @@ export default function NMDGFPage() {
               style={{
                 display: "inline-block",
                 padding: "12px 24px",
-                background: "#1a472a",
+                background: "var(--client-accent, #1a472a)",
                 color: "white",
                 borderRadius: 8,
                 textDecoration: "none",
@@ -154,7 +154,7 @@ export default function NMDGFPage() {
           border: "1px solid #c8e6c9",
         }}
       >
-        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "#1a472a" }}>Need Help?</h3>
+        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "var(--client-accent, #1a472a)" }}>Need Help?</h3>
         <p style={{ margin: 0, color: "#555" }}>
           Contact your outfitter if you have any questions about setting up your account or
           applying for draws. We're here to help make the process as smooth as possible.
@@ -196,7 +196,7 @@ function StepSection({
             width: 36,
             height: 36,
             borderRadius: "50%",
-            background: "#1a472a",
+            background: "var(--client-accent, #1a472a)",
             color: "white",
             display: "flex",
             alignItems: "center",

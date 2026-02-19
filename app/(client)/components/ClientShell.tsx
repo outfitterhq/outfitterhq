@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import NotificationBell from "@/app/components/NotificationBell";
@@ -17,8 +17,10 @@ interface ClientShellProps {
   backgroundType?: "color" | "image" | "per-page";
   backgroundColor?: string;
   backgroundImageUrl?: string;
+  backgroundImageUrls?: string[];
   perPageBackgrounds?: Record<string, { type: "color" | "image"; value: string }>;
   headerColor?: string;
+  accentColor?: string;
 }
 
 const TABS = [
@@ -45,12 +47,25 @@ export default function ClientShell({
   backgroundType = "color",
   backgroundColor = "#f5f5f5",
   backgroundImageUrl,
+  backgroundImageUrls = [],
   perPageBackgrounds = {},
   headerColor = "#1a472a",
+  accentColor = "#1a472a",
 }: ClientShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const useSlideshow = backgroundType === "image" && Array.isArray(backgroundImageUrls) && backgroundImageUrls.length > 0;
+  const slideshowUrls = useSlideshow ? backgroundImageUrls : [];
+
+  useEffect(() => {
+    if (slideshowUrls.length <= 1) return;
+    const interval = setInterval(() => {
+      setSlideIndex((i) => (i + 1) % slideshowUrls.length);
+    }, 9000);
+    return () => clearInterval(interval);
+  }, [slideshowUrls.length]);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -92,14 +107,24 @@ export default function ClientShell({
       return { backgroundColor: backgroundColor };
     }
 
-    // Global image background
-    if (backgroundType === "image" && backgroundImageUrl) {
-      return {
-        backgroundImage: `url(${backgroundImageUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      };
+    // Global image background (single image or slideshow uses wrapper below)
+    if (backgroundType === "image") {
+      if (useSlideshow && slideshowUrls[slideIndex]) {
+        return {
+          backgroundImage: `url(${slideshowUrls[slideIndex]})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        };
+      }
+      if (backgroundImageUrl) {
+        return {
+          backgroundImage: `url(${backgroundImageUrl})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
+        };
+      }
     }
 
     // Default color background
@@ -107,9 +132,14 @@ export default function ClientShell({
   }
 
   const backgroundStyle = getBackgroundStyle();
+  const accentVar = { "--client-accent": accentColor } as React.CSSProperties;
 
   return (
-    <div className="client-shell" style={{ minHeight: "100vh", ...backgroundStyle }} suppressHydrationWarning>
+    <div
+      className="client-shell"
+      style={{ minHeight: "100vh", ...backgroundStyle, ...accentVar }}
+      suppressHydrationWarning
+    >
       {/* Header */}
       <header
         className="client-shell-header"
@@ -199,9 +229,9 @@ export default function ClientShell({
                 style={{
                   padding: "16px 20px",
                   textDecoration: "none",
-                  color: active ? "#1a472a" : "#666",
+                  color: active ? "var(--client-accent, #1a472a)" : "#666",
                   fontWeight: active ? 600 : 400,
-                  borderBottom: active ? "3px solid #1a472a" : "3px solid transparent",
+                  borderBottom: active ? "3px solid var(--client-accent, #1a472a)" : "3px solid transparent",
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
@@ -230,7 +260,7 @@ export default function ClientShell({
           gap: 12,
         }}
       >
-        <span style={{ fontSize: 16, fontWeight: 600, color: "#1a472a" }}>
+        <span style={{ fontSize: 16, fontWeight: 600, color: "var(--client-accent, #1a472a)" }}>
           {TABS.find((t) => isActive(t.href))?.label ?? "Menu"}
         </span>
         <button
@@ -241,7 +271,7 @@ export default function ClientShell({
             padding: 12,
             minWidth: 44,
             minHeight: 44,
-            background: mobileMenuOpen ? "#1a472a" : "transparent",
+            background: mobileMenuOpen ? "var(--client-accent, #1a472a)" : "transparent",
             color: mobileMenuOpen ? "white" : "#333",
             border: "1px solid #ddd",
             borderRadius: 6,
@@ -299,7 +329,7 @@ export default function ClientShell({
                   style={{
                     padding: "14px 20px",
                     textDecoration: "none",
-                    color: active ? "#1a472a" : "#333",
+                    color: active ? "var(--client-accent, #1a472a)" : "#333",
                     fontWeight: active ? 600 : 400,
                     display: "flex",
                     alignItems: "center",

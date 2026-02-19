@@ -171,7 +171,7 @@ export default function ClientDocumentsPage() {
           border: "1px solid #c8e6c9",
         }}
       >
-        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "#1a472a" }}>Document Process</h3>
+        <h3 style={{ fontWeight: 600, marginBottom: 8, color: "var(--client-accent, #1a472a)" }}>Document Process</h3>
         <ul style={{ margin: 0, paddingLeft: 20, color: "#555", lineHeight: 1.8 }}>
           <li><strong>Questionnaire:</strong> Fill out once and update as needed</li>
           <li><strong>Pre-Draw Contract:</strong> Complete before the draw deadline for your species choices</li>
@@ -179,7 +179,7 @@ export default function ClientDocumentsPage() {
           <li><strong>Hunt Contract:</strong> Generated after you receive your tag (draw success or private land)</li>
         </ul>
         <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #c8e6c9" }}>
-          <h4 style={{ fontWeight: 600, marginBottom: 6, color: "#1a472a", fontSize: 14 }}>Draw hunts</h4>
+          <h4 style={{ fontWeight: 600, marginBottom: 6, color: "var(--client-accent, #1a472a)", fontSize: 14 }}>Draw hunts</h4>
           <p style={{ margin: 0, fontSize: 14, color: "#555", lineHeight: 1.6 }}>
             Complete your <strong>Pre-Draw Contract</strong> first. After the draw, your outfitter will enter results. If you were drawn, a <strong>Hunt Contract</strong> will appear above—complete and sign it. Each hunt has its own contract.
           </p>

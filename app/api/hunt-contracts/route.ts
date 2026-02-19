@@ -20,6 +20,17 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "No outfitter selected" }, { status: 400 });
     }
 
+    const { data: membership } = await supabase
+      .from("outfitter_memberships")
+      .select("outfitter_id")
+      .eq("user_id", userRes.user.id)
+      .eq("outfitter_id", outfitterId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (!membership) {
+      return NextResponse.json({ error: "Not authorized for this outfitter" }, { status: 403 });
+    }
+
     // Parse query params for filtering
     const url = new URL(req.url);
     const status = url.searchParams.get("status");

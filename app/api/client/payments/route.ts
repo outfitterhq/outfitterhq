@@ -79,10 +79,29 @@ export async function GET() {
       }
     : null;
 
+  const balanceDue = totalAmount - amountPaid;
+  let pay_online_url: string | null = null;
+  if (balanceDue > 0) {
+    const { data: firstUnpaid } = await supabase
+      .from("payment_items")
+      .select("id, contract_id")
+      .eq("client_id", client.id)
+      .in("status", ["pending", "partially_paid"])
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+    const item = firstUnpaid as { id: string; contract_id: string | null } | null;
+    if (item) {
+      pay_online_url = item.contract_id
+        ? `/client/pay?contract_id=${encodeURIComponent(item.contract_id)}`
+        : `/client/pay?item_id=${encodeURIComponent(item.id)}`;
+    }
+  }
+
   return NextResponse.json({
     total_amount: totalAmount,
     amount_paid: amountPaid,
-    balance_due: totalAmount - amountPaid,
+    balance_due: balanceDue,
     payment_plan: paymentPlan,
     payments: paymentList.map((p) => ({
       label: p.label,
@@ -92,5 +111,6 @@ export async function GET() {
       paid_at: p.paid_at,
     })),
     hunt,
+    pay_online_url: pay_online_url ?? undefined,
   });
 }

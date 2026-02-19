@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface PaymentSchedule {
   label: string;
@@ -20,6 +21,7 @@ interface PaymentSummary {
     title: string;
     start_date: string;
   };
+  pay_online_url?: string;
 }
 
 export default function ClientPaymentsPage() {
@@ -59,9 +61,25 @@ export default function ClientPaymentsPage() {
     <div>
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>My Payments</h1>
-        <p style={{ color: "#666" }}>
+        <p style={{ color: "#666", marginBottom: summary?.balance_due && summary?.pay_online_url ? 16 : 0 }}>
           View your payment schedule and balance. Contact your outfitter for payment options.
         </p>
+        {summary?.balance_due && summary?.pay_online_url && (
+          <Link
+            href={summary.pay_online_url}
+            style={{
+              display: "inline-block",
+              padding: "12px 24px",
+              background: "var(--client-accent, #1a472a)",
+              color: "white",
+              borderRadius: 8,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            Pay online
+          </Link>
+        )}
       </div>
 
       {error && (
@@ -132,7 +150,7 @@ export default function ClientPaymentsPage() {
                 marginBottom: 24,
               }}
             >
-              <p style={{ margin: 0, color: "#1a472a" }}>
+              <p style={{ margin: 0, color: "var(--client-accent, #1a472a)" }}>
                 <strong>{summary.hunt.title}</strong> • Hunt starts{" "}
                 {formatDate(summary.hunt.start_date)}
               </p>
@@ -192,7 +210,7 @@ export default function ClientPaymentsPage() {
                       style={{
                         fontSize: 20,
                         fontWeight: 700,
-                        color: payment.is_paid ? "#2e7d32" : "#1a472a",
+                        color: payment.is_paid ? "#2e7d32" : "var(--client-accent, #1a472a)",
                       }}
                     >
                       ${payment.amount.toLocaleString()}
@@ -232,7 +250,10 @@ export default function ClientPaymentsPage() {
       >
         <h3 style={{ fontWeight: 600, marginBottom: 12 }}>Payment Methods</h3>
         <ul style={{ margin: 0, paddingLeft: 20, color: "#555", lineHeight: 1.8 }}>
-          <li>Contact your outfitter for accepted payment methods</li>
+          {summary?.pay_online_url && (
+            <li>Use <strong>Pay online</strong> above to pay by card (secure).</li>
+          )}
+          <li>Contact your outfitter for other payment methods (check, etc.)</li>
           <li>Payments are typically due according to the schedule above</li>
           <li>Full balance must be paid before hunt start date</li>
         </ul>
@@ -265,7 +286,7 @@ function SummaryCard({
         <span style={{ fontSize: 24 }}>{icon}</span>
         <span style={{ fontSize: 14, color: "#666" }}>{label}</span>
       </div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: color || "#1a472a" }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: color || "var(--client-accent, #1a472a)" }}>{value}</div>
     </div>
   );
 }

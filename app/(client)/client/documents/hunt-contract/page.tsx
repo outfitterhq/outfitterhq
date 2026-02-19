@@ -577,7 +577,7 @@ export default function HuntContractPage() {
           }}
           style={{
             padding: "12px 24px",
-            background: "#1a472a",
+            background: "var(--client-accent, #1a472a)",
             color: "white",
             border: "none",
             borderRadius: 8,
@@ -603,7 +603,7 @@ export default function HuntContractPage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/documents"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Documents
         </Link>
@@ -622,10 +622,10 @@ export default function HuntContractPage() {
           disabled={loading}
           style={{
             padding: "8px 16px",
-            border: "1px solid #1a472a",
+            border: "1px solid var(--client-accent, #1a472a)",
             borderRadius: 8,
             background: "white",
-            color: "#1a472a",
+            color: "var(--client-accent, #1a472a)",
             fontWeight: 600,
             cursor: loading ? "not-allowed" : "pointer",
           }}
@@ -812,8 +812,8 @@ export default function HuntContractPage() {
               style={{
                 padding: "12px 24px",
                 background: "white",
-                color: "#1a472a",
-                border: "2px solid #1a472a",
+                color: "var(--client-accent, #1a472a)",
+                border: "2px solid var(--client-accent, #1a472a)",
                 borderRadius: 8,
                 fontWeight: 600,
                 fontSize: 14,
@@ -870,7 +870,7 @@ export default function HuntContractPage() {
                         ) : (
                           <Link
                             href={`/client/pay?item_id=${encodeURIComponent(inst.payment_item_id)}`}
-                            style={{ marginLeft: 12, color: "#1a472a", fontWeight: 600 }}
+                            style={{ marginLeft: 12, color: "var(--client-accent, #1a472a)", fontWeight: 600 }}
                           >
                             Pay
                           </Link>
@@ -887,7 +887,7 @@ export default function HuntContractPage() {
                       style={{
                         display: "inline-block",
                         padding: "10px 20px",
-                        background: "#1a472a",
+                        background: "var(--client-accent, #1a472a)",
                         color: "white",
                         borderRadius: 8,
                         textDecoration: "none",
@@ -952,8 +952,8 @@ export default function HuntContractPage() {
                       style={{
                         padding: "10px 20px",
                         background: "white",
-                        color: "#1a472a",
-                        border: "2px solid #1a472a",
+                        color: "var(--client-accent, #1a472a)",
+                        border: "2px solid var(--client-accent, #1a472a)",
                         borderRadius: 8,
                         fontWeight: 600,
                         fontSize: 14,
@@ -1066,7 +1066,7 @@ export default function HuntContractPage() {
                     disabled={paymentPlanSaving || !paymentPlanFirstDue}
                     style={{
                       padding: "10px 20px",
-                      background: paymentPlanSaving ? "#999" : "#1a472a",
+                      background: paymentPlanSaving ? "#999" : "var(--client-accent, #1a472a)",
                       color: "white",
                       border: "none",
                       borderRadius: 8,
@@ -1119,7 +1119,7 @@ export default function HuntContractPage() {
                       }}
                       style={{
                         padding: "8px 16px",
-                        background: "#1a472a",
+                        background: "var(--client-accent, #1a472a)",
                         color: "white",
                         border: "none",
                         borderRadius: 8,
@@ -1321,7 +1321,7 @@ export default function HuntContractPage() {
             style={{
               display: "inline-block",
               padding: "12px 24px",
-              background: "#1a472a",
+              background: "var(--client-accent, #1a472a)",
               color: "white",
               borderRadius: 8,
               textDecoration: "none",
@@ -1521,7 +1521,7 @@ export default function HuntContractPage() {
                 }}
                 style={{
                   padding: "12px 24px",
-                  background: "#1a472a",
+                  background: "var(--client-accent, #1a472a)",
                   color: "white",
                   border: "none",
                   borderRadius: 8,
@@ -1557,13 +1557,13 @@ export default function HuntContractPage() {
             <div
               style={{
                 background: "#f9f9f9",
-                border: "2px solid #1a472a",
+                border: "2px solid var(--client-accent, #1a472a)",
                 borderRadius: 8,
                 padding: 24,
                 marginBottom: 24,
               }}
             >
-              <h3 style={{ fontWeight: 600, marginBottom: 16, color: "#1a472a", fontSize: 20 }}>
+              <h3 style={{ fontWeight: 600, marginBottom: 16, color: "var(--client-accent, #1a472a)", fontSize: 20 }}>
                 Complete Your Booking
               </h3>
               <p style={{ marginBottom: 20, color: "#666", fontSize: 14 }}>
@@ -1615,7 +1615,7 @@ export default function HuntContractPage() {
                                     style={{
                                       padding: 16,
                                       textAlign: "left",
-                                      border: selectedPlanId === plan.id ? "2px solid #1a472a" : "1px solid #ddd",
+                                      border: selectedPlanId === plan.id ? "2px solid var(--client-accent, #1a472a)" : "1px solid #ddd",
                                       borderRadius: 8,
                                       background: selectedPlanId === plan.id ? "#f0f7f4" : "#fff",
                                       cursor: "pointer",
@@ -1625,7 +1625,7 @@ export default function HuntContractPage() {
                                   >
                                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
                                       <span style={{ fontWeight: 600, fontSize: 16 }}>{plan.title}</span>
-                                      <span style={{ color: "#1a472a", fontWeight: 700, fontSize: 18 }}>
+                                      <span style={{ color: "var(--client-accent, #1a472a)", fontWeight: 700, fontSize: 18 }}>
                                         ${Number(plan.amount_usd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                       </span>
                                     </div>
@@ -1644,7 +1644,7 @@ export default function HuntContractPage() {
                               disabled={!selectedPlanId}
                               style={{
                                 padding: "12px 24px",
-                                background: !selectedPlanId ? "#ccc" : "#1a472a",
+                                background: !selectedPlanId ? "#ccc" : "var(--client-accent, #1a472a)",
                                 color: "white",
                                 border: "none",
                                 borderRadius: 8,
@@ -1764,7 +1764,7 @@ export default function HuntContractPage() {
                         onClick={() => setBookingStep(3)}
                         style={{
                           padding: "12px 24px",
-                          background: "#1a472a",
+                          background: "var(--client-accent, #1a472a)",
                           color: "white",
                           border: "none",
                           borderRadius: 8,
@@ -1900,7 +1900,7 @@ export default function HuntContractPage() {
                               disabled={!formOk || bookingSubmitting}
                               style={{
                                 padding: "12px 24px",
-                                background: !formOk || bookingSubmitting ? "#ccc" : "#1a472a",
+                                background: !formOk || bookingSubmitting ? "#ccc" : "var(--client-accent, #1a472a)",
                                 color: "white",
                                 border: "none",
                                 borderRadius: 8,
@@ -1990,10 +1990,10 @@ export default function HuntContractPage() {
                     borderRadius: 8,
                   }}
                 >
-                  <h4 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "#1a472a" }}>
+                  <h4 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 600, color: "var(--client-accent, #1a472a)" }}>
                     Contract Total
                   </h4>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#1a472a" }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "var(--client-accent, #1a472a)" }}>
                     ${((currentContract.contract_total_cents as number) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </div>
                   <p style={{ margin: "8px 0 0 0", fontSize: 12, color: "#666" }}>
@@ -2023,7 +2023,7 @@ export default function HuntContractPage() {
                 style={{
                   width: "100%",
                   padding: "12px 24px",
-                  background: canSubmit ? "#1a472a" : "#ccc",
+                  background: canSubmit ? "var(--client-accent, #1a472a)" : "#ccc",
                   color: "white",
                   border: "none",
                   borderRadius: 8,

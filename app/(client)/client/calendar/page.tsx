@@ -251,7 +251,7 @@ export default function ClientCalendarPage() {
                         style={{
                           fontSize: 11,
                           padding: "4px 6px",
-                          background: isPast ? "#9e9e9e" : "#1a472a",
+                          background: isPast ? "#9e9e9e" : "var(--client-accent, #1a472a)",
                           color: "white",
                           borderRadius: 4,
                           overflow: "hidden",

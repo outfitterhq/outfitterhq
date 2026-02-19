@@ -161,7 +161,7 @@ export default function QuestionnairePage() {
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/client/documents"
-          style={{ color: "#1a472a", textDecoration: "none", fontSize: 14 }}
+          style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14 }}
         >
           ← Back to Documents
         </Link>
@@ -176,7 +176,7 @@ export default function QuestionnairePage() {
           and ensure your safety and comfort.
         </p>
         {isExisting && (
-          <p style={{ color: "#1a472a", fontWeight: 500, marginTop: 8 }}>
+          <p style={{ color: "var(--client-accent, #1a472a)", fontWeight: 500, marginTop: 8 }}>
             You've already submitted this form. You can update your information below.
           </p>
         )}
@@ -365,7 +365,7 @@ export default function QuestionnairePage() {
             disabled={saving}
             style={{
               padding: "14px 32px",
-              background: saving ? "#ccc" : "#1a472a",
+              background: saving ? "#ccc" : "var(--client-accent, #1a472a)",
               color: "white",
               border: "none",
               borderRadius: 8,
@@ -409,7 +409,7 @@ function FormSection({ title, children }: { title: string; children: React.React
         marginBottom: 24,
       }}
     >
-      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: "#1a472a" }}>
+      <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 20, color: "var(--client-accent, #1a472a)" }}>
         {title}
       </h2>
       {children}

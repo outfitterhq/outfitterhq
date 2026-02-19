@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import SpeciesPhotoPicker from "./SpeciesPhotoPicker";
 
 interface OutfitterCode {
@@ -23,7 +24,9 @@ export default function SettingsPage() {
   const [backgroundType, setBackgroundType] = useState<"color" | "image" | "per-page">("color");
   const [backgroundColor, setBackgroundColor] = useState("#f5f5f5");
   const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
+  const [backgroundImageUrls, setBackgroundImageUrls] = useState<string[]>([]);
   const [headerColor, setHeaderColor] = useState("#1a472a");
+  const [accentColor, setAccentColor] = useState("#1a472a");
   const [perPageBackgrounds, setPerPageBackgrounds] = useState<Record<string, { type: "color" | "image"; value: string }>>({});
   const [savingBranding, setSavingBranding] = useState(false);
 
@@ -37,8 +40,6 @@ export default function SettingsPage() {
   const [dashboardCtaSecondaryText, setDashboardCtaSecondaryText] = useState("");
   const [dashboardCtaSecondaryUrl, setDashboardCtaSecondaryUrl] = useState("");
   const [dashboardFeatureCards, setDashboardFeatureCards] = useState<Array<{ title: string; description: string; icon?: string; href: string }>>([]);
-  const [dashboardHuntShowcases, setDashboardHuntShowcases] = useState<Array<{ title: string; imageUrl?: string; href: string }>>([]);
-  const [dashboardTestimonials, setDashboardTestimonials] = useState<Array<{ name: string; location: string; text: string; imageUrl?: string }>>([]);
   const [dashboardSpecialSections, setDashboardSpecialSections] = useState<Array<{ title: string; description: string; imageUrl?: string; href?: string; buttonText?: string }>>([]);
   const [dashboardPartnerLogos, setDashboardPartnerLogos] = useState<Array<{ name: string; logoUrl: string; href?: string }>>([]);
   const [dashboardContactEnabled, setDashboardContactEnabled] = useState(false);
@@ -94,7 +95,9 @@ export default function SettingsPage() {
         setBackgroundType(outfitter.client_portal_background_type || "color");
         setBackgroundColor(outfitter.client_portal_background_color || "#f5f5f5");
         setBackgroundImageUrl(outfitter.client_portal_background_image_url || "");
+        setBackgroundImageUrls(Array.isArray(outfitter.client_portal_background_image_urls) ? outfitter.client_portal_background_image_urls : []);
         setHeaderColor(outfitter.client_portal_header_color || "#1a472a");
+        setAccentColor(outfitter.client_portal_accent_color || "#1a472a");
         setPerPageBackgrounds(outfitter.client_portal_per_page_backgrounds || {});
         
         // Dashboard customization
@@ -106,8 +109,6 @@ export default function SettingsPage() {
         setDashboardCtaSecondaryText(outfitter.dashboard_cta_secondary_text || "");
         setDashboardCtaSecondaryUrl(outfitter.dashboard_cta_secondary_url || "");
         setDashboardFeatureCards((outfitter.dashboard_feature_cards as any[]) || []);
-        setDashboardHuntShowcases((outfitter.dashboard_hunt_showcases as any[]) || []);
-        setDashboardTestimonials((outfitter.dashboard_testimonials as any[]) || []);
         setDashboardSpecialSections((outfitter.dashboard_special_sections as any[]) || []);
         setDashboardPartnerLogos((outfitter.dashboard_partner_logos as any[]) || []);
         setDashboardContactEnabled(outfitter.dashboard_contact_enabled || false);
@@ -177,8 +178,10 @@ export default function SettingsPage() {
           client_portal_background_type: backgroundType,
           client_portal_background_color: backgroundColor,
           client_portal_background_image_url: backgroundImageUrl || null,
+          client_portal_background_image_urls: backgroundImageUrls,
           client_portal_per_page_backgrounds: backgroundType === "per-page" ? perPageBackgrounds : null,
           client_portal_header_color: headerColor,
+          client_portal_accent_color: accentColor,
         }),
       });
 
@@ -226,8 +229,6 @@ export default function SettingsPage() {
           dashboard_cta_secondary_text: dashboardCtaSecondaryText || null,
           dashboard_cta_secondary_url: dashboardCtaSecondaryUrl || null,
           dashboard_feature_cards: dashboardFeatureCards,
-          dashboard_hunt_showcases: dashboardHuntShowcases,
-          dashboard_testimonials: dashboardTestimonials,
           dashboard_special_sections: dashboardSpecialSections,
           dashboard_partner_logos: dashboardPartnerLogos,
           dashboard_contact_enabled: dashboardContactEnabled,
@@ -420,10 +421,30 @@ export default function SettingsPage() {
 
         {/* Client Portal Branding */}
         <section style={{ border: "1px solid #ddd", borderRadius: 12, padding: 24, marginBottom: 24 }}>
-          <h2 style={{ marginTop: 0, marginBottom: 16 }}>Client Portal Branding</h2>
-          <p style={{ opacity: 0.7, marginBottom: 24 }}>
-            Customize the background and colors of your client portal to match your brand.
-          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 24 }}>
+            <div>
+              <h2 style={{ marginTop: 0, marginBottom: 8 }}>Client Portal Branding</h2>
+              <p style={{ opacity: 0.7, margin: 0 }}>
+                Customize the background and colors of your client portal to match your brand.
+              </p>
+            </div>
+            <Link
+              href="/preview-client"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                padding: "10px 20px",
+                background: "#1565c0",
+                color: "white",
+                borderRadius: 8,
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 14,
+              }}
+            >
+              Preview client portal
+            </Link>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Logo */}
@@ -675,6 +696,72 @@ export default function SettingsPage() {
                 Color for the header and footer. Dark colors work best for contrast with white text.
               </p>
             </div>
+
+            {/* Accent Color */}
+            <div>
+              <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
+                Accent Color (buttons, links)
+              </label>
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <input
+                  type="color"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  style={{ width: 60, height: 40, border: "1px solid #ddd", borderRadius: 6, cursor: "pointer" }}
+                />
+                <input
+                  type="text"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  style={{ flex: 1, padding: 10, border: "1px solid #ddd", borderRadius: 6 }}
+                  placeholder="#1a472a"
+                />
+              </div>
+              <p style={{ fontSize: 12, opacity: 0.6, marginTop: 4 }}>
+                Used for buttons, links, and accents across the client portal.
+              </p>
+            </div>
+
+            {/* Background image: single vs slideshow (when type is image) */}
+            {backgroundType === "image" && (
+              <div>
+                <label style={{ display: "block", marginBottom: 8, fontWeight: 600 }}>
+                  Slideshow (multiple background photos)
+                </label>
+                <p style={{ fontSize: 12, opacity: 0.6, marginBottom: 8 }}>
+                  Add multiple image URLs to rotate as the background every 9 seconds. Leave empty to use the single Background Image URL above.
+                </p>
+                {backgroundImageUrls.map((url, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => {
+                        const next = [...backgroundImageUrls];
+                        next[idx] = e.target.value;
+                        setBackgroundImageUrls(next);
+                      }}
+                      style={{ flex: 1, padding: 8, border: "1px solid #ddd", borderRadius: 6 }}
+                      placeholder="https://example.com/photo.jpg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setBackgroundImageUrls(backgroundImageUrls.filter((_, i) => i !== idx))}
+                      style={{ padding: "8px 12px", background: "#ef4444", color: "white", border: "none", borderRadius: 6, cursor: "pointer" }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setBackgroundImageUrls([...backgroundImageUrls, ""])}
+                  style={{ padding: "8px 16px", background: "#e5e7eb", color: "#374151", border: "none", borderRadius: 6, cursor: "pointer", fontWeight: 500 }}
+                >
+                  + Add photo URL
+                </button>
+              </div>
+            )}
 
             {/* Save Button */}
             <button
@@ -1056,10 +1143,6 @@ export default function SettingsPage() {
               setCtaSecondaryUrl={setDashboardCtaSecondaryUrl}
               featureCards={dashboardFeatureCards}
               setFeatureCards={setDashboardFeatureCards}
-              huntShowcases={dashboardHuntShowcases}
-              setHuntShowcases={setDashboardHuntShowcases}
-              testimonials={dashboardTestimonials}
-              setTestimonials={setDashboardTestimonials}
               specialSections={dashboardSpecialSections}
               setSpecialSections={setDashboardSpecialSections}
               partnerLogos={dashboardPartnerLogos}
@@ -1542,10 +1625,6 @@ function DashboardCustomizationForm({
   setCtaSecondaryUrl,
   featureCards,
   setFeatureCards,
-  huntShowcases,
-  setHuntShowcases,
-  testimonials,
-  setTestimonials,
   specialSections,
   setSpecialSections,
   partnerLogos,
@@ -1575,10 +1654,6 @@ function DashboardCustomizationForm({
   setCtaSecondaryUrl: (v: string) => void;
   featureCards: Array<{ title: string; description: string; icon?: string; href: string }>;
   setFeatureCards: (v: Array<{ title: string; description: string; icon?: string; href: string }>) => void;
-  huntShowcases: Array<{ title: string; imageUrl?: string; href: string }>;
-  setHuntShowcases: (v: Array<{ title: string; imageUrl?: string; href: string }>) => void;
-  testimonials: Array<{ name: string; location: string; text: string; imageUrl?: string }>;
-  setTestimonials: (v: Array<{ name: string; location: string; text: string; imageUrl?: string }>) => void;
   specialSections: Array<{ title: string; description: string; imageUrl?: string; href?: string; buttonText?: string }>;
   setSpecialSections: (v: Array<{ title: string; description: string; imageUrl?: string; href?: string; buttonText?: string }>) => void;
   partnerLogos: Array<{ name: string; logoUrl: string; href?: string }>;
@@ -1729,95 +1804,6 @@ function DashboardCustomizationForm({
           </div>
         )}
         defaultItem={{ title: "", description: "", icon: "", href: "" }}
-      />
-
-      {/* Hunt Showcases */}
-      <EditableArraySection
-        title="Hunt Showcases"
-        items={huntShowcases}
-        onItemsChange={setHuntShowcases}
-        renderItem={(item, index, onUpdate, onDelete) => (
-          <div key={index} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 16, marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-              <strong>Hunt Showcase {index + 1}</strong>
-              <button onClick={onDelete} style={{ padding: "4px 12px", background: "#ef4444", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
-                Delete
-              </button>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <input
-                type="text"
-                placeholder="Title (e.g., Arizona Trophy Elk Hunts)"
-                value={item.title}
-                onChange={(e) => onUpdate({ ...item, title: e.target.value })}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-              <input
-                type="url"
-                placeholder="Image URL"
-                value={item.imageUrl || ""}
-                onChange={(e) => onUpdate({ ...item, imageUrl: e.target.value })}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-              <input
-                type="text"
-                placeholder="Link URL"
-                value={item.href}
-                onChange={(e) => onUpdate({ ...item, href: e.target.value })}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-            </div>
-          </div>
-        )}
-        defaultItem={{ title: "", imageUrl: "", href: "" }}
-      />
-
-      {/* Testimonials */}
-      <EditableArraySection
-        title="Client Testimonials"
-        items={testimonials}
-        onItemsChange={setTestimonials}
-        renderItem={(item, index, onUpdate, onDelete) => (
-          <div key={index} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 16, marginBottom: 12 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-              <strong>Testimonial {index + 1}</strong>
-              <button onClick={onDelete} style={{ padding: "4px 12px", background: "#ef4444", color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
-                Delete
-              </button>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <textarea
-                placeholder="Testimonial text"
-                value={item.text}
-                onChange={(e) => onUpdate({ ...item, text: e.target.value })}
-                rows={3}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-              <input
-                type="text"
-                placeholder="Client Name"
-                value={item.name}
-                onChange={(e) => onUpdate({ ...item, name: e.target.value })}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-              <input
-                type="text"
-                placeholder="Location (e.g., Missouri)"
-                value={item.location}
-                onChange={(e) => onUpdate({ ...item, location: e.target.value })}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-              <input
-                type="url"
-                placeholder="Photo URL (optional)"
-                value={item.imageUrl || ""}
-                onChange={(e) => onUpdate({ ...item, imageUrl: e.target.value })}
-                style={{ padding: 8, border: "1px solid #ddd", borderRadius: 4 }}
-              />
-            </div>
-          </div>
-        )}
-        defaultItem={{ name: "", location: "", text: "", imageUrl: "" }}
       />
 
       {/* Special Sections */}

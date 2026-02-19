@@ -256,7 +256,7 @@ export default function CompleteBookingPage() {
     return (
       <div style={{ maxWidth: 600, margin: "48px auto", padding: 24 }}>
         <p style={{ color: "#c00", marginBottom: 16 }}>{error}</p>
-        <Link href="/client/private-tags" style={{ color: "#1a472a", fontWeight: 600 }}>
+        <Link href="/client/private-tags" style={{ color: "var(--client-accent, #1a472a)", fontWeight: 600 }}>
           ← Back to Tags
         </Link>
       </div>
@@ -265,7 +265,7 @@ export default function CompleteBookingPage() {
 
   return (
     <main style={{ maxWidth: 600, margin: "32px auto", padding: 24 }}>
-      <Link href="/client/private-tags" style={{ color: "#1a472a", textDecoration: "none", fontSize: 14, marginBottom: 16, display: "inline-block" }}>
+      <Link href="/client/private-tags" style={{ color: "var(--client-accent, #1a472a)", textDecoration: "none", fontSize: 14, marginBottom: 16, display: "inline-block" }}>
         ← Back to Tags
       </Link>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Complete your booking</h1>
@@ -324,7 +324,7 @@ export default function CompleteBookingPage() {
                   style={{
                     padding: 16,
                     textAlign: "left",
-                    border: selectedPlanId === plan.id ? "2px solid #1a472a" : "1px solid #ddd",
+                    border: selectedPlanId === plan.id ? "2px solid var(--client-accent, #1a472a)" : "1px solid #ddd",
                     borderRadius: 8,
                     background: selectedPlanId === plan.id ? "#f0f7f4" : "#fff",
                     cursor: "pointer",
@@ -334,7 +334,7 @@ export default function CompleteBookingPage() {
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
                     <span style={{ fontWeight: 600, fontSize: 16 }}>{plan.title}</span>
-                    <span style={{ color: "#1a472a", fontWeight: 700, fontSize: 18 }}>
+                    <span style={{ color: "var(--client-accent, #1a472a)", fontWeight: 700, fontSize: 18 }}>
                       ${Number(plan.amount_usd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -365,7 +365,7 @@ export default function CompleteBookingPage() {
             disabled={!selectedPlanId}
             style={{
               padding: "12px 24px",
-              background: !selectedPlanId ? "#ccc" : "#1a472a",
+              background: !selectedPlanId ? "#ccc" : "var(--client-accent, #1a472a)",
               color: "white",
               border: "none",
               borderRadius: 8,
@@ -402,7 +402,7 @@ export default function CompleteBookingPage() {
               padding: 12, 
               marginBottom: 16 
             }}>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1a472a" }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--client-accent, #1a472a)" }}>
                 Your guide fee plan: {selectedPlan.title} ({baseDays} day{baseDays !== 1 ? "s" : ""})
               </p>
               {requiredDays != null && (
@@ -451,7 +451,7 @@ export default function CompleteBookingPage() {
                     )}
                     <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 13 }}>
                       {item.amount_usd != null && item.amount_usd > 0 && (
-                        <div style={{ color: "#1a472a", fontWeight: 600 }}>
+                        <div style={{ color: "var(--client-accent, #1a472a)", fontWeight: 600 }}>
                           ${Number(item.amount_usd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} each
                         </div>
                       )}
@@ -495,7 +495,7 @@ export default function CompleteBookingPage() {
             onClick={() => setStep(3)}
             style={{
               padding: "12px 24px",
-              background: "#1a472a",
+              background: "var(--client-accent, #1a472a)",
               color: "white",
               border: "none",
               borderRadius: 8,
@@ -626,7 +626,7 @@ export default function CompleteBookingPage() {
             disabled={!formOk || submitting}
             style={{
               padding: "12px 24px",
-              background: !formOk || submitting ? "#ccc" : "#1a472a",
+              background: !formOk || submitting ? "#ccc" : "var(--client-accent, #1a472a)",
               color: "white",
               border: "none",
               borderRadius: 8,

@@ -281,7 +281,7 @@ export default function ClientSuccessHistoryPage() {
                       padding: 16,
                       textAlign: "center",
                       background: isFiltered ? "#059669" : "white",
-                      color: isFiltered ? "white" : "#1a472a",
+                      color: isFiltered ? "white" : "var(--client-accent, #1a472a)",
                     }}
                   >
                     <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>{species}</div>

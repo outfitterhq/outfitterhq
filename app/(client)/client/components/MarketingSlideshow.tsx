@@ -137,7 +137,7 @@ export default function MarketingSlideshow({
         style={{
           position: "fixed",
           inset: 0,
-          background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+          background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -160,7 +160,7 @@ export default function MarketingSlideshow({
         style={{
           position: "fixed",
           inset: 0,
-          background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+          background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -177,7 +177,7 @@ export default function MarketingSlideshow({
           style={{
             padding: "12px 24px",
             background: "white",
-            color: "#1a472a",
+            color: "var(--client-accent, #1a472a)",
             border: "none",
             borderRadius: 8,
             cursor: "pointer",
@@ -210,7 +210,7 @@ export default function MarketingSlideshow({
         style={{
           position: "fixed",
           inset: 0,
-          background: "linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%)",
+          background: "linear-gradient(135deg, var(--client-accent, #1a472a) 0%, #2d5a3d 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -398,7 +398,7 @@ export default function MarketingSlideshow({
           onClick={onContinue}
           style={{
             padding: "12px 24px",
-            background: "#1a472a",
+            background: "var(--client-accent, #1a472a)",
             color: "white",
             border: "none",
             borderRadius: 8,

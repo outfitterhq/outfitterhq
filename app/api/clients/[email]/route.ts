@@ -21,6 +21,17 @@ export async function GET(
       return NextResponse.json({ error: "No outfitter selected" }, { status: 400 });
     }
 
+    const { data: membership } = await supabase
+      .from("outfitter_memberships")
+      .select("outfitter_id")
+      .eq("user_id", userRes.user.id)
+      .eq("outfitter_id", outfitterId)
+      .eq("status", "active")
+      .maybeSingle();
+    if (!membership) {
+      return NextResponse.json({ error: "Not authorized for this outfitter" }, { status: 403 });
+    }
+
     const { email } = await params;
     const decodedEmail = decodeURIComponent(email);
     
